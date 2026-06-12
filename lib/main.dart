@@ -1,36 +1,14 @@
-/*import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MandiApp());
-}
-
-class MandiApp extends StatelessWidget {
-  const MandiApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Mandi Intelligence',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Mandi Intelligence'),
-        ),
-        body: const Center(
-          child: Text(
-            'Flutter Setup Successful 🚀',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-      ),
-    );
-  }
-}*/
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme/app_theme.dart';
 import 'features/mandi_prices/screens/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -41,6 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mandi Intelligence',
+      theme: AppTheme.lightTheme,
       home: const HomeScreen(),
     );
   }

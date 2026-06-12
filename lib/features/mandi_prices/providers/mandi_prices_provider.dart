@@ -1,21 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../../data/models/mandi_price.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
-import '../../../data/models/mandi_price.dart';
+import 'filter_model.dart';
 
-final mandiRepositoryProvider =
-    Provider<MandiRepository>((ref) {
-  return MandiRepository(
-    MandiApiService(),
-  );
+// Provider for the ApiService
+final apiServiceProvider = Provider<MandiApiService>((ref) {
+  return MandiApiService();
 });
 
-final mandiPricesProvider =
-    FutureProvider<List<MandiPrice>>((ref) async {
-  final repository = ref.watch(
-    mandiRepositoryProvider,
-  );
+// Provider for the Repository
+final mandiRepositoryProvider = Provider<MandiRepository>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return MandiRepository(apiService);
+});
 
-  return repository.getMandiPrices();
+// FutureProvider to fetch the mandi prices based on a filter
+final mandiPricesProvider = FutureProvider.family<List<MandiPrice>, Filter>((ref, filter) {
+  final repository = ref.watch(mandiRepositoryProvider);
+  return repository.getMandiPrices(filter);
 });
