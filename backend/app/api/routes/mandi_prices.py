@@ -1,0 +1,79 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+
+from app.models.mandi_price import MandiPrice
+from app.models.commodity import Commodity
+from app.models.variety import Variety
+from app.models.grade import Grade
+from app.models.market import Market
+from app.models.district import District
+from app.models.state import State
+
+router = APIRouter()
+
+
+@router.get("/")
+def get_mandi_prices(
+    state: str | None = None,
+    district: str | None = None,
+    market: str | None = None,
+    commodity: str | None = None,
+    variety: str | None = None,
+    db: Session = Depends(get_db)
+):
+
+    query = (
+        db.query(
+            State.name.label("state"),
+            District.name.label("district"),
+            Market.name.label("market"),
+            Commodity.name.label("commodity"),
+            Variety.name.label("variety"),
+            Grade.grade_name.label("grade"),
+            MandiPrice.modal_price,
+            MandiPrice.min_price,
+            MandiPrice.max_price,
+            MandiPrice.arrival_date
+        )
+        .join(Market, MandiPrice.market_id == Market.id)
+        .join(District, Market.district_id == District.id)
+        .join(State, District.state_id == State.id)
+        .join(Commodity, MandiPrice.commodity_id == Commodity.id)
+        .join(Variety, MandiPrice.variety_id == Variety.id)
+        .join(Grade, MandiPrice.grade_id == Grade.id)
+    )
+
+    if state:
+        query = query.filter(State.name == state)
+
+    if district:
+        query = query.filter(District.name == district)
+
+    if market:
+        query = query.filter(Market.name == market)
+
+    if commodity:
+        query = query.filter(Commodity.name == commodity)
+
+    if variety:
+        query = query.filter(Variety.name == variety)
+
+    results = query.all()
+
+    return [
+        {
+            "state": row.state,
+            "district": row.district,
+            "market": row.market,
+            "commodity": row.commodity,
+            "variety": row.variety,
+            "grade": row.grade,
+            "modal_price": float(row.modal_price),
+            "min_price": float(row.min_price),
+            "max_price": float(row.max_price),
+            "arrival_date": row.arrival_date,
+        }
+        for row in results
+    ]
