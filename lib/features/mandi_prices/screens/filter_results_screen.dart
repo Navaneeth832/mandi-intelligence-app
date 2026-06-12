@@ -1,52 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/mandi_price.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/filter_model.dart';
+import '../providers/mandi_prices_provider.dart';
 import '../widgets/price_card.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
+import '../widgets/empty_widget.dart';
+import 'market_detail_screen.dart';
 
-class FilterResultsScreen extends StatelessWidget {
-  FilterResultsScreen({super.key});
+class FilterResultsScreen extends ConsumerWidget {
+  final String? selectedCrop;
+  final String? selectedState;
+  final String? selectedMarket;
 
-  // Dummy data for price cards
-  final List<MandiPrice> _dummyPrices = [
-    MandiPrice(
-      commodity: 'Tomato',
-      variety: 'Nadan',
-      market: 'Ernakulam',
-      district: 'Ernakulam',
-      state: 'KL',
-      modalPrice: 42,
-      highPrice: 45,
-      lowPrice: 38,
-      priceChange: 1.5,
-      lastUpdated: DateTime.now(),
-    ),
-    MandiPrice(
-      commodity: 'Coconut',
-      variety: 'West Coast Tall',
-      market: 'Alappuzha',
-      district: 'Alappuzha',
-      state: 'KL',
-      modalPrice: 35,
-      highPrice: 38,
-      lowPrice: 32,
-      priceChange: -0.5,
-      lastUpdated: DateTime.now(),
-    ),
-    MandiPrice(
-      commodity: 'Paddy',
-      variety: 'Uma',
-      market: 'Palakkad',
-      district: 'Palakkad',
-      state: 'KL',
-      modalPrice: 28,
-      highPrice: 30,
-      lowPrice: 26,
-      priceChange: 0.2,
-      lastUpdated: DateTime.now(),
-    ),
-  ];
+  const FilterResultsScreen({
+    super.key,
+    this.selectedCrop,
+    this.selectedState,
+    this.selectedMarket,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = Filter(
+      crop: selectedCrop,
+      state: selectedState,
+      market: selectedMarket,
+    );
+    final filteredPricesAsync = ref.watch(mandiPricesProvider(filter));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Filter Results'),
@@ -55,7 +37,19 @@ class FilterResultsScreen extends StatelessWidget {
         children: [
           _buildActiveFilters(),
           Expanded(
-            child: _buildPriceList(),
+            child: filteredPricesAsync.when(
+              data: (prices) {
+                if (prices.isEmpty) {
+                  return const EmptyStateWidget();
+                }
+                return _buildPriceList(prices);
+              },
+              loading: () => const LoadingWidget(),
+              error: (err, stack) => ErrorStateWidget(
+                errorMessage: err.toString(),
+                onRetry: () => ref.refresh(mandiPricesProvider(filter)),
+              ),
+            ),
           ),
         ],
       ),
@@ -63,58 +57,54 @@ class FilterResultsScreen extends StatelessWidget {
   }
 
   Widget _buildActiveFilters() {
+    final filters = <String, String?>{
+      'Crop': selectedCrop,
+      'State': selectedState,
+      'Market': selectedMarket,
+    };
+
+    final activeFilters = <Widget>[];
+    filters.forEach((key, value) {
+      if (value != null) {
+        activeFilters.add(
+          Chip(
+            label: Text('$key: $value'),
+          ),
+        );
+        activeFilters.add(const SizedBox(width: 8));
+      }
+    });
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: [
-            Chip(
-              label: const Text('Crop: Tomato'),
-              onDeleted: () {},
-            ),
-            const SizedBox(width: 8),
-            Chip(
-              label: const Text('State: Kerala'),
-              onDeleted: () {},
-            ),
-            const SizedBox(width: 8),
-            Chip(
-              label: const Text('Market: Ernakulam'),
-              onDeleted: () {},
-            ),
-          ],
+          children: activeFilters,
         ),
       ),
     );
   }
 
-  Widget _buildPriceList() {
+  Widget _buildPriceList(List<dynamic> prices) {
     return ListView.separated(
       padding: const EdgeInsets.all(16.0),
-      itemCount: _dummyPrices.length + 1, // +1 for the load more button
+      itemCount: prices.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        if (index == _dummyPrices.length) {
-          return _buildLoadMoreButton();
-        }
-        final price = _dummyPrices[index];
-        return PriceCard(price: price);
-      },
-    );
-  }
-
-  Widget _buildLoadMoreButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Handle load more logic
+        final price = prices[index];
+        return PriceCard(
+          price: price,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MarketDetailScreen(price: price),
+              ),
+            );
           },
-          child: const Text('Load More'),
-        ),
-      ),
+        );
+      },
     );
   }
 }

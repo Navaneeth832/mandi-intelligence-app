@@ -68,7 +68,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _navigateToFilterResults() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => FilterResultsScreen()),
+      MaterialPageRoute(
+        builder: (context) => FilterResultsScreen(
+          selectedCrop: _selectedCrop,
+          selectedState: _selectedState,
+          selectedMarket: _selectedMarket,
+        ),
+      ),
     );
   }
 
