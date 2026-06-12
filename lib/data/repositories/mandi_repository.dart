@@ -3,8 +3,8 @@ import '../services/mandi_api_service.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 
 // TASK 5: TESTING CONTROLS
-const bool simulateLoading = true;
-const bool simulateError = true;
+const bool simulateLoading = false;
+const bool simulateError = false;
 const bool simulateEmpty = false;
 
 class MandiRepository {

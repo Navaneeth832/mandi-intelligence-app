@@ -28,6 +28,7 @@ class FilterDropdownButton extends StatelessWidget {
           value: value,
           hint: Text(hintText),
           isDense: true,
+          isExpanded: true,
           onChanged: onChanged,
           items: items.map((String value) {
             return DropdownMenuItem<String>(

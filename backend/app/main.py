@@ -4,8 +4,18 @@ from app.api.routes import states
 from app.api.routes import commodities
 from app.api.routes import markets
 from app.api.routes import mandi_prices
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

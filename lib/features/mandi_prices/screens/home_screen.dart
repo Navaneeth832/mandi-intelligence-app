@@ -7,6 +7,11 @@ import '../widgets/filter_dropdown.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'filter_results_screen.dart';
 import 'market_detail_screen.dart';
+import '../providers/filter_model.dart';
+import '../providers/mandi_prices_provider.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
+import '../widgets/empty_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +21,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String? _selectedCrop = 'Tomato';
+  String? _selectedCrop;
   String? _selectedState;
   String? _selectedMarket;
 
@@ -25,45 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> _states = ['Kerala', 'Tamil Nadu', 'Karnataka'];
   final List<String> _markets = ['Ernakulam', 'Coimbatore', 'Mangalore'];
 
-  // Dummy data for price cards
-  final List<MandiPrice> _dummyPrices = [
-    MandiPrice(
-      commodity: 'Tomato',
-      variety: 'Nadan',
-      market: 'Ernakulam',
-      district: 'Ernakulam',
-      state: 'KL',
-      modalPrice: 42,
-      highPrice: 45,
-      lowPrice: 38,
-      priceChange: 1.5,
-      lastUpdated: DateTime.now(),
-    ),
-    MandiPrice(
-      commodity: 'Coconut',
-      variety: 'West Coast Tall',
-      market: 'Alappuzha',
-      district: 'Alappuzha',
-      state: 'KL',
-      modalPrice: 35,
-      highPrice: 38,
-      lowPrice: 32,
-      priceChange: -0.5,
-      lastUpdated: DateTime.now(),
-    ),
-    MandiPrice(
-      commodity: 'Paddy',
-      variety: 'Uma',
-      market: 'Palakkad',
-      district: 'Palakkad',
-      state: 'KL',
-      modalPrice: 28,
-      highPrice: 30,
-      lowPrice: 26,
-      priceChange: 0.2,
-      lastUpdated: DateTime.now(),
-    ),
-  ];
+  
 
   void _navigateToFilterResults() {
     Navigator.push(
@@ -162,75 +129,138 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildFilterSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: FilterDropdownButton(
-            hintText: 'Crop',
-            items: _crops,
-            value: _selectedCrop,
-            onChanged: (value) {
-              setState(() {
-                _selectedCrop = value;
-              });
-              _navigateToFilterResults();
-            },
+Widget _buildFilterSection() {
+  return Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: FilterDropdownButton(
+              hintText: 'Crop',
+              items: _crops,
+              value: _selectedCrop,
+              onChanged: (value) {
+                setState(() {
+                  _selectedCrop = value;
+                });
+              },
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: FilterDropdownButton(
-            hintText: 'State',
-            items: _states,
-            value: _selectedState,
-            onChanged: (value) {
-              setState(() {
-                _selectedState = value;
-              });
-              _navigateToFilterResults();
-            },
+          const SizedBox(width: 8),
+          Expanded(
+            child: FilterDropdownButton(
+              hintText: 'State',
+              items: _states,
+              value: _selectedState,
+              onChanged: (value) {
+                setState(() {
+                  _selectedState = value;
+                });
+              },
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: FilterDropdownButton(
-            hintText: 'Market',
-            items: _markets,
-            value: _selectedMarket,
-            onChanged: (value) {
-              setState(() {
-                _selectedMarket = value;
-              });
-              _navigateToFilterResults();
-            },
+          const SizedBox(width: 8),
+          Expanded(
+            child: FilterDropdownButton(
+              hintText: 'Market',
+              items: _markets,
+              value: _selectedMarket,
+              onChanged: (value) {
+                setState(() {
+                  _selectedMarket = value;
+                });
+              },
+            ),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+
+      const SizedBox(height: 12),
+
+      Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _navigateToFilterResults,
+              child: const Text('Apply Filters'),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () {
+                setState(() {
+                  _selectedCrop = null;
+                  _selectedState = null;
+                  _selectedMarket = null;
+                });
+              },
+              child: const Text('Clear'),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _buildPriceList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _dummyPrices.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final price = _dummyPrices[index];
-        return PriceCard(
-          price: price,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MarketDetailScreen(price: price),
-              ),
+    final filter = Filter(
+      crop: _selectedCrop,
+      state: _selectedState,
+      market: _selectedMarket,
+    );
+
+    final pricesAsync = ref.watch(
+      mandiPricesProvider(filter),
+    );
+
+    return pricesAsync.when(
+      data: (prices) {
+        if (prices.isEmpty) {
+          return const EmptyStateWidget();
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: prices.length,
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final price = prices[index];
+
+            return PriceCard(
+              price: price,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MarketDetailScreen(
+                      price: price,
+                    ),
+                  ),
+                );
+              },
             );
           },
         );
       },
+
+      loading: () => const LoadingWidget(),
+
+      error: (err, stack) => ErrorStateWidget(
+        errorMessage: err.toString(),
+        onRetry: () {
+          ref.refresh(
+            mandiPricesProvider(filter),
+          );
+        },
+      ),
     );
   }
 }
