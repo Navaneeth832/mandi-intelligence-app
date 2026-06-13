@@ -20,3 +20,26 @@ final mandiPricesProvider = FutureProvider.family<List<MandiPrice>, Filter>((ref
   final repository = ref.watch(mandiRepositoryProvider);
   return repository.getMandiPrices(filter);
 });
+final statesProvider =
+    FutureProvider<List<String>>((ref) {
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+
+  return repository.getStates();
+});
+
+final commoditiesProvider =
+    FutureProvider<List<String>>((ref) {
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+
+  return repository.getCommodities();
+});
+
+final marketsProvider =
+    FutureProvider<List<String>>((ref) {
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+
+  return repository.getMarkets();
+});

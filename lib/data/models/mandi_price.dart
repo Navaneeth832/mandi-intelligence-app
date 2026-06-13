@@ -5,9 +5,9 @@ class MandiPrice {
   final String district;
   final String state;
 
-  final int modalPrice;
-  final int highPrice;
-  final int lowPrice;
+  final double modalPrice;
+  final double highPrice;
+  final double lowPrice;
 
   final DateTime lastUpdated;
 
@@ -34,9 +34,9 @@ class MandiPrice {
       district: json['district'],
       state: json['state'],
 
-      modalPrice: json['modal_price'],
-      highPrice: json['max_price'],
-      lowPrice: json['min_price'],
+      modalPrice: (json['modal_price'] as num).toDouble(),
+      highPrice: (json['max_price'] as num).toDouble(),
+      lowPrice: (json['min_price'] as num).toDouble(),
 
       // Backend doesn't provide this yet
       priceChange: 0.0,

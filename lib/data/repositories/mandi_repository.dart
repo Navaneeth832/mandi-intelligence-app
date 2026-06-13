@@ -35,4 +35,15 @@ class MandiRepository {
       return cropMatch && stateMatch && marketMatch;
     }).toList();
   }
+  Future<List<String>> getStates() {
+    return _apiService.getStates();
+  }
+
+  Future<List<String>> getCommodities() {
+    return _apiService.getCommodities();
+  }
+
+  Future<List<String>> getMarkets() {
+    return _apiService.getMarkets();
+  }
 }

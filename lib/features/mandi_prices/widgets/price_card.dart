@@ -81,7 +81,7 @@ class PriceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceColumn(String label, int priceValue, BuildContext context) {
+  Widget _buildPriceColumn(String label, double priceValue, BuildContext context) {
     final theme = Theme.of(context);
     final formattedPrice = NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(priceValue);
     return Column(

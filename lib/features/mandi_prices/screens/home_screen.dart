@@ -24,12 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedCrop;
   String? _selectedState;
   String? _selectedMarket;
-
-  // Dummy data for dropdowns
-  final List<String> _crops = ['Tomato', 'Coconut', 'Paddy'];
-  final List<String> _states = ['Kerala', 'Tamil Nadu', 'Karnataka'];
-  final List<String> _markets = ['Ernakulam', 'Coimbatore', 'Mangalore'];
-
   
 
   void _navigateToFilterResults() {
@@ -130,6 +124,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
 Widget _buildFilterSection() {
+  final cropsAsync = ref.watch(commoditiesProvider);
+  final statesAsync = ref.watch(statesProvider);
+  final marketsAsync = ref.watch(marketsProvider);
   return Column(
     children: [
       Row(
@@ -138,7 +135,7 @@ Widget _buildFilterSection() {
           Expanded(
             child: FilterDropdownButton(
               hintText: 'Crop',
-              items: _crops,
+              items: cropsAsync.value ?? [],
               value: _selectedCrop,
               onChanged: (value) {
                 setState(() {
@@ -151,7 +148,7 @@ Widget _buildFilterSection() {
           Expanded(
             child: FilterDropdownButton(
               hintText: 'State',
-              items: _states,
+              items: statesAsync.value ?? [],
               value: _selectedState,
               onChanged: (value) {
                 setState(() {
@@ -164,7 +161,7 @@ Widget _buildFilterSection() {
           Expanded(
             child: FilterDropdownButton(
               hintText: 'Market',
-              items: _markets,
+              items: marketsAsync.value ?? [],
               value: _selectedMarket,
               onChanged: (value) {
                 setState(() {
