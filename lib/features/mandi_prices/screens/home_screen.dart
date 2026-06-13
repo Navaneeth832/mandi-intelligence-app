@@ -24,7 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedCrop;
   String? _selectedState;
   String? _selectedMarket;
-  
 
   void _navigateToFilterResults() {
     Navigator.push(
@@ -38,171 +37,279 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+  String getRelativeTime(DateTime lastUpdated) {
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdated);
+
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} mins ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} weeks ago';
+    } else {
+      return '${(difference.inDays / 30).floor()} months ago';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FA), // Light grey background matching the design
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF7F8FA),
+        elevation: 0,
+        titleSpacing: 16,
+        title: const Row(
+          children: [
+            Icon(Icons.agriculture_outlined, color: Color(0xFF0A4A1C), size: 32),
+            SizedBox(width: 8),
+            Text(
+              'Revin Sight',
+              style: TextStyle(
+                color: Color(0xFF0A4A1C),
+                fontWeight: FontWeight.w900,
+                fontSize: 24,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none, color: Color(0xFF0A4A1C), size: 28),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(child: _buildBody()),
       bottomNavigationBar: const BottomNavBar(),
     );
   }
 
-  Widget _buildBody() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      children: [
-        _buildHeroSection(),
-        const SizedBox(height: 16),
-        _buildLivePricesHeader(),
-        const SizedBox(height: 8),
-        _buildFilterSection(),
-        const SizedBox(height: 16),
-        _buildPriceList(),
-      ],
+ Widget _buildBody() {
+    final filter = Filter(
+      crop: _selectedCrop,
+      state: _selectedState,
+      market: _selectedMarket,
     );
-  }
 
-  Widget _buildHeroSection() {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final pricesAsync = ref.watch(mandiPricesProvider(filter));
+    return RefreshIndicator(
+      onRefresh: () async {
+        final filter = Filter(
+          crop: _selectedCrop,
+          state: _selectedState,
+          market: _selectedMarket,
+        );
+
+        ref.invalidate(mandiPricesProvider(filter));
+        ref.invalidate(statesProvider);
+        ref.invalidate(commoditiesProvider);
+        ref.invalidate(marketsProvider);
+
+        await Future.delayed(
+          const Duration(milliseconds: 500),
+        );
+      },
+      child: ListView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8.0,
+        ),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Revin Sight',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+          _buildHeaderSection(
+              pricesAsync.maybeWhen(
+                data: (prices) =>
+                    prices.isNotEmpty
+                        ? prices
+                            .map((p) => p.lastUpdated)
+                            .reduce(
+                              (a, b) =>
+                                  a.isAfter(b) ? a : b,
+                            )
+                        : DateTime.now(),
+                orElse: () => DateTime.now(),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Icon(Icons.agriculture_outlined, size: 40, color: Colors.green),
+            ),
+          const SizedBox(height: 24),
+          _buildFilterSection(),
+          const SizedBox(height: 20),
+          _buildPriceList(),
         ],
       ),
     );
   }
 
-  Widget _buildLivePricesHeader() {
-    final theme = Theme.of(context);
+  Widget _buildHeaderSection(DateTime latestUpdate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Live Mandi Prices',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
         Row(
           children: [
-            Text(
-              DateFormat.yMMMMd().format(DateTime.now()),
-              style: theme.textTheme.bodyMedium,
+            const Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.hexagon, color: Color(0xFF14522B), size: 68),
+                Icon(Icons.arrow_upward, color: Colors.white, size: 32),
+              ],
             ),
-            const Spacer(),
-            const Chip(
-              label: Text('Last updated: 5 mins ago'),
-              backgroundColor: Color.fromARGB(255, 224, 224, 224),
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Live Mandi Prices',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF111111),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat.yMMMMd().format(DateTime.now()), 
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEF0F2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.history, size: 18, color: Colors.grey.shade700),
+              const SizedBox(width: 6),
+              Text(
+                'Last updated: ${getRelativeTime(latestUpdate)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection() {
+    final cropsAsync = ref.watch(commoditiesProvider);
+    final statesAsync = ref.watch(statesProvider);
+    final marketsAsync = ref.watch(marketsProvider);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 160,
+                child: FilterDropdownButton(
+                  hintText: 'Crop (Tomato)',
+                  items: cropsAsync.value ?? [],
+                  value: _selectedCrop,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCrop = value;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 160,
+                child: FilterDropdownButton(
+                  hintText: 'State (Kerala)',
+                  items: statesAsync.value ?? [],
+                  value: _selectedState,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedState = value;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 160,
+                child: FilterDropdownButton(
+                  hintText: 'Market',
+                  items: marketsAsync.value ?? [],
+                  value: _selectedMarket,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedMarket = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Buttons retained to keep your logic unbroken, styled to vibe with the UI
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF14522B),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: _navigateToFilterResults,
+                child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF14522B),
+                  side: const BorderSide(color: Color(0xFF14522B), width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _selectedCrop = null;
+                    _selectedState = null;
+                    _selectedMarket = null;
+                  });
+                },
+                child: const Text('Clear', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
             ),
           ],
         ),
       ],
     );
   }
-
-Widget _buildFilterSection() {
-  final cropsAsync = ref.watch(commoditiesProvider);
-  final statesAsync = ref.watch(statesProvider);
-  final marketsAsync = ref.watch(marketsProvider);
-  return Column(
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: FilterDropdownButton(
-              hintText: 'Crop',
-              items: cropsAsync.value ?? [],
-              value: _selectedCrop,
-              onChanged: (value) {
-                setState(() {
-                  _selectedCrop = value;
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: FilterDropdownButton(
-              hintText: 'State',
-              items: statesAsync.value ?? [],
-              value: _selectedState,
-              onChanged: (value) {
-                setState(() {
-                  _selectedState = value;
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: FilterDropdownButton(
-              hintText: 'Market',
-              items: marketsAsync.value ?? [],
-              value: _selectedMarket,
-              onChanged: (value) {
-                setState(() {
-                  _selectedMarket = value;
-                });
-              },
-            ),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 12),
-
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _navigateToFilterResults,
-              child: const Text('Apply Filters'),
-            ),
-          ),
-
-          const SizedBox(width: 8),
-
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedCrop = null;
-                  _selectedState = null;
-                  _selectedMarket = null;
-                });
-              },
-              child: const Text('Clear'),
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
 
   Widget _buildPriceList() {
     final filter = Filter(
@@ -211,9 +318,7 @@ Widget _buildFilterSection() {
       market: _selectedMarket,
     );
 
-    final pricesAsync = ref.watch(
-      mandiPricesProvider(filter),
-    );
+    final pricesAsync = ref.watch(mandiPricesProvider(filter));
 
     return pricesAsync.when(
       data: (prices) {
@@ -225,8 +330,7 @@ Widget _buildFilterSection() {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: prices.length,
-          separatorBuilder: (context, index) =>
-              const SizedBox(height: 12),
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final price = prices[index];
 
@@ -236,8 +340,7 @@ Widget _buildFilterSection() {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        MarketDetailScreen(
+                    builder: (context) => MarketDetailScreen(
                       price: price,
                     ),
                   ),
@@ -247,15 +350,11 @@ Widget _buildFilterSection() {
           },
         );
       },
-
       loading: () => const LoadingWidget(),
-
       error: (err, stack) => ErrorStateWidget(
         errorMessage: err.toString(),
         onRetry: () {
-          ref.refresh(
-            mandiPricesProvider(filter),
-          );
+          ref.refresh(mandiPricesProvider(filter));
         },
       ),
     );

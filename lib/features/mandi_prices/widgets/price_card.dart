@@ -14,16 +14,19 @@ class PriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5), // Distinct light card stroke
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(16.0),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
               const SizedBox(height: 16),
@@ -36,34 +39,47 @@ class PriceCard extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              price.commodity,
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              price.variety,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                price.commodity,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111111),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                price.variety,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFECEFF1),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             '${price.market}, ${price.state}',
-            style: theme.textTheme.bodySmall,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4A5568),
+            ),
           ),
         ),
       ],
@@ -71,30 +87,71 @@ class PriceCard extends StatelessWidget {
   }
 
   Widget _buildPriceSection(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildPriceColumn('High', price.highPrice, context),
-        _buildPriceColumn('Modal', price.modalPrice, context),
-        _buildPriceColumn('Low', price.lowPrice, context),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6F8), // Embedded price section row background color
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildPriceColumn('High', price.highPrice, isHigh: true, isLow: false)),
+          Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)), // Column borders
+          Expanded(child: _buildPriceColumn('Modal', price.modalPrice, isHigh: false, isLow: false)),
+          Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)),
+          Expanded(child: _buildPriceColumn('Low', price.lowPrice, isHigh: false, isLow: true)),
+        ],
+      ),
     );
   }
 
-  Widget _buildPriceColumn(String label, double priceValue, BuildContext context) {
-    final theme = Theme.of(context);
-    final formattedPrice = NumberFormat.currency(locale: 'en_IN', symbol: '₹').format(priceValue);
+  Widget _buildPriceColumn(String label, double priceValue, {required bool isHigh, required bool isLow}) {
+    final formattedPrice = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(priceValue);
+    
+    Color priceColor = const Color(0xFF111111);
+    String arrow = '';
+    
+    if (isHigh) {
+      priceColor = const Color(0xFF007A33); // Green theme match
+      arrow = ' ↑';
+    } else if (isLow) {
+      priceColor = const Color(0xFFD32F2F); // Red theme match
+      arrow = ' ↓';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 4),
-        Text(
-          formattedPrice,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        RichText(
+          text: TextSpan(
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: priceColor,
+            ),
+            children: [
+              TextSpan(text: formattedPrice),
+              if (arrow.isNotEmpty)
+                TextSpan(
+                  text: arrow,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: priceColor,
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );
