@@ -1,6 +1,7 @@
 import '../models/mandi_price.dart';
 import '../services/mandi_api_service.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
+import '../models/price_history.dart';
 
 // TASK 5: TESTING CONTROLS
 const bool simulateLoading = false;
@@ -45,5 +46,15 @@ class MandiRepository {
 
   Future<List<String>> getMarkets() {
     return _apiService.getMarkets();
+  }
+  Future<List<PriceHistory>>
+      getPriceHistory({
+    required String commodity,
+    required String market,
+  }) {
+    return _apiService.getPriceHistory(
+      commodity: commodity,
+      market: market,
+    );
   }
 }

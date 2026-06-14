@@ -2,12 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../data/models/mandi_price.dart';
+import '../../../data/models/price_history.dart';
+import '../../../data/repositories/mandi_repository.dart';
+import '../../../data/services/mandi_api_service.dart';
 
-class MarketDetailScreen extends StatelessWidget {
+class MarketDetailScreen extends StatefulWidget {
   final MandiPrice price;
 
   const MarketDetailScreen({super.key, required this.price});
+  @override
+State<MarketDetailScreen> createState() =>
+    _MarketDetailScreenState();
+}
 
+class _MarketDetailScreenState
+    extends State<MarketDetailScreen> {
+
+  late Future<List<PriceHistory>>
+      _historyFuture;
+
+  final MandiRepository _repository =
+      MandiRepository(
+    MandiApiService(),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    _historyFuture =
+        _repository.getPriceHistory(
+      commodity:
+          widget.price.commodity,
+      market:
+          widget.price.market,
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +51,7 @@ class MarketDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          price.commodity,
+          widget.price.commodity,
           style: const TextStyle(
             color: Color(0xFF111111),
             fontWeight: FontWeight.bold,
@@ -60,7 +90,7 @@ class MarketDetailScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${price.market}, ${price.district}',
+                              '${widget.price.market}, ${widget.price.district}',
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -69,7 +99,7 @@ class MarketDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Last updated: ${DateFormat.yMMMd().add_jm().format(price.lastUpdated)}',
+                              'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.lastUpdated)}',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -86,7 +116,7 @@ class MarketDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          price.variety,
+                          widget.price.variety,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -99,7 +129,7 @@ class MarketDetailScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   _buildPriceSummaryCard(context),
                   const SizedBox(height: 20),
-                  _build7DayTrendSection(context),
+                  _buildTrendSection(),
                 ],
               ),
             ),
@@ -151,11 +181,11 @@ class MarketDetailScreen extends StatelessWidget {
     );
   }
   Widget _buildPriceSummaryCard(BuildContext context) {
-    final priceChangeColor = price.priceChange >= 0 ? const Color(0xFF007A33) : const Color(0xFFD32F2F);
-    final priceChangeIcon = price.priceChange >= 0 ? Icons.trending_up : Icons.trending_down;
-    final formattedModal = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(price.modalPrice);
-    final formattedHigh = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(price.highPrice);
-    final formattedLow = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(price.lowPrice);
+    final priceChangeColor = widget.price.priceChange >= 0 ? const Color(0xFF007A33) : const Color(0xFFD32F2F);
+    final priceChangeIcon = widget.price.priceChange >= 0 ? Icons.trending_up : Icons.trending_down;
+    final formattedModal = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(widget.price.modalPrice);
+    final formattedHigh = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(widget.price.highPrice);
+    final formattedLow = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(widget.price.lowPrice);
 
     return Container(
       decoration: BoxDecoration(
@@ -189,7 +219,7 @@ class MarketDetailScreen extends StatelessWidget {
                       Icon(priceChangeIcon, color: priceChangeColor, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '${price.priceChange >= 0 ? "+" : ""}${price.priceChange.toStringAsFixed(2)}%',
+                        '${widget.price.priceChange >= 0 ? "+" : ""}${widget.price.priceChange.toStringAsFixed(2)}%',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -257,133 +287,185 @@ class MarketDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _build7DayTrendSection(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '7-Day Trend', 
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111111),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 200,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16.0, left: 4.0),
-                child: BarChart(_buildChartData(context)), // 👈 CHANGED: Upgraded to BarChart
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  
 
-  BarChartData _buildChartData(BuildContext context) {
-    return BarChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color(0xFFE2E8F0),
-            strokeWidth: 1,
-            dashArray: [4, 4],
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: (value, meta) {
-              const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              if (value.toInt() >= 0 && value.toInt() < days.length) {
-                return SideTitleWidget(
-                  meta: meta,
-                  space: 8,
-                  child: Text(
-                    days[value.toInt()],
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
+  Widget _buildTrendSection() {
+  return FutureBuilder<List<PriceHistory>>(
+    future: _historyFuture,
+    builder: (context, snapshot) {
+
+      if (snapshot.connectionState ==
+          ConnectionState.waiting) {
+        return const SizedBox(
+          height: 220,
+          child: Center(
+            child:
+                CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (snapshot.hasError) {
+        return SizedBox(
+          height: 220,
+          child: Center(
+            child: Text(
+              snapshot.error.toString(),
+            ),
+          ),
+        );
+      }
+
+      final history =
+          snapshot.data ?? [];
+
+      if (history.isEmpty) {
+        return const SizedBox(
+          height: 220,
+          child: Center(
+            child: Text(
+              'No historical data available',
+            ),
+          ),
+        );
+      }
+
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.circular(16),
+          border: Border.all(
+            color:
+                const Color(0xFFDCDFE4),
           ),
         ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 42,
-            interval: 10, // Adjust grid spacing based on your price range
-            getTitlesWidget: (value, meta) {
-              return SideTitleWidget(
-                meta: meta,
-                space: 8,
-                child: Text(
-                  '₹${value.toInt()}',
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+        child: Padding(
+          padding:
+              const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${history.length}-Day Trend',
+                style:
+                    const TextStyle(
+                  fontSize: 16,
+                  fontWeight:
+                      FontWeight.bold,
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                height: 220,
+                child: BarChart(
+                  _buildChartData(
+                    history,
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
+        ),
+      );
+    },
+  );
+}
+
+BarChartData _buildChartData(
+  List<PriceHistory> history,
+) {
+  final maxPrice = history
+      .map(
+        (e) => e.modalPrice,
+      )
+      .reduce(
+        (a, b) => a > b ? a : b,
+      );
+
+  return BarChartData(
+    maxY: maxPrice * 1.2,
+    minY: 0,
+    borderData:
+        FlBorderData(show: false),
+    gridData: FlGridData(
+      show: true,
+      drawVerticalLine: false,
+    ),
+    titlesData: FlTitlesData(
+      rightTitles:
+          const AxisTitles(
+        sideTitles:
+            SideTitles(
+          showTitles: false,
         ),
       ),
-      borderData: FlBorderData(show: false),
-      alignment: BarChartAlignment.spaceAround,
-      maxY: 60, // Feel free to dynamically calculate or adjust based on data points
-      minY: 0,
-      barGroups: [
-        _makeBarGroup(0, 35),
-        _makeBarGroup(1, 42),
-        _makeBarGroup(2, 38),
-        _makeBarGroup(3, 48),
-        _makeBarGroup(4, 40),
-        _makeBarGroup(5, 45),
-        _makeBarGroup(6, 52),
-      ],
-    );
-  }
-
-  BarChartGroupData _makeBarGroup(int x, double y) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: const Color(0xFF007A33), // Exact matching forest green brand color
-          width: 16,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(4),
-            topRight: Radius.circular(4),
-          ),
+      topTitles:
+          const AxisTitles(
+        sideTitles:
+            SideTitles(
+          showTitles: false,
         ),
-      ],
-    );
-  }
+      ),
+      bottomTitles:
+          AxisTitles(
+        sideTitles:
+            SideTitles(
+          showTitles: true,
+          getTitlesWidget:
+              (value, meta) {
+
+            if (value.toInt() >=
+                history.length) {
+              return const SizedBox();
+            }
+
+            return SideTitleWidget(
+              meta: meta,
+              child: Text(
+                DateFormat(
+                  'MMM d',
+                ).format(
+                  history[
+                          value
+                              .toInt()]
+                      .date,
+                ),
+                style:
+                    const TextStyle(
+                  fontSize: 10,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+    barGroups: history
+        .asMap()
+        .entries
+        .map(
+          (entry) =>
+              BarChartGroupData(
+            x: entry.key,
+            barRods: [
+              BarChartRodData(
+                toY: entry
+                    .value
+                    .modalPrice,
+                width: 18,
+                color:
+                    const Color(
+                  0xFF007A33,
+                ),
+              ),
+            ],
+          ),
+        )
+        .toList(),
+  );
+}
 }

@@ -4,6 +4,8 @@ from app.api.routes import states
 from app.api.routes import commodities
 from app.api.routes import markets
 from app.api.routes import mandi_prices
+from app.api.routes import price_history
+
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -50,4 +52,10 @@ app.include_router(
     mandi_prices.router,
     prefix="/mandi-prices",
     tags=["Mandi Prices"]
+)
+
+app.include_router(
+    price_history.router,
+    prefix="/price-history",
+    tags=["Price history"]
 )

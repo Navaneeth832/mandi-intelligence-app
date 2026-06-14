@@ -12,8 +12,12 @@ class MandiPrice {
   final DateTime lastUpdated;
 
   final double priceChange;
+  final int? commodityId;
+  final int? marketId;
 
   MandiPrice({
+    this.commodityId,
+    this.marketId,
     required this.commodity,
     required this.variety,
     required this.market,
@@ -33,6 +37,8 @@ class MandiPrice {
       market: json['market'],
       district: json['district'],
       state: json['state'],
+      commodityId: json['commodity_id'] as int?,
+      marketId: json['market_id'] as int?,
 
       modalPrice: (json['modal_price'] as num).toDouble(),
       highPrice: (json['max_price'] as num).toDouble(),

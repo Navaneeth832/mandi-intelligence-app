@@ -228,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 width: 160,
                 child: FilterDropdownButton(
-                  hintText: 'Crop (Tomato)',
+                  hintText: 'Crop',
                   items: cropsAsync.value ?? [],
                   value: _selectedCrop,
                   onChanged: (value) {
@@ -242,7 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(
                 width: 160,
                 child: FilterDropdownButton(
-                  hintText: 'State (Kerala)',
+                  hintText: 'State',
                   items: statesAsync.value ?? [],
                   value: _selectedState,
                   onChanged: (value) {

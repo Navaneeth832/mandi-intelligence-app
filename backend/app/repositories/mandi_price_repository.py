@@ -1,0 +1,34 @@
+from sqlalchemy.orm import Session
+from app.models.mandi_price import MandiPrice
+from app.models.commodity import Commodity
+from app.models.market import Market
+
+
+def get_price_history(
+    db: Session,
+    commodity_name: str,
+    market_name: str,
+):
+    return (
+        db.query(
+            MandiPrice.arrival_date,
+            MandiPrice.modal_price,
+        )
+        .join(
+            Commodity,
+            Commodity.id == MandiPrice.commodity_id,
+        )
+        .join(
+            Market,
+            Market.id == MandiPrice.market_id,
+        )
+        .filter(
+            Commodity.name == commodity_name,
+            Market.name == market_name,
+        )
+        .order_by(
+            MandiPrice.arrival_date.desc()
+        )
+        .limit(7)
+        .all()
+    )
