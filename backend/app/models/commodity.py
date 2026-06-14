@@ -27,6 +27,11 @@ class Commodity(Base):
         back_populates="commodity"
     )
 
+    grades = relationship(
+        "Grade",
+        back_populates="commodity"
+    )
+
     mandi_prices = relationship(
         "MandiPrice",
         back_populates="commodity"
