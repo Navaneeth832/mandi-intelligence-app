@@ -7,6 +7,7 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
+import 'home_screen.dart';
 
 class FilterResultsScreen extends ConsumerWidget {
   final String? selectedCrop;
@@ -28,10 +29,14 @@ class FilterResultsScreen extends ConsumerWidget {
       market: selectedMarket,
     );
     final filteredPricesAsync = ref.watch(mandiPricesProvider(filter));
-
-    // Calculate active filters count
-    final activeFiltersList = [selectedCrop, selectedState, selectedMarket]
-        .where((f) => f != null)
+    final activeFilters = {
+  'crop': selectedCrop,
+  'state': selectedState,
+  'market': selectedMarket,
+};
+    final activeFiltersList =
+    activeFilters.entries
+        .where((e) => e.value != null)
         .toList();
 
     return Scaffold(
@@ -65,7 +70,7 @@ class FilterResultsScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          _buildActiveFiltersSection(activeFiltersList),
+          _buildActiveFiltersSection(context,activeFiltersList),
           _buildSortSection(),
           Expanded(
             child: filteredPricesAsync.when(
@@ -88,7 +93,10 @@ class FilterResultsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActiveFiltersSection(List<String?> activeFiltersList) {
+  Widget _buildActiveFiltersSection(
+  BuildContext context,
+  List<MapEntry<String, String?>> activeFiltersList,
+) {
     if (activeFiltersList.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -109,7 +117,16 @@ class FilterResultsScreen extends ConsumerWidget {
               ),
               InkWell(
                 onTap: () {
-                  // TODO: Handle Clear All functionality if needed
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const HomeScreen(),
+                    ),
+                    (route) => false,
+                  );
+
                 },
                 child: const Text(
                   'Clear All',
@@ -126,7 +143,7 @@ class FilterResultsScreen extends ConsumerWidget {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: activeFiltersList.map((value) {
+              children: activeFiltersList.map((entry) {
                 return Container(
                   margin: const EdgeInsets.only(right: 8.0),
                   padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
@@ -139,7 +156,7 @@ class FilterResultsScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        value!,
+                        entry.value!,
                         style: const TextStyle(
                           color: Color(0xFF111111),
                           fontSize: 14,
@@ -147,7 +164,48 @@ class FilterResultsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.close, size: 16, color: Color(0xFF666666)),
+                      GestureDetector(
+                      onTap: () {
+
+                        String? crop =
+                            selectedCrop;
+                        String? state =
+                            selectedState;
+                        String? market =
+                            selectedMarket;
+
+                        switch (entry.key) {
+                          case 'crop':
+                            crop = null;
+                            break;
+
+                          case 'state':
+                            state = null;
+                            break;
+
+                          case 'market':
+                            market = null;
+                            break;
+                        }
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                FilterResultsScreen(
+                              selectedCrop: crop,
+                              selectedState: state,
+                              selectedMarket: market,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Color(0xFF666666),
+                      ),
+                    )
                     ],
                   ),
                 );
