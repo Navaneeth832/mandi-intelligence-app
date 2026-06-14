@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from datetime import date
 from app.core.database import get_db
 
 from app.models.mandi_price import MandiPrice
@@ -44,7 +44,9 @@ def get_mandi_prices(
         .join(Variety, MandiPrice.variety_id == Variety.id)
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
-
+    query = query.filter(
+    MandiPrice.arrival_date == date.today()
+    )
     if state:
         query = query.filter(State.name == state)
 

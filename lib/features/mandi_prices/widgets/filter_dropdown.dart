@@ -16,24 +16,39 @@ class FilterDropdownButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(color: theme.dividerColor),
+        color: const Color(0xFFE2E5E8), // Solid grey fill from image_0aa080.png
+        borderRadius: BorderRadius.circular(24.0), // Rounded pill container
+        border: Border.all(color: const Color(0xFFC4C7CC), width: 1.0),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          hint: Text(hintText),
+          hint: Text(
+            hintText,
+            style: const TextStyle(
+              color: Color(0xFF111111),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF111111)),
           isDense: true,
           isExpanded: true,
           onChanged: onChanged,
-          items: items.map((String value) {
+          items: items.map((String val) {
             return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
+              value: val,
+              child: Text(
+                val,
+                style: const TextStyle(
+                  color: Color(0xFF111111),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
             );
           }).toList(),
         ),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/mandi_price.dart';
+import '../models/price_history.dart';
 
 class MandiApiService {
 
@@ -77,6 +78,32 @@ class MandiApiService {
 
     return data
         .map((e) => e['name'].toString())
+        .toList();
+  }
+  Future<List<PriceHistory>> getPriceHistory({
+    required String commodity,
+    required String market,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/price-history?commodity=$commodity&market=$market',
+      ),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Failed to load price history',
+      );
+    }
+
+    final List<dynamic> data =
+        jsonDecode(response.body);
+
+    return data
+        .map(
+          (item) =>
+              PriceHistory.fromJson(item),
+        )
         .toList();
   }
 }
