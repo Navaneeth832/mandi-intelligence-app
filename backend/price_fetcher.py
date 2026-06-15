@@ -202,8 +202,8 @@ def fetch_and_display_mandi_data(
     return valid_records
 
 if __name__ == "__main__":
-    fetch_and_display_mandi_data(
-        commodity="Tomato",
-        state="Kerala",
-        limit=5
-    )
+    active_crop_log = ['Tomato', 'Paddy(Common)', 'Coffee', 'Water Melon', 'Tapioca', 'Potato']
+    for crop in active_crop_log:
+        fetch_and_display_mandi_data(
+            commodity=crop,
+        )

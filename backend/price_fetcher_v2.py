@@ -253,7 +253,7 @@ def fetch_and_display_mandi_data_v2(
     current_day = datetime.today().strftime("%Y-%m-%d")
 
     payload = {
-        "from_date": current_day,
+        "from_date": "2026-06-09",
         "to_date": current_day,
         "data_type": "100006",
         "group": group_id,
