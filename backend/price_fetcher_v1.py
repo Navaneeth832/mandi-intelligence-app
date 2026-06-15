@@ -4,7 +4,7 @@ import os
 import httpx
 from dotenv import load_dotenv
 from datetime import datetime
-from commodity_normalizer import resolve_commodities
+#from commodity_normalizer import resolve_commodities
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")

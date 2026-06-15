@@ -1,4 +1,5 @@
 # Generated commodity mapping from data.json
+# name:[commodity_id,commodity_group_id]
 Commodity = {
     'Absinthe': [380, 12],
     'Adulsa': [571, 16],
@@ -612,6 +613,8 @@ State = {
     'West Bengal': 36,
 }
 
+
+#district_id:[name,state_id]
 District = {
     565: ['Adilabad', 32],
     287: ['Agar Malwa', 19],
@@ -5555,6 +5558,7 @@ Mandi = {
 }
 
 
+# id:[name,commodity_id]
 Variety = {
     1: ['(Whole)', 45],
     2: ['1001', 2],
