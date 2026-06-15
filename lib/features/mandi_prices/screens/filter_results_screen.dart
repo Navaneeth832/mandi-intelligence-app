@@ -9,7 +9,7 @@ import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
 import 'home_screen.dart';
 
-class FilterResultsScreen extends ConsumerWidget {
+class FilterResultsScreen extends ConsumerStatefulWidget {
   final String? selectedCrop;
   final String? selectedState;
   final String? selectedMarket;
@@ -22,22 +22,51 @@ class FilterResultsScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FilterResultsScreen> createState() => _FilterResultsScreenState();
+}
+
+class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final filter = Filter(
+        crop: widget.selectedCrop,
+        state: widget.selectedState,
+        market: widget.selectedMarket,
+      );
+      ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filter = Filter(
-      crop: selectedCrop,
-      state: selectedState,
-      market: selectedMarket,
+      crop: widget.selectedCrop,
+      state: widget.selectedState,
+      market: widget.selectedMarket,
     );
     final filteredPricesAsync = ref.watch(mandiPricesProvider(filter));
     final activeFilters = {
-  'crop': selectedCrop,
-  'state': selectedState,
-  'market': selectedMarket,
-};
-    final activeFiltersList =
-    activeFilters.entries
-        .where((e) => e.value != null)
-        .toList();
+      'crop': widget.selectedCrop,
+      'state': widget.selectedState,
+      'market': widget.selectedMarket,
+    };
+    final activeFiltersList = activeFilters.entries.where((e) => e.value != null).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA), // Match off-white background
@@ -74,20 +103,19 @@ class FilterResultsScreen extends ConsumerWidget {
           _buildSortSection(),
           Expanded(
             child: filteredPricesAsync.when(
-              data: (prices) {
-                if (prices.isEmpty) {
+              data: (state) {
+                if (state.items.isEmpty) {
                   return const EmptyStateWidget();
                 }
-                return _buildPriceList(prices);
+                return _buildPriceList(state);
               },
               loading: () => const LoadingWidget(),
               error: (err, stack) => ErrorStateWidget(
                 errorMessage: err.toString(),
-                onRetry: () => ref.refresh(mandiPricesProvider(filter)),
+                onRetry: () => ref.read(mandiPricesProvider(filter).notifier).loadInitialPage(),
               ),
             ),
           ),
-          _buildLoadMoreButton(),
         ],
       ),
     );
@@ -168,11 +196,11 @@ class FilterResultsScreen extends ConsumerWidget {
                       onTap: () {
 
                         String? crop =
-                            selectedCrop;
+                            widget.selectedCrop;
                         String? state =
-                            selectedState;
+                            widget.selectedState;
                         String? market =
-                            selectedMarket;
+                            widget.selectedMarket;
 
                         switch (entry.key) {
                           case 'crop':
@@ -257,55 +285,37 @@ class FilterResultsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPriceList(List<dynamic> prices) {
+  Widget _buildPriceList(MandiPricesState state) {
     return ListView.separated(
+      controller: _scrollController,
       padding: const EdgeInsets.all(16.0),
-      itemCount: prices.length,
+      itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final price = prices[index];
-        return _FilterResultCard(
-          price: price,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MarketDetailScreen(price: price),
+        if (index < state.items.length) {
+          final price = state.items[index];
+          return _FilterResultCard(
+            price: price,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MarketDetailScreen(price: price),
+                ),
+              );
+            },
+          );
+        } else {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF0A4A1C),
               ),
-            );
-          },
-        );
+            ),
+          );
+        }
       },
-    );
-  }
-
-  Widget _buildLoadMoreButton() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () {
-            // Handle load more functionality
-          },
-          icon: const Icon(Icons.refresh, color: Color(0xFF0A4A1C), size: 20),
-          label: const Text(
-            'Load More Markets',
-            style: TextStyle(
-              color: Color(0xFF0A4A1C),
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            side: const BorderSide(color: Color(0xFF0A4A1C), width: 1.5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24.0),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

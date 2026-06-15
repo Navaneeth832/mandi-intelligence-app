@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import date
+
 from app.core.database import get_db
 
 from app.models.mandi_price import MandiPrice
@@ -21,8 +22,14 @@ def get_mandi_prices(
     market: str | None = None,
     commodity: str | None = None,
     variety: str | None = None,
+
+    page: int = 1,
+    page_size: int = 50,
+
     db: Session = Depends(get_db)
 ):
+
+    page_size = min(page_size, 100)
 
     query = (
         db.query(
@@ -44,38 +51,66 @@ def get_mandi_prices(
         .join(Variety, MandiPrice.variety_id == Variety.id)
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
+
     query = query.filter(
-    MandiPrice.arrival_date == date.today()
+        MandiPrice.arrival_date == date.today()
     )
+
     if state:
-        query = query.filter(State.name == state)
+        query = query.filter(
+            State.name.ilike(f"%{state}%")
+        )
 
     if district:
-        query = query.filter(District.name == district)
+        query = query.filter(
+            District.name.ilike(f"%{district}%")
+        )
 
     if market:
-        query = query.filter(Market.name == market)
+        query = query.filter(
+            Market.name.ilike(f"%{market}%")
+        )
 
     if commodity:
-        query = query.filter(Commodity.name == commodity)
+        query = query.filter(
+            Commodity.name.ilike(f"%{commodity}%")
+        )
 
     if variety:
-        query = query.filter(Variety.name == variety)
+        query = query.filter(
+            Variety.name.ilike(f"%{variety}%")
+        )
 
-    results = query.all()
+    total_records = query.count()
 
-    return [
-        {
-            "state": row.state,
-            "district": row.district,
-            "market": row.market,
-            "commodity": row.commodity,
-            "variety": row.variety,
-            "grade": row.grade,
-            "modal_price": float(row.modal_price),
-            "min_price": float(row.min_price),
-            "max_price": float(row.max_price),
-            "arrival_date": row.arrival_date,
-        }
-        for row in results
-    ]
+    results = (
+        query
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total_records": total_records,
+        "total_pages":
+            (total_records + page_size - 1)
+            // page_size,
+
+        "data": [
+            {
+                "state": row.state,
+                "district": row.district,
+                "market": row.market,
+                "commodity": row.commodity,
+                "variety": row.variety,
+                "grade": row.grade,
+                "modal_price": float(row.modal_price),
+                "min_price": float(row.min_price), 
+                "max_price": float(row.max_price),
+                "arrival_date": row.arrival_date,
+            }
+            for row in results
+        ]
+    }

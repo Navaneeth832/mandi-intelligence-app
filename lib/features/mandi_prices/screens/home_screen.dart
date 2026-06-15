@@ -24,6 +24,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedCrop;
   String? _selectedState;
   String? _selectedMarket;
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final filter = Filter(
+        crop: _selectedCrop,
+        state: _selectedState,
+        market: _selectedMarket,
+      );
+      ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
+    }
+  }
 
   void _navigateToFilterResults() {
     Navigator.push(
@@ -119,6 +145,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       child: ListView(
+        controller: _scrollController,
         padding: const EdgeInsets.symmetric(
           horizontal: 16.0,
           vertical: 8.0,
@@ -126,9 +153,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           _buildHeaderSection(
               pricesAsync.maybeWhen(
-                data: (prices) =>
-                    prices.isNotEmpty
-                        ? prices
+                data: (state) =>
+                    state.items.isNotEmpty
+                        ? state.items
                             .map((p) => p.lastUpdated)
                             .reduce(
                               (a, b) =>
@@ -321,40 +348,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
 
     return pricesAsync.when(
-      data: (prices) {
-        if (prices.isEmpty) {
+      data: (state) {
+        if (state.items.isEmpty) {
           return const EmptyStateWidget();
         }
 
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: prices.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final price = prices[index];
+        return Column(
+          children: [
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: state.items.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final price = state.items[index];
 
-            return PriceCard(
-              price: price,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MarketDetailScreen(
-                      price: price,
-                    ),
-                  ),
+                return PriceCard(
+                  price: price,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MarketDetailScreen(
+                          price: price,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
-            );
-          },
+            ),
+            if (state.isLoadingMore)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF14522B),
+                  ),
+                ),
+              ),
+          ],
         );
       },
       loading: () => const LoadingWidget(),
       error: (err, stack) => ErrorStateWidget(
         errorMessage: err.toString(),
         onRetry: () {
-          ref.refresh(mandiPricesProvider(filter));
+          ref.read(mandiPricesProvider(filter).notifier).loadInitialPage();
         },
       ),
     );

@@ -2,6 +2,7 @@ import '../models/mandi_price.dart';
 import '../services/mandi_api_service.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 import '../models/price_history.dart';
+import '../models/paginated_mandi_response.dart';
 
 // TASK 5: TESTING CONTROLS
 const bool simulateLoading = false;
@@ -13,7 +14,11 @@ class MandiRepository {
 
   MandiRepository(this._apiService);
 
-  Future<List<MandiPrice>> getMandiPrices(Filter filter) async {
+  Future<PaginatedMandiResponse> getMandiPrices(
+    Filter filter, {
+    int page = 1,
+    int pageSize = 50,
+  }) async {
     // Handle testing flags
     if (simulateLoading) {
       await Future.delayed(const Duration(seconds: 10));
@@ -23,18 +28,22 @@ class MandiRepository {
       throw Exception('Simulated error: Could not fetch prices.');
     }
     if (simulateEmpty) {
-      return [];
+      return PaginatedMandiResponse(
+        page: page,
+        pageSize: pageSize,
+        totalRecords: 0,
+        totalPages: 0,
+        data: [],
+      );
     }
 
-    final allPrices = await _apiService.getMandiPrices();
-
-    // Apply filters
-    return allPrices.where((price) {
-      final cropMatch = filter.crop == null || price.commodity == filter.crop;
-      final stateMatch = filter.state == null || price.state == filter.state;
-      final marketMatch = filter.market == null || price.market == filter.market;
-      return cropMatch && stateMatch && marketMatch;
-    }).toList();
+    return _apiService.getMandiPrices(
+      page: page,
+      pageSize: pageSize,
+      state: filter.state,
+      market: filter.market,
+      commodity: filter.crop,
+    );
   }
   Future<List<String>> getStates() {
     return _apiService.getStates();
