@@ -9,7 +9,7 @@ import '../models/paginated_mandi_response.dart';
 class MandiApiService {
 
   static const String baseUrl =
-      'http://192.168.29.253:8000';
+      'http://192.168.1.7:8000';
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,

@@ -1,181 +1,209 @@
-#Dependency: httpx,python-dotenv,datetime
-
+import sys
 import os
 import httpx
-from dotenv import load_dotenv
 from datetime import datetime
-from commodity_normalizer import resolve_commodities
 
-load_dotenv()
-API_KEY = os.getenv("API_KEY")
-BASE_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+# Solve module import paths
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
 
-def validate_records(records, target_commodity=None):
-    expected_columns = [
-        "state", "district", "market", "commodity", "variety", "grade",
-        "arrival_date", "min_price", "max_price", "modal_price"
-    ]
-    
-    unique_records = []
-    seen = set()
-    duplicates_count = 0
-    
-    for record in records:
-        record_key = tuple(sorted((k, str(v)) for k, v in record.items()))
-        if record_key in seen:
-            duplicates_count += 1
-            continue
-        seen.add(record_key)
-        unique_records.append(record)
+import price_fetcher_v1
+import price_fetcher_v2
+
+# Expose validate_records so other components can import it directly from here
+from price_fetcher_v1 import validate_records
+
+try:
+    from app.core.database import SessionLocal
+except ImportError:
+    SessionLocal = None
+
+def parse_date(date_str):
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(str(date_str).strip(), fmt).date()
+        except ValueError:
+            pass
+    raise ValueError(f"Unknown date format: {date_str}")
+
+def resolve_group_from_commodity(commodity_name):
+    try:
+        import Data_mapping
+        comm_map = getattr(Data_mapping, "Commodity", getattr(Data_mapping, "commodity", {}))
+        group_map = getattr(Data_mapping, "CommodityGroup", getattr(Data_mapping, "commodity_group", getattr(Data_mapping, "cmdt_group", {})))
+    except ImportError:
+        return "Vegetables"
         
-    valid_records = []
-    invalid_records = []
-    
-    for record in unique_records:
-        errors = []
-        
-        # 1. Ensure none of the columns are null or empty
-        for col in expected_columns:
-            if col not in record:
-                errors.append(f"Missing column '{col}'")
-            else:
-                val = record[col]
-                if val is None:
-                    errors.append(f"Column '{col}' is null")
-                elif isinstance(val, str) and not val.strip():
-                    errors.append(f"Column '{col}' is empty")
-                    
-        # 2. Ensure min, max, and modal price are numbers
-        price_fields = ["min_price", "max_price", "modal_price"]
-        prices = {}
-        for pf in price_fields:
-            if pf in record and record[pf] is not None:
-                try:
-                    prices[pf] = float(record[pf])
-                except (ValueError, TypeError):
-                    errors.append(f"Column '{pf}' value '{record[pf]}' is not a number")
-                    
-        # 3. If target_commodity is passed, ensure commodity is of same
-        if target_commodity is not None and "commodity" in record:
-            rec_commodity = record["commodity"]
-            if not rec_commodity or rec_commodity.strip().lower() != target_commodity.strip().lower():
-                errors.append(f"Commodity mismatch: expected '{target_commodity}', got '{rec_commodity}'")
-                
-        # 4. Ensure min_price < max_price
-        if "min_price" in prices and "max_price" in prices:
-            if prices["min_price"] > prices["max_price"]:
-                errors.append(f"Price relationship violated: min_price ({prices['min_price']}) is not less than max_price ({prices['max_price']})")
-                
-        if errors:
-            invalid_records.append((record, errors))
-        else:
-            valid_records.append(record)
+    c_lower = str(commodity_name).strip().lower()
+    group_id = None
+    for k, v in comm_map.items():
+        if k.lower() == c_lower:
+            group_id = v[1]
+            break
             
-    return valid_records, invalid_records, duplicates_count
+    if group_id is not None:
+        for gk, gv in group_map.items():
+            if gv == group_id:
+                return gk
+                
+    return "Vegetables"
 
-today = datetime.today().strftime("%d/%m/%Y")
-def fetch_and_display_mandi_data(state=None,district = None,market = None,commodity=None,variety=None,grade=None,arrival_date="10/06/2026",limit=0,offset=0):
-    if not API_KEY:
-        print("Error: API_KEY is not defined in the environment or .env file.")
+def upsert_records_to_db(valid_records):
+    if not SessionLocal:
+        print("[Warning] Database SessionLocal not available. Skipping upsert.")
         return
 
-    params = {
-        "api-key": API_KEY,
-        "format": "json",
-        "limit": limit
-    }
-    if state is not None:
-        params["filters[state.keyword]"] = state
-    if district is not None:
-        params["filters[district]"] = district
-    if market is not None:
-        params["filters[market]"] = market
-    if commodity is not None:
-        params["filters[commodity]"] = commodity
-    if variety is not None:
-        params["filters[variety]"] = variety
-    if grade is not None:
-        params["filters[grade]"] = grade
-    if arrival_date is not None:
-        params["filters[arrival_date]"] = arrival_date
-
-    # Custom headers to bypass security rules blocking generic python clients
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
-    print("Fetching Mandi data...")
-    print(f"Request URL: {BASE_URL}")
-    
-
+    print(f"Upserting {len(valid_records)} records into the database...")
+    db = None
     try:
-        # Request data with a 30-second timeout
-        with httpx.Client(timeout=30.0) as client:
-            response = client.get(BASE_URL, params=params, headers=headers)
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            # Extract metadata
-            total = data.get("total", 0)
-            count = data.get("count", 0)
-            records = data.get("records", [])
-            updated_date = data.get("updated_date", "Unknown")            
-            valid_records, invalid_records, duplicates_count = validate_records(records, target_commodity=commodity)
-            
-            print(f"--- API Response Metadata ---")
-            print(f"Total Matching Records: {total}")
-            print(f"Returned Records Count: {count}")
-            print(f"Data Last Updated: {updated_date}")
-            print(f"Limit used: {limit}")
-            
-            if duplicates_count > 0:
-                print(f"Duplicates Removed: {duplicates_count}")
-            if invalid_records:
-                print(f"Invalid Records Count: {len(invalid_records)}")
-                for rec, errs in invalid_records:
-                    print(f"  Record: {rec}")
-                    print(f"    Validation Errors: {', '.join(errs)}")
-                    
-            print(f"--- Retrieved Valid Mandi Price Records ---")
-            if not valid_records:
-                print("No valid records found matching the criteria.")
-            for i, record in enumerate(valid_records, start=1):
-                print(f"Record {i}:")
-                print(f"  State:         {record.get('state')}")
-                print(f"  District:      {record.get('district')}")
-                print(f"  Market:        {record.get('market')}")
-                print(f"  Commodity:     {record.get('commodity')}")
-                print(f"  Variety:       {record.get('variety')}")
-                print(f"  Grade:         {record.get('grade')}")
-                print(f"  Arrival Date:  {record.get('arrival_date')}")
-                print(f"  Min Price:     ₹{record.get('min_price')}")
-                print(f"  Max Price:     ₹{record.get('max_price')}")
-                print(f"  Modal Price:   ₹{record.get('modal_price')}")
-                print("-" * 40)
-
-    except httpx.HTTPStatusError as e:
-        print(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        db = SessionLocal()
+        from sqlalchemy.dialects.postgresql import insert
+        from app.models.mandi_price import MandiPrice
+        
+        upsert_count = 0
+        for rec in valid_records:
+            try:
+                # 1. Resolve names to IDs
+                cmdt_id = int(str(price_fetcher_v2.get_commodity_id(rec["commodity"], db)).strip("[]"))
+                var_id = int(str(price_fetcher_v2.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
+                grd_id = int(str(price_fetcher_v2.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
+                mkt_id = int(str(price_fetcher_v2.get_market_id(rec["market"], db)).strip("[]"))
+                
+                # 2. Parse date
+                arr_date = parse_date(rec["arrival_date"])
+                
+                # 3. Clean and convert prices
+                min_p = float(str(rec["min_price"]).replace(",", ""))
+                max_p = float(str(rec["max_price"]).replace(",", ""))
+                modal_p = float(str(rec["modal_price"]).replace(",", ""))
+                
+                # 4. Build PostgreSQL insert statement
+                stmt = insert(MandiPrice).values(
+                    commodity_id=cmdt_id,
+                    variety_id=var_id,
+                    grade_id=grd_id,
+                    market_id=mkt_id,
+                    arrival_date=arr_date,
+                    min_price=min_p,
+                    max_price=max_p,
+                    modal_price=modal_p
+                )
+                
+                # 5. On conflict do update
+                stmt = stmt.on_conflict_do_update(
+                    constraint="mandi_prices_unique",
+                    set_={
+                        "min_price": stmt.excluded.min_price,
+                        "max_price": stmt.excluded.max_price,
+                        "modal_price": stmt.excluded.modal_price
+                    }
+                )
+                
+                db.execute(stmt)
+                upsert_count += 1
+            except Exception as e:
+                print(f"Failed to upsert record: {rec}. Error: {e}")
+                
+        db.commit()
+        print(f"Successfully upserted {upsert_count} records.")
     except Exception as e:
-        print(f"An unexpected error occurred: {type(e).__name__} - {e}")
+        print(f"[Warning] Database upsert operation failed: {e}")
+        if db:
+            db.rollback()
+    finally:
+        if db:
+            db.close()
 
+def fetch_and_display_mandi_data(
+    state=None,
+    district=None,
+    market=None,
+    commodity=None,
+    variety=None,
+    grade=None,
+    arrival_date="10/06/2026",
+    limit=0,
+    offset=0,
+    group=None
+):
+    valid_records = []
+    try:
+        # Attempt Version 1 (Public API)
+        print("Attempting to fetch Mandi data using Version 1 (Public API)...")
+        valid_records = price_fetcher_v1.fetch_and_display_mandi_data(
+            state=state,
+            district=district,
+            market=market,
+            commodity=commodity,
+            variety=variety,
+            grade=grade,
+            arrival_date=arrival_date,
+            limit=limit,
+            offset=offset
+        )
+    except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
+        print(f"\n[Warning] Version 1 Fetcher failed due to timeout: {type(e).__name__} - {e}")
+        print("Switching to Version 2 (Internal Report API)...")
+    except httpx.HTTPStatusError as e:
+        print(f"\n[Warning] Version 1 Fetcher failed with HTTP status {e.response.status_code}: {e}")
+        print("Switching to Version 2 (Internal Report API)...")
+    except Exception as e:
+        print(f"\n[Warning] Version 1 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
+        print("Switching to Version 2 (Internal Report API)...")
+        
+    if not valid_records:
+        # Resolve group if not provided
+        if not group and commodity:
+            group = resolve_group_from_commodity(commodity)
+            print(f"Resolved group for '{commodity}': {group}")
+            
+        # Map parameters for Version 2
+        v2_args = {
+            "group": group or "Vegetables",
+            "commodity": commodity or "Tomato",
+        }
+        if state is not None:
+            v2_args["state"] = state
+        if district is not None:
+            v2_args["district"] = district
+        if market is not None:
+            v2_args["market"] = market
+        if variety is not None:
+            v2_args["variety"] = variety
+        if grade is not None:
+            v2_args["grade"] = grade
+        if limit:
+            v2_args["limit"] = limit
+            
+        try:
+            valid_records = price_fetcher_v2.fetch_and_display_mandi_data_v2(**v2_args)
+        except httpx.HTTPStatusError as e:
+            status = e.response.status_code
+            if status == 402:
+                print(f"\n[Error] Version 2 Error: 402 Payment/Access Required. Access to the Agmarknet daily price report API has been restricted or requires payment/registration.")
+            elif status >= 500:
+                print(f"\n[Error] Version 2 Error: {status} Server Error. The Agmarknet report API server is currently experiencing downtime or is overloaded.")
+            else:
+                print(f"\n[Error] Version 2 Error: HTTP status {status} - {e.response.text}")
+        except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
+            print(f"\n[Error] Version 2 Error: Request timed out ({type(e).__name__}). The Agmarknet report API did not respond within the time limit.")
+        except httpx.RequestError as e:
+            print(f"\n[Error] Version 2 Error: Network connection issue. Could not connect to the Agmarknet report API: {e}")
+        except Exception as e:
+            print(f"\n[Error] Version 2 Error: An unexpected error occurred: {type(e).__name__} - {e}")
 
+    if valid_records:
+        upsert_records_to_db(valid_records)
 
+    return valid_records
 
 if __name__ == "__main__":
-    state = "Keralam"
-    district = "Kottayam"
-    commodity = "Amranthas Red"
-    arrival_date = "11/06/2026"
-    limit = 5
-    offset = 0
-    #fetch_and_display_mandi_data(commodity=commodity,arrival_date=arrival_date,limit=limit,offset=offset)
-    #fetch_and_display_mandi_data(commodity="methi seeds",arrival_date=arrival_date,limit=limit,offset=offset)
-    query = input("Enter to search commodity: ").lower()
-    resolved_list = resolve_commodities(query)
-    if not resolved_list:
-        print(f"No commodities found for '{query}'")
-    else:
-        print(f"Found {len(resolved_list)} commodities for '{query}':")
-        for cmdt in resolved_list:
-            print(f"  - {cmdt}")
+    fetch_and_display_mandi_data(
+        commodity="Tomato",
+        state="Kerala",
+        limit=5
+    )

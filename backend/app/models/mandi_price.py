@@ -4,7 +4,8 @@ from sqlalchemy import (
     Numeric,
     Date,
     DateTime,
-    ForeignKey
+    ForeignKey,
+    UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -14,6 +15,17 @@ from app.core.database import Base
 
 class MandiPrice(Base):
     __tablename__ = "mandi_prices"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "commodity_id",
+            "variety_id",
+            "grade_id",
+            "market_id",
+            "arrival_date",
+            name="mandi_prices_unique"
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
 
