@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
 from app.models.market import Market
+
+
+def get_latest_arrival_date(db: Session):
+    return db.query(func.max(MandiPrice.arrival_date)).scalar()
 
 
 def get_price_history(
