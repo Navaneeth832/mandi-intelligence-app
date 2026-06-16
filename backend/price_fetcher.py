@@ -14,6 +14,8 @@ import getId
 import price_fetcher_v1
 import price_fetcher_v2
 import market_normalizer
+import variety_normalizer
+import commodity_normalizer
 
 # Expose validate_records so other components can import it directly from here
 from price_fetcher_v1 import validate_records
@@ -80,8 +82,29 @@ def upsert_records_to_db(valid_records):
                     print(f"[INFO] Fuzzy matched market '{original_market}' -> '{normalized_market}' (District: {rec.get('district')}, State: {rec.get('state')})")
                     rec["market"] = normalized_market
 
+                # Normalize commodity name
+                original_commodity = rec.get("commodity")
+                norm_res = commodity_normalizer.resolve_commodities(original_commodity)
+                if isinstance(norm_res, list) and len(norm_res) > 0:
+                    normalized_commodity = norm_res[0]["canonical_name"]
+                    if normalized_commodity != original_commodity:
+                        print(f"[INFO] Fuzzy matched commodity '{original_commodity}' -> '{normalized_commodity}'")
+                        rec["commodity"] = normalized_commodity
+
                 # 1. Resolve names to IDs
                 cmdt_id = int(str(getId.get_commodity_id(rec["commodity"], db)).strip("[]"))
+                
+                # Normalize variety name using commodity_id as context
+                original_variety = rec.get("variety")
+                normalized_variety = variety_normalizer.resolve_variety(
+                    variety_query=original_variety,
+                    commodity_id=cmdt_id,
+                    fuzzy_cutoff=0.65
+                )
+                if normalized_variety != original_variety:
+                    print(f"[INFO] Fuzzy matched variety '{original_variety}' -> '{normalized_variety}' (Commodity ID: {cmdt_id})")
+                    rec["variety"] = normalized_variety
+
                 var_id = int(str(getId.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
                 grd_id = int(str(getId.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
                 mkt_id = int(str(getId.get_market_id(rec["market"], db)).strip("[]"))
@@ -217,7 +240,6 @@ def fetch_and_display_mandi_data(
 
     return valid_records
 
-import commodity_normalizer
 
 if __name__ == "__main__":
     active_crop_log = ["Tomato","Paddy(Common)","Coffee","Water Melon","Tapioca","Potato"]
