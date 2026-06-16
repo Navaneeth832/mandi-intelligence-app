@@ -6,13 +6,14 @@ from datetime import datetime
 # Solve module import paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
 if current_dir not in sys.path:
-    sys.path.append(current_dir)
+    sys.path.insert(0, current_dir)
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 import getId
 import price_fetcher_v1
 import price_fetcher_v2
+import market_normalizer
 
 # Expose validate_records so other components can import it directly from here
 from price_fetcher_v1 import validate_records
@@ -67,6 +68,18 @@ def upsert_records_to_db(valid_records):
         upsert_count = 0
         for rec in valid_records:
             try:
+                # Normalize market name using state and district as context
+                original_market = rec.get("market")
+                normalized_market = market_normalizer.resolve_market(
+                    market_query=original_market,
+                    district_query=rec.get("district"),
+                    state_query=rec.get("state"),
+                    fuzzy_cutoff=0.65
+                )
+                if normalized_market != original_market:
+                    print(f"[INFO] Fuzzy matched market '{original_market}' -> '{normalized_market}' (District: {rec.get('district')}, State: {rec.get('state')})")
+                    rec["market"] = normalized_market
+
                 # 1. Resolve names to IDs
                 cmdt_id = int(str(getId.get_commodity_id(rec["commodity"], db)).strip("[]"))
                 var_id = int(str(getId.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
