@@ -73,8 +73,8 @@ def validate_records(records, target_commodity=None):
             
     return valid_records, invalid_records, duplicates_count
 
-today = datetime.today().strftime("%d/%m/%Y")
-def fetch_and_display_mandi_data(state=None,district = None,market = None,commodity=None,variety=None,grade=None,arrival_date="10/06/2026",limit=0,offset=0):
+
+def fetch_and_display_mandi_data(state=None,district = None,market = None,commodity=None,variety=None,grade=None,limit=100000,offset=0):
     if not API_KEY:
         print("Error: API_KEY is not defined in the environment or .env file.")
         raise ValueError("API_KEY is not defined in the environment or .env file.")
@@ -96,8 +96,6 @@ def fetch_and_display_mandi_data(state=None,district = None,market = None,commod
         params["filters[variety]"] = variety
     if grade is not None:
         params["filters[grade]"] = grade
-    if arrival_date is not None:
-        params["filters[arrival_date]"] = arrival_date
 
     # Custom headers to bypass security rules blocking generic python clients
     headers = {
@@ -138,7 +136,7 @@ def fetch_and_display_mandi_data(state=None,district = None,market = None,commod
         print(f"--- Retrieved Valid Mandi Price Records ---")
         if not valid_records:
             print("No valid records found matching the criteria.")
-        for i, record in enumerate(valid_records, start=1):
+        '''for i, record in enumerate(valid_records, start=1):
             print(f"Record {i}:")
             print(f"  State:         {record.get('state')}")
             print(f"  District:      {record.get('district')}")
@@ -150,18 +148,6 @@ def fetch_and_display_mandi_data(state=None,district = None,market = None,commod
             print(f"  Min Price:     ₹{record.get('min_price')}")
             print(f"  Max Price:     ₹{record.get('max_price')}")
             print(f"  Modal Price:   ₹{record.get('modal_price')}")
-            print("-" * 40)
+            print("-" * 40)'''
             
         return valid_records
-
-if __name__ == "__main__":
-    state = "Keralam"
-    district = "Kottayam"
-    commodity = "Amranthas Red"
-    arrival_date = "11/06/2026"
-    limit = 5
-    offset = 0
-    try:
-        fetch_and_display_mandi_data(commodity="Tomato",limit=limit,offset=offset)
-    except Exception as e:
-        print(f"v1 error: {e}")

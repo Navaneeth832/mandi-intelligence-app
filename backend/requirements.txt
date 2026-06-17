@@ -6,4 +6,3 @@ python-dotenv
 httpx
 datetime
 psycopg2
-requests
