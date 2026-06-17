@@ -6,13 +6,16 @@ from datetime import datetime
 # Solve module import paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
 if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
+    sys.path.insert(0, current_dir)
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+import getId
 import price_fetcher_v1
 import price_fetcher_v2
+import market_normalizer
+import variety_normalizer
+import commodity_normalizer
 
 # Expose validate_records so other components can import it directly from here
 from price_fetcher_v1 import validate_records
@@ -36,7 +39,7 @@ def resolve_group_from_commodity(commodity_name):
         comm_map = getattr(Data_mapping, "Commodity", getattr(Data_mapping, "commodity", {}))
         group_map = getattr(Data_mapping, "CommodityGroup", getattr(Data_mapping, "commodity_group", getattr(Data_mapping, "cmdt_group", {})))
     except ImportError:
-        return "Vegetables"
+        return "Couldn't resolve the Commodity Group"
         
     c_lower = str(commodity_name).strip().lower()
     group_id = None
@@ -50,7 +53,7 @@ def resolve_group_from_commodity(commodity_name):
             if gv == group_id:
                 return gk
                 
-    return "Vegetables"
+    return "Couldn't resolve the Commodity Group id"
 
 def upsert_records_to_db(valid_records):
     if not SessionLocal:
@@ -67,11 +70,44 @@ def upsert_records_to_db(valid_records):
         upsert_count = 0
         for rec in valid_records:
             try:
+                # Normalize market name using state and district as context
+                original_market = rec.get("market")
+                normalized_market = market_normalizer.resolve_market(
+                    market_query=original_market,
+                    district_query=rec.get("district"),
+                    state_query=rec.get("state"),
+                    fuzzy_cutoff=0.65
+                )
+                if normalized_market != original_market:
+                    print(f"[INFO] Fuzzy matched market '{original_market}' -> '{normalized_market}' (District: {rec.get('district')}, State: {rec.get('state')})")
+                    rec["market"] = normalized_market
+
+                # Normalize commodity name
+                original_commodity = rec.get("commodity")
+                norm_res = commodity_normalizer.resolve_commodities(original_commodity)
+                if isinstance(norm_res, list) and len(norm_res) > 0:
+                    normalized_commodity = norm_res[0]["canonical_name"]
+                    if normalized_commodity != original_commodity:
+                        print(f"[INFO] Fuzzy matched commodity '{original_commodity}' -> '{normalized_commodity}'")
+                        rec["commodity"] = normalized_commodity
+
                 # 1. Resolve names to IDs
-                cmdt_id = int(str(price_fetcher_v2.get_commodity_id(rec["commodity"], db)).strip("[]"))
-                var_id = int(str(price_fetcher_v2.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
-                grd_id = int(str(price_fetcher_v2.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
-                mkt_id = int(str(price_fetcher_v2.get_market_id(rec["market"], db)).strip("[]"))
+                cmdt_id = int(str(getId.get_commodity_id(rec["commodity"], db)).strip("[]"))
+                
+                # Normalize variety name using commodity_id as context
+                original_variety = rec.get("variety")
+                normalized_variety = variety_normalizer.resolve_variety(
+                    variety_query=original_variety,
+                    commodity_id=cmdt_id,
+                    fuzzy_cutoff=0.65
+                )
+                if normalized_variety != original_variety:
+                    print(f"[INFO] Fuzzy matched variety '{original_variety}' -> '{normalized_variety}' (Commodity ID: {cmdt_id})")
+                    rec["variety"] = normalized_variety
+
+                var_id = int(str(getId.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
+                grd_id = int(str(getId.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
+                mkt_id = int(str(getId.get_market_id(rec["market"], db)).strip("[]"))
                 
                 # 2. Parse date
                 arr_date = parse_date(rec["arrival_date"])
@@ -125,85 +161,97 @@ def fetch_and_display_mandi_data(
     commodity=None,
     variety=None,
     grade=None,
-    arrival_date="10/06/2026",
-    limit=0,
+    arrival_date=datetime.today().strftime("%d/%m/%Y"),
+    limit=10000,
     offset=0,
     group=None
 ):
     valid_records = []
+    
+    # Resolve group for v2 upfront
+    if not group and commodity:
+        group = resolve_group_from_commodity(commodity)
+        print(f"Resolved group for '{commodity}': {group}")
+
+    # Map parameters for Version 2
+    v2_args = {
+        "group": group or "Vegetables",
+        "commodity": commodity or "Tomato",
+    }
+    if state is not None:
+        v2_args["state"] = state
+    if district is not None:
+        v2_args["district"] = district
+    if market is not None:
+        v2_args["market"] = market
+    if variety is not None:
+        v2_args["variety"] = variety
+    if grade is not None:
+        v2_args["grade"] = grade
+    if limit:
+        v2_args["limit"] = limit
+
     try:
-        # Attempt Version 1 (Public API)
-        print("Attempting to fetch Mandi data using Version 1 (Public API)...")
-        valid_records = price_fetcher_v1.fetch_and_display_mandi_data(
-            state=state,
-            district=district,
-            market=market,
-            commodity=commodity,
-            variety=variety,
-            grade=grade,
-            arrival_date=arrival_date,
-            limit=limit,
-            offset=offset
-        )
-    except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
-        print(f"\n[Warning] Version 1 Fetcher failed due to timeout: {type(e).__name__} - {e}")
-        print("Switching to Version 2 (Internal Report API)...")
+        # Attempt Version 2 (Internal Report API) first
+        print("Attempting to fetch Mandi data using Version 2 (Internal Report API)...")
+        valid_records = price_fetcher_v2.fetch_and_display_mandi_data_v2(**v2_args)
     except httpx.HTTPStatusError as e:
-        print(f"\n[Warning] Version 1 Fetcher failed with HTTP status {e.response.status_code}: {e}")
-        print("Switching to Version 2 (Internal Report API)...")
+        status = e.response.status_code
+        if status == 402:
+            print(f"\n[Warning] Version 2 Error: 402 Payment/Access Required.")
+        elif status >= 500:
+            print(f"\n[Warning] Version 2 Error: {status} Server Error.")
+        else:
+            print(f"\n[Warning] Version 2 Error: HTTP status {status} - {e.response.text}")
+        print("Switching to Version 1 (Public API)...")
+    except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
+        print(f"\n[Warning] Version 2 Fetcher failed due to timeout: {type(e).__name__} - {e}")
+        print("Switching to Version 1 (Public API)...")
+    except httpx.RequestError as e:
+        print(f"\n[Warning] Version 2 Error: Network connection issue: {e}")
+        print("Switching to Version 1 (Public API)...")
     except Exception as e:
-        print(f"\n[Warning] Version 1 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
-        print("Switching to Version 2 (Internal Report API)...")
-        
+        print(f"\n[Warning] Version 2 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
+        print("Switching to Version 1 (Public API)...")
+
     if not valid_records:
-        # Resolve group if not provided
-        if not group and commodity:
-            group = resolve_group_from_commodity(commodity)
-            print(f"Resolved group for '{commodity}': {group}")
-            
-        # Map parameters for Version 2
-        v2_args = {
-            "group": group or "Vegetables",
-            "commodity": commodity or "Tomato",
-        }
-        if state is not None:
-            v2_args["state"] = state
-        if district is not None:
-            v2_args["district"] = district
-        if market is not None:
-            v2_args["market"] = market
-        if variety is not None:
-            v2_args["variety"] = variety
-        if grade is not None:
-            v2_args["grade"] = grade
-        if limit:
-            v2_args["limit"] = limit
-            
         try:
-            valid_records = price_fetcher_v2.fetch_and_display_mandi_data_v2(**v2_args)
-        except httpx.HTTPStatusError as e:
-            status = e.response.status_code
-            if status == 402:
-                print(f"\n[Error] Version 2 Error: 402 Payment/Access Required. Access to the Agmarknet daily price report API has been restricted or requires payment/registration.")
-            elif status >= 500:
-                print(f"\n[Error] Version 2 Error: {status} Server Error. The Agmarknet report API server is currently experiencing downtime or is overloaded.")
-            else:
-                print(f"\n[Error] Version 2 Error: HTTP status {status} - {e.response.text}")
+            # Fallback to Version 1 (Public API)
+            print("Attempting to fetch Mandi data using Version 1 (Public API)...")
+            valid_records = price_fetcher_v1.fetch_and_display_mandi_data(
+                state=state,
+                district=district,
+                market=market,
+                commodity=commodity,
+                variety=variety,
+                grade=grade,
+                limit=limit,
+                offset=offset
+            )
         except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
-            print(f"\n[Error] Version 2 Error: Request timed out ({type(e).__name__}). The Agmarknet report API did not respond within the time limit.")
-        except httpx.RequestError as e:
-            print(f"\n[Error] Version 2 Error: Network connection issue. Could not connect to the Agmarknet report API: {e}")
+            print(f"\n[Error] Version 1 Fetcher failed due to timeout: {type(e).__name__} - {e}")
+        except httpx.HTTPStatusError as e:
+            print(f"\n[Error] Version 1 Fetcher failed with HTTP status {e.response.status_code}: {e}")
         except Exception as e:
-            print(f"\n[Error] Version 2 Error: An unexpected error occurred: {type(e).__name__} - {e}")
+            print(f"\n[Error] Version 1 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
 
     if valid_records:
         upsert_records_to_db(valid_records)
 
     return valid_records
 
+
 if __name__ == "__main__":
-    active_crop_log = ['Tomato', 'Paddy(Common)', 'Coffee', 'Water Melon', 'Tapioca', 'Potato']
+    active_crop_log = ["Tomato","Paddy(Common)","Coffee","Water Melon","Tapioca","Potato"]
     for crop in active_crop_log:
-        fetch_and_display_mandi_data(
-            commodity=crop,
-        )
+        # Normalize crop name
+        norm_result = commodity_normalizer.resolve_commodities(crop)
+        if isinstance(norm_result, dict) and norm_result.get("error") == "commodity_not_found":
+            print(f"[INFO] No commodity mapping found for '{crop}'. Skipping.")
+            continue
+        # Process up to top 5 canonical names (already limited by resolver)
+        for canonical in norm_result[:5]:
+            try:
+                fetch_and_display_mandi_data(commodity=canonical["canonical_name"])
+            except Exception as e:
+                print(f"[ERROR] API call failed for '{canonical['canonical_name']}' (original query '{crop}'): {e}")

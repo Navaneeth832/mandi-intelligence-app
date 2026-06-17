@@ -4,11 +4,11 @@ import os
 # Solve module import paths and resolve name collisions between root and backend Data_mapping.py
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
 if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
+    sys.path.insert(0, current_dir)
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+import getId
 import httpx
 import json
 from datetime import datetime
@@ -25,201 +25,11 @@ except ImportError:
 # Import validate_records from price_fetcher_v1 to avoid circular dependency
 from price_fetcher_v1 import validate_records
 
-# Load Data_mapping dynamically to support both root and backend casings
-try:
-    import Data_mapping
-    COMMODITY_MAP = getattr(Data_mapping, "Commodity", getattr(Data_mapping, "commodity", {}))
-    STATE_MAP = getattr(Data_mapping, "State", getattr(Data_mapping, "state", {}))
-    DISTRICT_MAP = getattr(Data_mapping, "District", getattr(Data_mapping, "district", {}))
-    MANDI_MAP = getattr(Data_mapping, "Mandi", getattr(Data_mapping, "mandi", {}))
-    VARIETY_MAP = getattr(Data_mapping, "Variety", getattr(Data_mapping, "variety", {}))
-    GRADE_MAP = getattr(Data_mapping, "Grade", getattr(Data_mapping, "grade", {}))
-    GROUP_MAP = getattr(Data_mapping, "CommodityGroup", getattr(Data_mapping, "commodity_group", getattr(Data_mapping, "cmdt_group", {})))
-except ImportError:
-    COMMODITY_MAP = {}
-    STATE_MAP = {}
-    DISTRICT_MAP = {}
-    MANDI_MAP = {}
-    VARIETY_MAP = {}
-    GRADE_MAP = {}
-    GROUP_MAP = {}
-
-# ── Name-to-ID Resolvers with DB & Static Dictionary Fallback ────────────────
-
-def get_group_id(name, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.commodity_group import CommodityGroup
-            rec = db.query(CommodityGroup).filter(CommodityGroup.name.ilike(name_str)).first()
-            if rec:
-                return str(rec.id)
-        except Exception:
-            pass
-            
-    for k, v in GROUP_MAP.items():
-        if k.lower() == name_str:
-            return str(v)
-    
-    raise ValueError(f"Commodity group '{name}' not found.")
-
-def get_commodity_id(name, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.commodity import Commodity
-            rec = db.query(Commodity).filter(Commodity.name.ilike(name_str)).first()
-            if rec:
-                return str(rec.id)
-        except Exception:
-            pass
-            
-    for k, v in COMMODITY_MAP.items():
-        if k.lower() == name_str:
-            return str(v[0])
-        
-    raise ValueError(f"Commodity '{name}' not found.")
-
-def get_state_id(name, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    aliases = {
-        "kerala": "keralam",
-        "delhi": "nct of delhi",
-        "pondicherry": "pondicherry",
-    }
-    search_name = aliases.get(name_str, name_str)
-    
-    if db:
-        try:
-            from app.models.state import State
-            rec = db.query(State).filter((State.name.ilike(search_name)) | (State.name.ilike(name_str))).first()
-            if rec:
-                return f"[{rec.id}]"
-        except Exception:
-            pass
-            
-    for k, v in STATE_MAP.items():
-        if k.lower() in (search_name, name_str):
-            return f"[{v}]"
-        
-    raise ValueError(f"State '{name}' not found.")
-
-def get_district_id(name, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.district import District
-            rec = db.query(District).filter(District.name.ilike(name_str)).first()
-            if rec:
-                return f"[{rec.id}]"
-        except Exception:
-            pass
-            
-    for k, v in DISTRICT_MAP.items():
-        if v[0].lower() == name_str:
-            return f"[{k}]"
-        
-    raise ValueError(f"District '{name}' not found.")
-
-def get_market_id(name, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.market import Market
-            rec = db.query(Market).filter(Market.name.ilike(name_str)).first()
-            if rec:
-                return f"[{rec.id}]"
-        except Exception:
-            pass
-            
-    for k, v in MANDI_MAP.items():
-        if v[0].lower() == name_str:
-            return f"[{k}]"
-        
-    raise ValueError(f"Market '{name}' not found.")
-
-def get_variety_id(name, commodity_id=None, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.variety import Variety
-            query = db.query(Variety).filter(Variety.name.ilike(name_str))
-            if commodity_id is not None:
-                clean_cid = str(commodity_id).strip("[]")
-                if clean_cid.isdigit():
-                    query = query.filter(Variety.commodity_id == int(clean_cid))
-            rec = query.first()
-            if rec:
-                return f"[{rec.id}]"
-        except Exception:
-            pass
-            
-    clean_cid = int(str(commodity_id).strip("[]")) if (commodity_id is not None and str(commodity_id).strip("[]").isdigit()) else None
-    
-    for k, v in VARIETY_MAP.items():
-        if k.lower() == name_str:
-            if clean_cid is None or (isinstance(v[1], list) and clean_cid in v[1]) or v[1] == clean_cid:
-                return f"[{v[0]}]"
-    for k, v in VARIETY_MAP.items():
-        if k.lower() == name_str:
-            return f"[{v[0]}]"
-        
-    raise ValueError(f"Variety '{name}' not found.")
-
-def get_grade_id(name, commodity_id=None, db=None):
-    if not name or str(name).startswith('[') or str(name).isdigit():
-        return str(name)
-    name_str = str(name).strip().lower()
-    
-    if db:
-        try:
-            from app.models.grade import Grade
-            query = db.query(Grade).filter(Grade.grade_name.ilike(name_str))
-            if commodity_id is not None:
-                clean_cid = str(commodity_id).strip("[]")
-                if clean_cid.isdigit():
-                    query = query.filter(Grade.commodity_id == int(clean_cid))
-            rec = query.first()
-            if rec:
-                return f"[{rec.id}]"
-        except Exception:
-            pass
-            
-    clean_cid = int(str(commodity_id).strip("[]")) if (commodity_id is not None and str(commodity_id).strip("[]").isdigit()) else None
-    
-    for k, v in GRADE_MAP.items():
-        if k.lower() == name_str:
-            if clean_cid is None or (isinstance(v[1], list) and clean_cid in v[1]) or v[1] == clean_cid:
-                return f"[{v[0]}]"
-    for k, v in GRADE_MAP.items():
-        if k.lower() == name_str:
-            return f"[{v[0]}]"
-        
-    raise ValueError(f"Grade '{name}' not found.")
-
 # ── Core Fetching Logic using Internal API ─────────────────────────────────────
 
 def fetch_and_display_mandi_data_v2(
-    group="Vegetables",
-    commodity="Tomato",
+    group,
+    commodity,
     state="[100000]",
     district="[100001]",
     market="[100002]",
@@ -239,13 +49,13 @@ def fetch_and_display_mandi_data_v2(
     
     try:
         # Resolve all parameters to IDs
-        group_id = get_group_id(group, db)
-        commodity_id = get_commodity_id(commodity, db)
-        state_id = get_state_id(state, db)
-        district_id = get_district_id(district, db)
-        market_id = get_market_id(market, db)
-        variety_id = get_variety_id(variety, commodity_id, db)
-        grade_id = get_grade_id(grade, commodity_id, db)
+        group_id = getId.get_group_id(group, db)
+        commodity_id = getId.get_commodity_id(commodity, db)
+        state_id = getId.get_state_id(state, db)
+        district_id = getId.get_district_id(district, db)
+        market_id = getId.get_market_id(market, db)
+        variety_id = getId.get_variety_id(variety, commodity_id, db)
+        grade_id = getId.get_grade_id(grade, commodity_id, db)
     finally:
         if db:
             db.close()
@@ -328,7 +138,7 @@ def fetch_and_display_mandi_data_v2(
         if not valid_records:
             print("No valid records found matching the criteria.")
         
-        for i, record in enumerate(valid_records[:5], start=1):
+        '''for i, record in enumerate(valid_records[:5], start=1):
             print(f"Record {i}:")
             print(f"  State:         {record.get('state')}")
             print(f"  District:      {record.get('district')}")
@@ -340,17 +150,6 @@ def fetch_and_display_mandi_data_v2(
             print(f"  Min Price:     ₹{record.get('min_price')}")
             print(f"  Max Price:     ₹{record.get('max_price')}")
             print(f"  Modal Price:   {record.get('modal_price')}")
-            print("-" * 40)
+            print("-" * 40)'''
             
         return valid_records
-
-if __name__ == "__main__":
-    try:
-        fetch_and_display_mandi_data_v2(
-            group="Vegetables",
-            commodity="Tomato",
-            state="Kerala",
-            limit=5
-        )
-    except Exception as e:
-        print(f"v2 error: {e}")
