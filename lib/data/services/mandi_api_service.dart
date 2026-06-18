@@ -6,6 +6,8 @@ import '../models/mandi_price.dart';
 import '../models/price_history.dart';
 import '../models/district_model.dart';
 import '../models/paginated_mandi_response.dart';
+import '../models/paginated_market_response.dart';
+import '../models/commodity_model.dart';
 
 class MandiApiService {
 
@@ -65,7 +67,8 @@ class MandiApiService {
         .map((e) => e['name'].toString())
         .toList();
   }
-  Future<List<String>> getCommodities() async {
+  
+  Future<List<Commodity>> getCommodities() async {
     final response = await http.get(
       Uri.parse('$baseUrl/commodities'),
     );
@@ -78,9 +81,10 @@ class MandiApiService {
         jsonDecode(response.body);
 
     return data
-        .map((e) => e['name'].toString())
+        .map((e) => Commodity.fromJson(e))
         .toList();
   }
+  
   Future<List<String>> getMarkets(int? districtId,) async {
       String endpoint = '/markets';
      if (districtId != null) {
@@ -101,6 +105,37 @@ class MandiApiService {
         .map((e) => e['name'].toString())
         .toList();
   }
+  
+  Future<PaginatedMarketResponse> getMarketDirectory({
+    int page = 1,
+    int pageSize = 50,
+    int? districtId,
+    int? commodityId,
+  }) async {
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'page_size': pageSize.toString(),
+    };
+    if (districtId != null) {
+      queryParams['district_id'] = districtId.toString();
+    }
+    if (commodityId != null) {
+      queryParams['commodity_id'] = commodityId.toString();
+    }
+    
+    final uri = Uri.parse('$baseUrl/market-directory').replace(queryParameters: queryParams);
+    
+    final response = await http.get(uri);
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load market directory');
+    }
+    
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    
+    return PaginatedMarketResponse.fromJson(data);
+  }
+  
   Future<List<PriceHistory>> getPriceHistory({
     required String commodity,
     required String market,

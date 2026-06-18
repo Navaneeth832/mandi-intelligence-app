@@ -7,6 +7,7 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
+import 'market_detail_screen.dart';
 import 'home_screen.dart';
 
 class FilterResultsScreen extends ConsumerStatefulWidget {
