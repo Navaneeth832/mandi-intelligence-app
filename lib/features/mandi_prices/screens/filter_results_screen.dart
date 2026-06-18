@@ -83,7 +83,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
         title: const Text(
           'Filter Results',
           style: TextStyle(
-            color: Color(0xFF0A4A1C),
+            color: Color.fromARGB(255, 39, 163, 45),
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
@@ -183,7 +183,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                 child: const Text(
                   'Clear All',
                   style: TextStyle(
-                    color: Color(0xFF0A4A1C),
+                    color: Color.fromARGB(255, 39, 163, 45),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -288,7 +288,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
             padding: EdgeInsets.symmetric(vertical: 16.0),
             child: Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF0A4A1C),
+                color: Color.fromARGB(255, 39, 163, 45),
               ),
             ),
           );
@@ -443,7 +443,7 @@ class _FilterResultCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF0A4A1C),
+                              color: Color.fromARGB(255, 39, 163, 45),
                             ),
                           ),
                           Container(

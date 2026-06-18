@@ -42,7 +42,8 @@ def get_mandi_prices(
             MandiPrice.modal_price,
             MandiPrice.min_price,
             MandiPrice.max_price,
-            MandiPrice.arrival_date
+            MandiPrice.arrival_date,
+            MandiPrice.created_at
         )
         .join(Market, MandiPrice.market_id == Market.id)
         .join(District, Market.district_id == District.id)
@@ -110,6 +111,7 @@ def get_mandi_prices(
                 "min_price": float(row.min_price), 
                 "max_price": float(row.max_price),
                 "arrival_date": row.arrival_date,
+                "created_at": row.created_at.isoformat(),
             }
             for row in results
         ]

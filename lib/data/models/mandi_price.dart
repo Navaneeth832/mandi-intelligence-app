@@ -10,6 +10,7 @@ class MandiPrice {
   final double lowPrice;
 
   final DateTime lastUpdated;
+  final DateTime createdAt;
 
   final double priceChange;
   final int? commodityId;
@@ -28,6 +29,7 @@ class MandiPrice {
     required this.lowPrice,
     required this.priceChange,
     required this.lastUpdated,
+    required this.createdAt,
   });
 
   factory MandiPrice.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,9 @@ class MandiPrice {
 
       lastUpdated: DateTime.parse(
         json['arrival_date'],
+      ),
+      createdAt: DateTime.parse(
+        json['created_at'],
       ),
     );
   }
