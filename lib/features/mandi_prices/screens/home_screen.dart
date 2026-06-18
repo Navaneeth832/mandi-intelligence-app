@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/mandi_price.dart';
+import '../../../data/models/district_model.dart';
 import '../widgets/price_card.dart';
 import '../widgets/filter_dropdown.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -23,6 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedCrop;
   String? _selectedState;
+  String? _selectedDistrict;
   String? _selectedMarket;
   late final ScrollController _scrollController;
 
@@ -45,6 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final filter = Filter(
         crop: _selectedCrop,
         state: _selectedState,
+        district: _selectedDistrict,
         market: _selectedMarket,
       );
       ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
@@ -97,9 +100,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Icon(Icons.agriculture_outlined, color: Color(0xFF0A4A1C), size: 32),
             SizedBox(width: 8),
             Text(
-              'Revin Sight',
+              '',
               style: TextStyle(
-                color: Color(0xFF0A4A1C),
+                color: Color.fromARGB(255, 26, 152, 9),
                 fontWeight: FontWeight.w900,
                 fontSize: 24,
               ),
@@ -123,6 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final filter = Filter(
       crop: _selectedCrop,
       state: _selectedState,
+       district: _selectedDistrict,
       market: _selectedMarket,
     );
 
@@ -132,6 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final filter = Filter(
           crop: _selectedCrop,
           state: _selectedState,
+          district: _selectedDistrict,
           market: _selectedMarket,
         );
 
@@ -242,7 +247,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildFilterSection() {
     final cropsAsync = ref.watch(commoditiesProvider);
     final statesAsync = ref.watch(statesProvider);
-    final marketsAsync = ref.watch(marketsProvider);
+    final districtsAsync =
+    ref.watch(
+      districtsProvider(
+        _selectedState,
+      ),
+    );
+    District? selectedDistrictObj;
+
+    districtsAsync.whenData((districts) {
+      try {
+        selectedDistrictObj = districts.firstWhere(
+          (d) => d.name == _selectedDistrict,
+        );
+      } catch (_) {
+        selectedDistrictObj = null;
+      }
+    });
+
+    final marketsAsync =
+    ref.watch(
+      marketsProvider(
+        selectedDistrictObj?.id,
+      ),
+    );
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,6 +303,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onChanged: (value) {
                     setState(() {
                       _selectedState = value;
+                      _selectedDistrict = null;
+                      _selectedMarket = null;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              SizedBox(
+                width: 160,
+                child: FilterDropdownButton(
+                  hintText: 'District',
+
+                  items: districtsAsync.maybeWhen(
+                    data: (districts) =>
+                        districts
+                            .map((d) => d.name)
+                            .toList(),
+                    orElse: () => [],
+                  ),
+
+                  value: _selectedDistrict,
+
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedDistrict = value;
+                      _selectedMarket = null;
                     });
                   },
                 ),
@@ -326,6 +381,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   setState(() {
                     _selectedCrop = null;
                     _selectedState = null;
+                    _selectedDistrict = null;
                     _selectedMarket = null;
                   });
                 },
@@ -342,6 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final filter = Filter(
       crop: _selectedCrop,
       state: _selectedState,
+      district: _selectedDistrict,
       market: _selectedMarket,
     );
 

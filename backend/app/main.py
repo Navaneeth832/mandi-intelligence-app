@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-
 from app.api.routes import states
 from app.api.routes import commodities
 from app.api.routes import markets
 from app.api.routes import mandi_prices
 from app.api.routes import price_history
+from app.api.routes import districts
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -58,4 +58,10 @@ app.include_router(
     price_history.router,
     prefix="/price-history",
     tags=["Price history"]
+)
+
+app.include_router(
+    districts.router,
+    prefix="/districts",
+    tags=["Districts"]
 )
