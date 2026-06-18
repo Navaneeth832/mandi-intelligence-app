@@ -13,13 +13,11 @@ router = APIRouter()
 
 @router.get("/")
 def get_states(db: Session = Depends(get_db)):
-    latest_date = get_latest_arrival_date(db)
     return (
         db.query(State)
         .join(District, State.id == District.state_id)
         .join(Market, District.id == Market.district_id)
         .join(MandiPrice, Market.id == MandiPrice.market_id)
-        .filter(MandiPrice.arrival_date == latest_date)
         .distinct()
         .all()
     )

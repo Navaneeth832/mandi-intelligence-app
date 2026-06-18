@@ -3,6 +3,7 @@ import '../services/mandi_api_service.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 import '../models/price_history.dart';
 import '../models/paginated_mandi_response.dart';
+import '../models/district_model.dart';
 
 // TASK 5: TESTING CONTROLS
 const bool simulateLoading = false;
@@ -53,17 +54,28 @@ class MandiRepository {
     return _apiService.getCommodities();
   }
 
-  Future<List<String>> getMarkets() {
-    return _apiService.getMarkets();
-  }
+  Future<List<String>> getMarkets(
+  int? districtId,
+) {
+  return _apiService.getMarkets(
+    districtId,
+  );
+}
   Future<List<PriceHistory>>
       getPriceHistory({
     required String commodity,
     required String market,
-  }) {
+      }) {
     return _apiService.getPriceHistory(
       commodity: commodity,
       market: market,
     );
   }
+  Future<List<District>> getDistricts(
+  String? state,
+) {
+  return _apiService.getDistricts(
+    state,
+  );
+}
 }

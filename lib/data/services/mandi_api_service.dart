@@ -4,12 +4,13 @@ import 'package:http/http.dart' as http;
 
 import '../models/mandi_price.dart';
 import '../models/price_history.dart';
+import '../models/district_model.dart';
 import '../models/paginated_mandi_response.dart';
 
 class MandiApiService {
 
   static const String baseUrl =
-      'http://192.168.68.104:8000';
+      'http://192.168.29.253:8000';
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,
@@ -80,9 +81,13 @@ class MandiApiService {
         .map((e) => e['name'].toString())
         .toList();
   }
-  Future<List<String>> getMarkets() async {
+  Future<List<String>> getMarkets(int? districtId,) async {
+      String endpoint = '/markets';
+     if (districtId != null) {
+        endpoint += '?district_id=$districtId';
+    }
     final response = await http.get(
-      Uri.parse('$baseUrl/markets'),
+      Uri.parse('$baseUrl$endpoint'),
     );
 
     if (response.statusCode != 200) {
@@ -119,6 +124,35 @@ class MandiApiService {
         .map(
           (item) =>
               PriceHistory.fromJson(item),
+        )
+        .toList();
+  }
+  Future<List<District>> getDistricts(
+    String? state,
+  ) async {
+    String endpoint = '/districts';
+
+    if (state != null &&
+        state.isNotEmpty) {
+      endpoint += '?state=$state';
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl$endpoint'),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Failed to load districts',
+      );
+    }
+
+    final List<dynamic> data =
+        jsonDecode(response.body);
+
+    return data
+        .map(
+          (e) => District.fromJson(e),
         )
         .toList();
   }

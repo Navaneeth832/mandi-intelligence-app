@@ -3,6 +3,7 @@ import '../../../data/models/mandi_price.dart';
 import '../../../data/models/paginated_mandi_response.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
+import '../../../data/models/district_model.dart';
 import 'filter_model.dart';
 
 // Provider for the ApiService
@@ -120,9 +121,27 @@ final commoditiesProvider =
 });
 
 final marketsProvider =
-    FutureProvider<List<String>>((ref) {
+    FutureProvider.family<
+        List<String>,
+        int?>((ref, districtId) {
+
   final repository =
       ref.watch(mandiRepositoryProvider);
 
-  return repository.getMarkets();
+  return repository.getMarkets(
+    districtId,
+  );
+});
+
+final districtsProvider =
+    FutureProvider.family<
+        List<District>,
+        String?>((ref, state) {
+
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+
+  return repository.getDistricts(
+    state,
+  );
 });

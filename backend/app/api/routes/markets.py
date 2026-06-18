@@ -10,12 +10,23 @@ router = APIRouter()
 
 
 @router.get("/")
-def get_markets(db: Session = Depends(get_db)):
-    latest_date = get_latest_arrival_date(db)
-    return (
+def get_markets(
+    district_id: int | None = None,
+    db: Session = Depends(get_db)
+):
+    query = (
         db.query(Market)
         .join(MandiPrice, Market.id == MandiPrice.market_id)
-        .filter(MandiPrice.arrival_date == latest_date)
+    )
+
+    if district_id:
+        query = query.filter(
+            Market.district_id == district_id
+        )
+
+    return (
+        query
         .distinct()
+        .order_by(Market.name)
         .all()
     )
