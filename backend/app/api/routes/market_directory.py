@@ -32,30 +32,11 @@ def get_market_directory(
     
     result = []
     for market in markets:
-        # Get unique commodities count for this market
-        commodity_count = (
-            db.query(func.count(func.distinct(MandiPrice.commodity_id)))
-            .filter(MandiPrice.market_id == market.id)
-            .scalar()
-        )
-        
-        # Get complete commodity list for detail view
-        commodities = (
-            db.query(Commodity)
-            .join(MandiPrice)
-            .filter(MandiPrice.market_id == market.id)
-            .distinct()
-            .all()
-        )
-        
         result.append({
             "id": market.id,
             "name": market.name,
             "district": market.district.name,
-            "state": market.district.state.name,
-            "commodities": [c.name for c in commodities],
-            "commodity_count": commodity_count or 0,
-            "total_records": len(market.mandi_prices)
+            "state": market.district.state.name
         })
         
     return {

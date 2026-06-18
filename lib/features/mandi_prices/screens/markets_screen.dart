@@ -179,12 +179,6 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                                 Text(' ${market.district}, ${market.state}',
                                     style: const TextStyle(color: Colors.grey)),
                               ]),
-                              const SizedBox(height: 6),
-                              Text('Available Crops Today: ${market.commodityCount}',
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF14522B))),
                             ],
                           ),
                           onTap: () {
