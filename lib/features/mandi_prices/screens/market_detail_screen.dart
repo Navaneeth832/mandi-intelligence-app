@@ -95,7 +95,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.lastUpdated)}',
+                              'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,

@@ -112,7 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none, color: Color(0xFF0A4A1C), size: 28),
+            icon: const Icon(Icons.notifications_none, color: Color.fromARGB(255, 39, 163, 45), size: 28),
           ),
           const SizedBox(width: 8),
         ],
@@ -160,7 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 data: (state) =>
                     state.items.isNotEmpty
                         ? state.items
-                            .map((p) => p.lastUpdated)
+                            .map((p) => p.createdAt)
                             .reduce(
                               (a, b) =>
                                   a.isAfter(b) ? a : b,
