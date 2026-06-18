@@ -5,6 +5,7 @@ from app.api.routes import markets
 from app.api.routes import mandi_prices
 from app.api.routes import price_history
 from app.api.routes import districts
+from app.api.routes import market_directory
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -64,4 +65,10 @@ app.include_router(
     districts.router,
     prefix="/districts",
     tags=["Districts"]
+)
+
+app.include_router(
+    market_directory.router,
+    prefix="/market-directory",
+    tags=["Market Directory"]
 )

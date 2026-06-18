@@ -118,7 +118,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       body: SafeArea(child: _buildBody()),
-      bottomNavigationBar: const BottomNavBar(),
     );
   }
 
@@ -243,9 +242,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
+Widget _buildFilterSection() {
+  final cropsAsync = ref.watch(commodityListProvider);
+  // ...
 
-  Widget _buildFilterSection() {
-    final cropsAsync = ref.watch(commoditiesProvider);
     final statesAsync = ref.watch(statesProvider);
     final districtsAsync =
     ref.watch(
@@ -282,7 +282,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               SizedBox(
                 width: 160,
-                child: FilterDropdownButton(
+                child: FilterDropdownButton<String>(
                   hintText: 'Crop',
                   items: cropsAsync.value ?? [],
                   value: _selectedCrop,
@@ -296,7 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 12),
               SizedBox(
                 width: 160,
-                child: FilterDropdownButton(
+                child: FilterDropdownButton<String>(
                   hintText: 'State',
                   items: statesAsync.value ?? [],
                   value: _selectedState,
@@ -313,7 +313,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               SizedBox(
                 width: 160,
-                child: FilterDropdownButton(
+                child: FilterDropdownButton<String>(
                   hintText: 'District',
 
                   items: districtsAsync.maybeWhen(
@@ -337,7 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 12),
               SizedBox(
                 width: 160,
-                child: FilterDropdownButton(
+                child: FilterDropdownButton<String>(
                   hintText: 'Market',
                   items: marketsAsync.value ?? [],
                   value: _selectedMarket,
@@ -423,7 +423,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return PriceCard(
                   price: price,
                   onTap: () {
-                    Navigator.push(
+                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => MarketDetailScreen(
@@ -431,7 +431,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     );
-                  },
+                                       },
                 );
               },
             ),

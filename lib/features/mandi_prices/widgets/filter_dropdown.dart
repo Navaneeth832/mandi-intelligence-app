@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-class FilterDropdownButton extends StatelessWidget {
+class FilterDropdownButton<T> extends StatelessWidget {
   final String hintText;
-  final List<String> items;
-  final String? value;
-  final ValueChanged<String?> onChanged;
+  final List<T> items;
+  final T? value;
+  final ValueChanged<T?> onChanged;
+  final String Function(T)? itemToString;
 
   const FilterDropdownButton({
     super.key,
@@ -12,6 +13,7 @@ class FilterDropdownButton extends StatelessWidget {
     required this.items,
     this.value,
     required this.onChanged,
+    this.itemToString,
   });
 
   @override
@@ -24,7 +26,7 @@ class FilterDropdownButton extends StatelessWidget {
         border: Border.all(color: const Color(0xFFC4C7CC), width: 1.0),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
+        child: DropdownButton<T>(
           value: value,
           hint: Text(
             hintText,
@@ -38,11 +40,12 @@ class FilterDropdownButton extends StatelessWidget {
           isDense: true,
           isExpanded: true,
           onChanged: onChanged,
-          items: items.map((String val) {
-            return DropdownMenuItem<String>(
+          items: items.map((T val) {
+            final label = itemToString != null ? itemToString!(val) : val.toString();
+            return DropdownMenuItem<T>(
               value: val,
               child: Text(
-                val,
+                label,
                 style: const TextStyle(
                   color: Color(0xFF111111),
                   fontWeight: FontWeight.w500,

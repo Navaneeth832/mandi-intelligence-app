@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 
-class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+class BottomNavBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onItemTapped;
 
-  @override
-  State<BottomNavBar> createState() => _BottomNavBarState();
-}
-
-class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  const BottomNavBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +39,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
       child: NavigationBar(
         backgroundColor: const Color(0xFFEFEFEF), // Light grey matching design image_0aa080.png
         elevation: 0,
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onItemTapped,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),

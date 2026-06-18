@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/mandi_price.dart';
 import '../../../data/models/paginated_mandi_response.dart';
+import '../../../data/models/paginated_market_response.dart';
+import '../../../data/models/market_directory_model.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
 import '../../../data/models/district_model.dart';
+import '../../../data/models/commodity_model.dart';
 import 'filter_model.dart';
 
 // Provider for the ApiService
@@ -17,6 +20,7 @@ final mandiRepositoryProvider = Provider<MandiRepository>((ref) {
   return MandiRepository(apiService);
 });
 
+// --- MANDI PRICES PROVIDER (Existing) ---
 class MandiPricesState {
   final List<MandiPrice> items;
   final int currentPage;
@@ -98,12 +102,103 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
   }
 }
 
-// StateNotifierProvider to manage and fetch mandi prices
 final mandiPricesProvider = StateNotifierProvider.family<MandiPricesNotifier, AsyncValue<MandiPricesState>, Filter>((ref, filter) {
   final repository = ref.watch(mandiRepositoryProvider);
   return MandiPricesNotifier(repository, filter);
 });
 
+// --- MARKET DIRECTORY PROVIDER (New) ---
+class MarketDirectoryState {
+  final List<MarketDirectory> items;
+  final int currentPage;
+  final int totalPages;
+  final bool isLoadingMore;
+  final bool hasMorePages;
+
+  MarketDirectoryState({
+    required this.items,
+    required this.currentPage,
+    required this.totalPages,
+    required this.isLoadingMore,
+    required this.hasMorePages,
+  });
+
+  MarketDirectoryState copyWith({
+    List<MarketDirectory>? items,
+    int? currentPage,
+    int? totalPages,
+    bool? isLoadingMore,
+    bool? hasMorePages,
+  }) {
+    return MarketDirectoryState(
+      items: items ?? this.items,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMorePages: hasMorePages ?? this.hasMorePages,
+    );
+  }
+}
+
+class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectoryState>> {
+  final MandiRepository _repository;
+  final int? districtId;
+  final int? commodityId;
+
+  MarketDirectoryNotifier(this._repository, this.districtId, this.commodityId) : super(const AsyncValue.loading()) {
+    loadInitialPage();
+  }
+
+  Future<void> loadInitialPage() async {
+    state = const AsyncValue.loading();
+    try {
+      final response = await _repository.getMarketDirectory(districtId, commodityId, page: 1);
+      state = AsyncValue.data(MarketDirectoryState(
+        items: response.data,
+        currentPage: response.page,
+        totalPages: response.totalPages,
+        isLoadingMore: false,
+        hasMorePages: response.page < response.totalPages,
+      ));
+    } catch (err, stack) {
+      state = AsyncValue.error(err, stack);
+    }
+  }
+
+  Future<void> loadNextPage() async {
+    final currentState = state.valueOrNull;
+    if (currentState == null || currentState.isLoadingMore || !currentState.hasMorePages) {
+      return;
+    }
+
+    state = AsyncValue.data(currentState.copyWith(isLoadingMore: true));
+
+    try {
+      final nextPage = currentState.currentPage + 1;
+      final response = await _repository.getMarketDirectory(districtId, commodityId, page: nextPage);
+
+      state = AsyncValue.data(MarketDirectoryState(
+        items: [...currentState.items, ...response.data],
+        currentPage: response.page,
+        totalPages: response.totalPages,
+        isLoadingMore: false,
+        hasMorePages: response.page < response.totalPages,
+      ));
+    } catch (err, stack) {
+      state = AsyncValue.data(currentState.copyWith(isLoadingMore: false));
+    }
+  }
+}
+
+final marketDirectoryProvider = StateNotifierProvider.family<
+    MarketDirectoryNotifier,
+    AsyncValue<MarketDirectoryState>,
+    ({int? districtId, int? commodityId})>((ref, filter) {
+  final repository = ref.watch(mandiRepositoryProvider);
+  return MarketDirectoryNotifier(repository, filter.districtId, filter.commodityId);
+});
+
+// --- HELPER PROVIDERS (Existing) ---
 final statesProvider =
     FutureProvider<List<String>>((ref) {
   final repository =
@@ -113,11 +208,16 @@ final statesProvider =
 });
 
 final commoditiesProvider =
-    FutureProvider<List<String>>((ref) {
+    FutureProvider<List<Commodity>>((ref) {
   final repository =
       ref.watch(mandiRepositoryProvider);
 
   return repository.getCommodities();
+});
+
+final commodityListProvider = FutureProvider<List<String>>((ref) async {
+  final commodities = await ref.watch(commoditiesProvider.future);
+  return commodities.map((c) => c.name).toList();
 });
 
 final marketsProvider =
