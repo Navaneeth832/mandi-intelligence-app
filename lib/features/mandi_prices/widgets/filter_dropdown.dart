@@ -7,6 +7,8 @@ class FilterDropdownButton<T> extends StatefulWidget {
   final ValueChanged<T?> onChanged;
   final String Function(T)? itemToString;
 
+  final bool showAllOption;
+
   const FilterDropdownButton({
     super.key,
     required this.hintText,
@@ -14,6 +16,7 @@ class FilterDropdownButton<T> extends StatefulWidget {
     this.value,
     required this.onChanged,
     this.itemToString,
+    this.showAllOption = false,
   });
 
   @override
@@ -23,8 +26,10 @@ class FilterDropdownButton<T> extends StatefulWidget {
 class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
   late TextEditingController _controller;
 
+  String get _allLabel => 'All ${widget.hintText}';
+
   String _getLabel(T? value) {
-    if (value == null) return '';
+    if (value == null) return widget.showAllOption ? _allLabel : '';
     return widget.itemToString != null ? widget.itemToString!(value) : value.toString();
   }
 
@@ -50,6 +55,24 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final List<DropdownMenuEntry<T>> entries = [];
+    if (widget.showAllOption) {
+      // We use a cast here because the value must be T, but for "All" we want to conceptually pass null.
+      // Since T is String, we use the _allLabel string as the value.
+      entries.add(DropdownMenuEntry<T>(
+        value: _allLabel as T,
+        label: _allLabel,
+      ));
+    }
+
+    entries.addAll(widget.items.map<DropdownMenuEntry<T>>((T item) {
+      final label = widget.itemToString != null ? widget.itemToString!(item) : item.toString();
+      return DropdownMenuEntry<T>(
+        value: item,
+        label: label,
+      );
+    }).toList());
+
     return DropdownMenu<T>(
       controller: _controller,
       width: 160,
@@ -58,7 +81,13 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
         fontWeight: FontWeight.w500,
         fontSize: 14,
       ),
-      onSelected: widget.onChanged,
+      onSelected: (value) {
+        if (value == _allLabel as T) {
+          widget.onChanged(null);
+        } else {
+          widget.onChanged(value);
+        }
+      },
       hintText: widget.hintText,
       enableSearch: true,
       enableFilter: true,
@@ -80,13 +109,7 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
           borderSide: const BorderSide(color: Color(0xFFC4C7CC), width: 1.0),
         ),
       ),
-      dropdownMenuEntries: widget.items.map<DropdownMenuEntry<T>>((T item) {
-        final label = widget.itemToString != null ? widget.itemToString!(item) : item.toString();
-        return DropdownMenuEntry<T>(
-          value: item,
-          label: label,
-        );
-      }).toList(),
+      dropdownMenuEntries: entries,
     );
   }
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/mandi_prices_provider.dart';
-import '../widgets/filter_dropdown.dart';
 import '../../../data/models/district_model.dart';
 import '../../../data/models/commodity_model.dart';
 import 'market_directory_detail_screen.dart';
+import '../providers/mandi_prices_provider.dart';
 
 class MarketsScreen extends ConsumerStatefulWidget {
   const MarketsScreen({super.key});
@@ -14,9 +13,7 @@ class MarketsScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketsScreenState extends ConsumerState<MarketsScreen> {
-  String? _selectedState;
-  String? _selectedDistrict;
-  Commodity? _selectedCommodity;
+  String _searchQuery = '';
   late final ScrollController _scrollController;
 
   @override
@@ -36,21 +33,11 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      final districtsAsync = ref.read(districtsProvider(_selectedState));
-      District? selectedDistrictObj;
-      districtsAsync.whenData((districts) {
-        try {
-          selectedDistrictObj = districts.firstWhere(
-            (d) => d.name == _selectedDistrict,
-          );
-        } catch (_) {
-          selectedDistrictObj = null;
-        }
-      });
       ref
           .read(marketDirectoryProvider((
-            districtId: selectedDistrictObj?.id,
-            commodityId: _selectedCommodity?.id,
+            districtId: null,
+            commodityId: null,
+            search: _searchQuery,
           )).notifier)
           .loadNextPage();
     }
@@ -58,25 +45,10 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final statesAsync = ref.watch(statesProvider);
-    final commoditiesAsync = ref.watch(commoditiesProvider);
-
-    final districtsAsync = ref.watch(districtsProvider(_selectedState));
-
-    District? selectedDistrictObj;
-    districtsAsync.whenData((districts) {
-      try {
-        selectedDistrictObj = districts.firstWhere(
-          (d) => d.name == _selectedDistrict,
-        );
-      } catch (_) {
-        selectedDistrictObj = null;
-      }
-    });
-
     final marketsAsync = ref.watch(marketDirectoryProvider((
-      districtId: selectedDistrictObj?.id,
-      commodityId: _selectedCommodity?.id,
+      districtId: null,
+      commodityId: null,
+      search: _searchQuery,
     )));
 
     return Scaffold(
@@ -90,48 +62,24 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: FilterDropdownButton<String>(
-                    hintText: 'State',
-                    items: statesAsync.value ?? [],
-                    value: _selectedState,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedState = value;
-                        _selectedDistrict = null;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilterDropdownButton<String>(
-                    hintText: 'District',
-                    items: districtsAsync.maybeWhen(
-                      data: (districts) => districts.map((d) => d.name).toList(),
-                      orElse: () => [],
-                    ),
-                    value: _selectedDistrict,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDistrict = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            FilterDropdownButton<Commodity>(
-              hintText: 'Commodity',
-              items: commoditiesAsync.value ?? [],
-              itemToString: (c) => c.name,
-              value: _selectedCommodity,
+            SearchBar(
+              hintText: 'Search by market, district or state...',
+              leading: const Icon(Icons.search),
+              trailing: _searchQuery.isNotEmpty
+                  ? [
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    ]
+                  : null,
               onChanged: (value) {
                 setState(() {
-                  _selectedCommodity = value;
+                  _searchQuery = value;
                 });
               },
             ),

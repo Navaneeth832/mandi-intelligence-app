@@ -97,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         titleSpacing: 16,
         title: const Row(
           children: [
-            Icon(Icons.agriculture_outlined, color: Color(0xFF0A4A1C), size: 32),
+            Icon(Icons.agriculture_outlined, color: Color.fromARGB(255, 39, 163, 45), size: 32),
             SizedBox(width: 8),
             Text(
               '',
@@ -122,24 +122,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
  Widget _buildBody() {
-    final filter = Filter(
-      crop: _selectedCrop,
-      state: _selectedState,
-       district: _selectedDistrict,
-      market: _selectedMarket,
-    );
+    // HomeScreen always shows default, unfiltered data
+    const filter = Filter();
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
     return RefreshIndicator(
       onRefresh: () async {
-        final filter = Filter(
-          crop: _selectedCrop,
-          state: _selectedState,
-          district: _selectedDistrict,
-          market: _selectedMarket,
-        );
-
-        ref.invalidate(mandiPricesProvider(filter));
+        // Refresh the default filter
+        ref.invalidate(mandiPricesProvider(const Filter()));
         ref.invalidate(statesProvider);
         ref.invalidate(commoditiesProvider);
         ref.invalidate(marketsProvider);
@@ -187,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Stack(
               alignment: Alignment.center,
               children: [
-                Icon(Icons.hexagon, color: Color(0xFF14522B), size: 68),
+                Icon(Icons.hexagon, color: Color.fromARGB(255, 39, 163, 45), size: 68),
                 Icon(Icons.arrow_upward, color: Colors.white, size: 32),
               ],
             ),
@@ -286,6 +276,7 @@ Widget _buildFilterSection() {
                   hintText: 'Crop',
                   items: cropsAsync.value ?? [],
                   value: _selectedCrop,
+                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedCrop = value;
@@ -300,6 +291,7 @@ Widget _buildFilterSection() {
                   hintText: 'State',
                   items: statesAsync.value ?? [],
                   value: _selectedState,
+                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedState = value;
@@ -325,7 +317,7 @@ Widget _buildFilterSection() {
                   ),
 
                   value: _selectedDistrict,
-
+                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedDistrict = value;
@@ -341,6 +333,7 @@ Widget _buildFilterSection() {
                   hintText: 'Market',
                   items: marketsAsync.value ?? [],
                   value: _selectedMarket,
+                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedMarket = value;
@@ -358,7 +351,7 @@ Widget _buildFilterSection() {
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF14522B),
+                  backgroundColor: const Color.fromARGB(255, 39, 163, 45),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -372,8 +365,8 @@ Widget _buildFilterSection() {
             Expanded(
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF14522B),
-                  side: const BorderSide(color: Color(0xFF14522B), width: 1.5),
+                  foregroundColor: const Color.fromARGB(255, 39, 163, 45),
+                  side: const BorderSide(color: Color.fromARGB(255, 39, 163, 45), width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
@@ -395,12 +388,8 @@ Widget _buildFilterSection() {
   }
 
   Widget _buildPriceList() {
-    final filter = Filter(
-      crop: _selectedCrop,
-      state: _selectedState,
-      district: _selectedDistrict,
-      market: _selectedMarket,
-    );
+    // HomeScreen always shows default, unfiltered data
+    const filter = Filter();
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
 
@@ -440,7 +429,7 @@ Widget _buildFilterSection() {
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFF14522B),
+                    color: Color.fromARGB(255, 39, 163, 45),
                   ),
                 ),
               ),

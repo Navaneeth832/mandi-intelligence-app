@@ -111,6 +111,7 @@ class MandiApiService {
     int pageSize = 50,
     int? districtId,
     int? commodityId,
+    String? search,
   }) async {
     final queryParams = <String, String>{
       'page': page.toString(),
@@ -121,6 +122,9 @@ class MandiApiService {
     }
     if (commodityId != null) {
       queryParams['commodity_id'] = commodityId.toString();
+    }
+    if (search != null && search.isNotEmpty) {
+      queryParams['search'] = search;
     }
     
     final uri = Uri.parse('$baseUrl/market-directory').replace(queryParameters: queryParams);
