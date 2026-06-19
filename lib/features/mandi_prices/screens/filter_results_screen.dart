@@ -172,12 +172,11 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
               const SizedBox(width: 8),
               InkWell(
                 onTap: () {
-                  Navigator.pushAndRemoveUntil(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const HomeScreen(),
+                      builder: (_) => const FilterResultsScreen(),
                     ),
-                    (route) => false,
                   );
                 },
                 child: const Text(

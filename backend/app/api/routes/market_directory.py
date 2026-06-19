@@ -6,6 +6,8 @@ from app.core.database import get_db
 from app.models.market import Market
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
+from app.models.district import District
+from app.models.state import State
 
 router = APIRouter()
 
@@ -15,15 +17,24 @@ def get_market_directory(
     page_size: int = 50,
     district_id: int | None = None,
     commodity_id: int | None = None,
+    search: str | None = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(Market)
+    query = db.query(Market).join(District).join(State)
     
     if district_id:
         query = query.filter(Market.district_id == district_id)
         
     if commodity_id:
         query = query.join(MandiPrice).filter(MandiPrice.commodity_id == commodity_id)
+    
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (Market.name.ilike(search_filter)) |
+            (District.name.ilike(search_filter)) |
+            (State.name.ilike(search_filter))
+        )
         
     total_records = query.count()
     total_pages = (total_records + page_size - 1) // page_size

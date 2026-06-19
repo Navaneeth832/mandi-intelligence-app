@@ -32,7 +32,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
+      /*appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -60,7 +60,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         shape: const Border(
           bottom: BorderSide(color: Color(0xFFEFEFEF), width: 1),
         ),
-      ),
+      ),*/
       body: SafeArea(
       top: false,
       child: SingleChildScrollView(

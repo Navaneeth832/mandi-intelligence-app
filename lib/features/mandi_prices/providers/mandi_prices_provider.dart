@@ -144,15 +144,16 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
   final MandiRepository _repository;
   final int? districtId;
   final int? commodityId;
+  final String? search;
 
-  MarketDirectoryNotifier(this._repository, this.districtId, this.commodityId) : super(const AsyncValue.loading()) {
+  MarketDirectoryNotifier(this._repository, this.districtId, this.commodityId, this.search) : super(const AsyncValue.loading()) {
     loadInitialPage();
   }
 
   Future<void> loadInitialPage() async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.getMarketDirectory(districtId, commodityId, page: 1);
+      final response = await _repository.getMarketDirectory(districtId, commodityId, search: search, page: 1);
       state = AsyncValue.data(MarketDirectoryState(
         items: response.data,
         currentPage: response.page,
@@ -175,7 +176,7 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
 
     try {
       final nextPage = currentState.currentPage + 1;
-      final response = await _repository.getMarketDirectory(districtId, commodityId, page: nextPage);
+      final response = await _repository.getMarketDirectory(districtId, commodityId, search: search, page: nextPage);
 
       state = AsyncValue.data(MarketDirectoryState(
         items: [...currentState.items, ...response.data],
@@ -193,9 +194,9 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
 final marketDirectoryProvider = StateNotifierProvider.family<
     MarketDirectoryNotifier,
     AsyncValue<MarketDirectoryState>,
-    ({int? districtId, int? commodityId})>((ref, filter) {
+    ({int? districtId, int? commodityId, String? search})>((ref, filter) {
   final repository = ref.watch(mandiRepositoryProvider);
-  return MarketDirectoryNotifier(repository, filter.districtId, filter.commodityId);
+  return MarketDirectoryNotifier(repository, filter.districtId, filter.commodityId, filter.search);
 });
 
 // --- HELPER PROVIDERS (Existing) ---

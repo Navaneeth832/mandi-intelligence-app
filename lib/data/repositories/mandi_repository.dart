@@ -69,12 +69,14 @@ class MandiRepository {
     int? commodityId, {
     int page = 1,
     int pageSize = 50,
+    String? search,
   }) {
     return _apiService.getMarketDirectory(
       page: page,
       pageSize: pageSize,
       districtId: districtId,
       commodityId: commodityId,
+      search: search,
     );
   }
 
