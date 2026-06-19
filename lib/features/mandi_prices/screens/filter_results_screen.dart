@@ -12,12 +12,14 @@ import 'home_screen.dart';
 class FilterResultsScreen extends ConsumerStatefulWidget {
   final String? selectedCrop;
   final String? selectedState;
+  final String? selectedDistrict;
   final String? selectedMarket;
 
   const FilterResultsScreen({
     super.key,
     this.selectedCrop,
     this.selectedState,
+    this.selectedDistrict,
     this.selectedMarket,
   });
 
@@ -48,6 +50,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
       final filter = Filter(
         crop: widget.selectedCrop,
         state: widget.selectedState,
+        district: widget.selectedDistrict,
         market: widget.selectedMarket,
       );
       ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
@@ -59,12 +62,14 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
     final filter = Filter(
       crop: widget.selectedCrop,
       state: widget.selectedState,
+      district: widget.selectedDistrict,
       market: widget.selectedMarket,
     );
     final filteredPricesAsync = ref.watch(mandiPricesProvider(filter));
     final activeFilters = {
       'crop': widget.selectedCrop,
       'state': widget.selectedState,
+      'district': widget.selectedDistrict,
       'market': widget.selectedMarket,
     };
     final activeFiltersList =
@@ -220,6 +225,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                         onTap: () {
                           String? crop = widget.selectedCrop;
                           String? state = widget.selectedState;
+                          String? district = widget.selectedDistrict;
                           String? market = widget.selectedMarket;
 
                           switch (entry.key) {
@@ -228,6 +234,12 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                               break;
                             case 'state':
                               state = null;
+                              district = null; // Clear dependent too
+                              market = null;
+                              break;
+                            case 'district':
+                              district = null;
+                              market = null;
                               break;
                             case 'market':
                               market = null;
@@ -240,6 +252,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                               builder: (_) => FilterResultsScreen(
                                 selectedCrop: crop,
                                 selectedState: state,
+                                selectedDistrict: district,
                                 selectedMarket: market,
                               ),
                             ),
@@ -443,30 +456,6 @@ class _FilterResultCard extends StatelessWidget {
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                               color: Color.fromARGB(255, 39, 163, 45),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: trendBgColor,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(trendIcon,
-                                    size: 12, color: trendTextColor),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '$trendPrefix${price.priceChange.abs().toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: trendTextColor,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ],

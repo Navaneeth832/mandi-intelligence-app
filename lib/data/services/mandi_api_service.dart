@@ -12,12 +12,13 @@ import '../models/commodity_model.dart';
 class MandiApiService {
 
   static const String baseUrl =
-      'http://192.168.29.253:8000';
+      'http://mandi-intelligence-app-production.up.railway.app';
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,
     int pageSize = 20,
     String? state,
+    String? district,
     String? market,
     String? commodity,
   }) async {
@@ -28,6 +29,9 @@ class MandiApiService {
 
     if (state != null && state.isNotEmpty) {
       queryParams['state'] = state;
+    }
+    if (district != null && district.isNotEmpty) {
+      queryParams['district'] = district;
     }
     if (market != null && market.isNotEmpty) {
       queryParams['market'] = market;

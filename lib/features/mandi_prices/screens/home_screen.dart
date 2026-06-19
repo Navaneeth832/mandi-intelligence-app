@@ -61,6 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         builder: (context) => FilterResultsScreen(
           selectedCrop: _selectedCrop,
           selectedState: _selectedState,
+          selectedDistrict: _selectedDistrict,
           selectedMarket: _selectedMarket,
         ),
       ),

@@ -44,6 +44,7 @@ class MandiRepository {
       page: page,
       pageSize: pageSize,
       state: filter.state,
+      district: filter.district,
       market: filter.market,
       commodity: filter.crop,
     );
