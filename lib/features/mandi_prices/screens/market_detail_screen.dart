@@ -89,11 +89,12 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF111111),
+                                height: 1.25,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 4,
+                              overflow: TextOverflow.visible,
                             ),
-                            const SizedBox(height: 6),
+                                                        const SizedBox(height: 6),
                             Text(
                               'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
                               style: TextStyle(
@@ -190,100 +191,125 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
   }
 
   Widget _buildPriceSummaryCard(BuildContext context) {
-    final priceChangeColor = widget.price.priceChange >= 0
-        ? const Color(0xFF007A33)
-        : const Color(0xFFD32F2F);
-    final priceChangeIcon = widget.price.priceChange >= 0
-        ? Icons.trending_up
-        : Icons.trending_down;
+    return FutureBuilder<List<PriceHistory>>(
+      future: _historyFuture,
+      builder: (context, snapshot) {
+        final history = snapshot.data ?? [];
+        
+        double? percentageChange;
+        if (history.length >= 2) {
+          final oldPrice = history.first.modalPrice;
+          final newPrice = history.last.modalPrice;
+          if (oldPrice != 0) {
+            percentageChange = ((newPrice - oldPrice) / oldPrice) * 100;
+          }
+        } else if (history.length == 1) {
+          percentageChange = 0.0;
+        }
 
-    final currencyFormatter = NumberFormat.currency(
-        locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+        final priceChangeColor = (percentageChange == null || percentageChange == 0)
+            ? const Color(0xFF616161) // Neutral
+            : (percentageChange > 0 ? const Color(0xFF007A33) : const Color(0xFFD32F2F));
+            
+        final priceChangeIcon = (percentageChange == null || percentageChange == 0)
+            ? null
+            : (percentageChange > 0 ? Icons.arrow_upward : Icons.arrow_downward);
 
-    final formattedModal =
-        '${currencyFormatter.format(widget.price.modalPrice)} / Quintal';
-    final formattedHigh =
-        '${currencyFormatter.format(widget.price.highPrice)} / Quintal';
-    final formattedLow =
-        '${currencyFormatter.format(widget.price.lowPrice)} / Quintal';
+        final displayPercentage = percentageChange != null
+            ? '${percentageChange >= 0 ? "+" : ""}${percentageChange.toStringAsFixed(2)}%'
+            : 'N/A';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        final currencyFormatter = NumberFormat.currency(
+            locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+        final formattedModal =
+            '${currencyFormatter.format(widget.price.modalPrice)} / Quintal';
+        final formattedHigh =
+            '${currencyFormatter.format(widget.price.highPrice)} / Quintal';
+        final formattedLow =
+            '${currencyFormatter.format(widget.price.lowPrice)} / Quintal';
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                const Text(
-                  'Price Summary',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111111),
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: priceChangeColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(priceChangeIcon, color: priceChangeColor, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${widget.price.priceChange >= 0 ? "+" : ""}${widget.price.priceChange.toStringAsFixed(2)}%',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: priceChangeColor,
-                        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Price Summary',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111111),
                       ),
+                    ),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: priceChangeColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          if (priceChangeIcon != null) ...[
+                            Icon(priceChangeIcon, color: priceChangeColor, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            displayPercentage,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: priceChangeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildPriceRow('High Price', formattedHigh,
+                          priceColor: const Color(0xFF007A33)),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Divider(color: Color(0xFFE2E8F0), height: 1),
+                      ),
+                      _buildPriceRow(
+                        'Modal Price',
+                        formattedModal,
+                        priceColor: const Color(0xFF111111),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Divider(color: Color(0xFFE2E8F0), height: 1),
+                      ),
+                      _buildPriceRow('Low Price', formattedLow,
+                          priceColor: const Color(0xFFD32F2F)),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _buildPriceRow('High Price', formattedHigh,
-                      priceColor: const Color(0xFF007A33)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Divider(color: Color(0xFFE2E8F0), height: 1),
-                  ),
-                  _buildPriceRow(
-                    'Modal Price',
-                    formattedModal,
-                    priceColor: const Color(0xFF111111),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Divider(color: Color(0xFFE2E8F0), height: 1),
-                  ),
-                  _buildPriceRow('Low Price', formattedLow,
-                      priceColor: const Color(0xFFD32F2F)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
