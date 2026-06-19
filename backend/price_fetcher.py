@@ -16,8 +16,6 @@ import price_fetcher_v2
 import market_normalizer
 import variety_normalizer
 import commodity_normalizer
-
-# Expose validate_records so other components can import it directly from here
 from price_fetcher_v1 import validate_records
 
 try:
@@ -36,6 +34,7 @@ def parse_date(date_str):
 def resolve_group_from_commodity(commodity_name):
     try:
         import Data_mapping
+        #change here
         comm_map = getattr(Data_mapping, "Commodity", getattr(Data_mapping, "commodity", {}))
         group_map = getattr(Data_mapping, "CommodityGroup", getattr(Data_mapping, "commodity_group", getattr(Data_mapping, "cmdt_group", {})))
     except ImportError:
@@ -241,7 +240,7 @@ def fetch_and_display_mandi_data(
     return valid_records
 
 
-if __name__ == "__main__":
+def run_fetching_pipeline():
     active_crop_log = ["Tomato","Paddy(Common)","Coffee","Water Melon","Tapioca","Potato"]
     for crop in active_crop_log:
         # Normalize crop name
@@ -255,3 +254,7 @@ if __name__ == "__main__":
                 fetch_and_display_mandi_data(commodity=canonical["canonical_name"])
             except Exception as e:
                 print(f"[ERROR] API call failed for '{canonical['canonical_name']}' (original query '{crop}'): {e}")
+
+
+if __name__ == "__main__":
+    run_fetching_pipeline()
