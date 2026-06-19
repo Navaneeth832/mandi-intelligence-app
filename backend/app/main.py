@@ -12,7 +12,7 @@ from app.api.routes import price_history
 from app.api.routes import districts
 from app.api.routes import market_directory
 
-
+'''
 async def fetch_prices_task():
     """Periodic task to fetch live mandi prices every 1 hour."""
     while True:
@@ -51,8 +51,8 @@ async def lifespan(app: FastAPI):
     mapping_task.cancel()
     await asyncio.gather(price_task, mapping_task, return_exceptions=True)
 
-
-app = FastAPI(lifespan=lifespan)
+'''
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
