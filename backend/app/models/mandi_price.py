@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
-
+from zoneinfo import ZoneInfo
 from app.core.database import Base
 
 
@@ -61,7 +61,7 @@ class MandiPrice(Base):
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None)
     )
 
     commodity = relationship(
