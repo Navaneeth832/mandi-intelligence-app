@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-
+from datetime import date
 from app.core.database import get_db
 from app.models.market import Market
 from app.models.mandi_price import MandiPrice
@@ -38,8 +38,8 @@ def get_market_commodities(
     market_id: int,
     db: Session = Depends(get_db)
 ):
-    # Get the latest arrival date to ensure we are only looking at today's/latest commodities
-    latest_date = get_latest_arrival_date(db)
+    # Get the latest arrival date to ensure we are only looking at today's commodities
+    latest_date = date.today()
     
     # Query distinct commodities for the market on the latest date
     commodities = (
