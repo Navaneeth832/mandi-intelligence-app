@@ -15,6 +15,7 @@ router = APIRouter()
 def get_market_directory(
     page: int = 1,
     page_size: int = 50,
+    state_id: int | None = None,
     district_id: int | None = None,
     commodity_id: int | None = None,
     search: str | None = None,
@@ -29,6 +30,9 @@ def get_market_directory(
         .join(District)
         .join(State)
     )
+
+    if state_id:
+        query = query.filter(District.state_id == state_id)
 
     if district_id:
         query = query.filter(Market.district_id == district_id)

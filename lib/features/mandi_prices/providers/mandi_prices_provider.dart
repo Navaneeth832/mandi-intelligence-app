@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mandi_intelligence_app/data/models/state_model.dart';
 import '../../../data/models/mandi_price.dart';
 import '../../../data/models/paginated_mandi_response.dart';
 import '../../../data/models/paginated_market_response.dart';
@@ -107,7 +108,7 @@ final mandiPricesProvider = StateNotifierProvider.family<MandiPricesNotifier, As
   return MandiPricesNotifier(repository, filter);
 });
 
-// --- MARKET DIRECTORY PROVIDER (New) ---
+// --- MARKET DIRECTORY PROVIDER (Updated) ---
 class MarketDirectoryState {
   final List<MarketDirectory> items;
   final int currentPage;
@@ -142,18 +143,19 @@ class MarketDirectoryState {
 
 class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectoryState>> {
   final MandiRepository _repository;
+  final int? stateId;
   final int? districtId;
   final int? commodityId;
   final String? search;
 
-  MarketDirectoryNotifier(this._repository, this.districtId, this.commodityId, this.search) : super(const AsyncValue.loading()) {
+  MarketDirectoryNotifier(this._repository, this.stateId, this.districtId, this.commodityId, this.search) : super(const AsyncValue.loading()) {
     loadInitialPage();
   }
 
   Future<void> loadInitialPage() async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.getMarketDirectory(districtId, commodityId, search: search, page: 1);
+      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: 1);
       state = AsyncValue.data(MarketDirectoryState(
         items: response.data,
         currentPage: response.page,
@@ -176,7 +178,7 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
 
     try {
       final nextPage = currentState.currentPage + 1;
-      final response = await _repository.getMarketDirectory(districtId, commodityId, search: search, page: nextPage);
+      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: nextPage);
 
       state = AsyncValue.data(MarketDirectoryState(
         items: [...currentState.items, ...response.data],
@@ -194,14 +196,14 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
 final marketDirectoryProvider = StateNotifierProvider.family<
     MarketDirectoryNotifier,
     AsyncValue<MarketDirectoryState>,
-    ({int? districtId, int? commodityId, String? search})>((ref, filter) {
+    ({int? stateId, int? districtId, int? commodityId, String? search})>((ref, filter) {
   final repository = ref.watch(mandiRepositoryProvider);
-  return MarketDirectoryNotifier(repository, filter.districtId, filter.commodityId, filter.search);
+  return MarketDirectoryNotifier(repository, filter.stateId, filter.districtId, filter.commodityId, filter.search);
 });
 
-// --- HELPER PROVIDERS (Existing) ---
+// --- HELPER PROVIDERS (Updated) ---
 final statesProvider =
-    FutureProvider<List<String>>((ref) {
+    FutureProvider<List<StateModel>>((ref) {
   final repository =
       ref.watch(mandiRepositoryProvider);
 
@@ -237,12 +239,12 @@ final marketsProvider =
 final districtsProvider =
     FutureProvider.family<
         List<District>,
-        String?>((ref, state) {
+        int?>((ref, stateId) {
 
   final repository =
       ref.watch(mandiRepositoryProvider);
 
   return repository.getDistricts(
-    state,
+    stateId: stateId,
   );
 });

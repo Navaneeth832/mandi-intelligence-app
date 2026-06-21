@@ -15,6 +15,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
+  int? _selectedStateId;
+  int? _selectedDistrictId;
 
   @override
   void initState() {
@@ -23,12 +25,17 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   }
 
   void _onScroll() {
+    if (_selectedStateId == null) return; // Don't load if state not selected
+
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref
-          .read(marketDirectoryProvider(
-                  (districtId: null, commodityId: null, search: _searchQuery))
-              .notifier)
+          .read(marketDirectoryProvider((
+            stateId: _selectedStateId,
+            districtId: _selectedDistrictId,
+            commodityId: null,
+            search: _searchQuery
+          )).notifier)
           .loadNextPage();
     }
   }
@@ -42,8 +49,17 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final marketsState = ref.watch(marketDirectoryProvider(
-        (districtId: null, commodityId: null, search: _searchQuery)));
+    final statesAsync = ref.watch(statesProvider);
+    final districtsAsync = ref.watch(districtsProvider(_selectedStateId));
+    
+    final marketsState = _selectedStateId == null
+        ? null
+        : ref.watch(marketDirectoryProvider((
+            stateId: _selectedStateId,
+            districtId: _selectedDistrictId,
+            commodityId: null,
+            search: _searchQuery
+          )));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -56,32 +72,67 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    'Market Directory',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE2F9EB),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.agriculture_rounded,
-                          size: 20,
-                          color: Color(0xFF14522B),
+                      Expanded(
+                        child: statesAsync.when(
+                          data: (states) => DropdownButtonFormField<int>(
+                            value: _selectedStateId,
+                            hint: const Text('Select State'),
+                            isExpanded: true,
+                            items: states.map((state) => DropdownMenuItem(
+                              value: state.id,
+                              child: Text(state.name),
+                            )).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedStateId = value;
+                                _selectedDistrictId = null;
+                              });
+                            },
+                          ),
+                          loading: () => const CircularProgressIndicator(),
+                          error: (_, __) => const Text('Error loading states'),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Market Directory',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _selectedStateId == null
+                            ? const Text('Select state first')
+                            : districtsAsync.when(
+                                data: (districts) => DropdownButtonFormField<int>(
+                                  value: _selectedDistrictId,
+                                  hint: const Text('Select District'),
+                                  isExpanded: true,
+                                  items: [
+                                    const DropdownMenuItem(value: null, child: Text('All Districts')),
+                                    ...districts.map((d) => DropdownMenuItem(
+                                      value: d.id,
+                                      child: Text(d.name),
+                                    ))
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedDistrictId = value;
+                                    });
+                                  },
+                                ),
+                                loading: () => const CircularProgressIndicator(),
+                                error: (_, __) => const Text('Error loading districts'),
+                              ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F3F4),
@@ -108,7 +159,9 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
             ),
             // Market List
             Expanded(
-              child: marketsState.when(
+              child: _selectedStateId == null
+                  ? const Center(child: Text('Please select a state to see markets'))
+                  : marketsState!.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: Color(0xFF14522B))),
                 error: (err, stack) => Center(child: Text('Error: $err')),

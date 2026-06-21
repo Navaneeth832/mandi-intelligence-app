@@ -8,11 +8,12 @@ import '../models/district_model.dart';
 import '../models/paginated_mandi_response.dart';
 import '../models/paginated_market_response.dart';
 import '../models/commodity_model.dart';
+import '../models/state_model.dart';
 
 class MandiApiService {
 
   static const String baseUrl =
-      'http://mandi-intelligence-app-production.up.railway.app';
+      'http://192.168.29.253:8000';
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,
@@ -55,7 +56,7 @@ class MandiApiService {
 
     return PaginatedMandiResponse.fromJson(data);
   }
-  Future<List<String>> getStates() async {
+  Future<List<StateModel>> getStates() async {
     final response = await http.get(
       Uri.parse('$baseUrl/states'),
     );
@@ -68,7 +69,7 @@ class MandiApiService {
         jsonDecode(response.body);
 
     return data
-        .map((e) => e['name'].toString())
+        .map((e) => StateModel.fromJson(e))
         .toList();
   }
   
@@ -113,6 +114,7 @@ class MandiApiService {
   Future<PaginatedMarketResponse> getMarketDirectory({
     int page = 1,
     int pageSize = 50,
+    int? stateId,
     int? districtId,
     int? commodityId,
     String? search,
@@ -121,6 +123,9 @@ class MandiApiService {
       'page': page.toString(),
       'page_size': pageSize.toString(),
     };
+    if (stateId != null) {
+      queryParams['state_id'] = stateId.toString();
+    }
     if (districtId != null) {
       queryParams['district_id'] = districtId.toString();
     }
@@ -170,19 +175,23 @@ class MandiApiService {
         )
         .toList();
   }
-  Future<List<District>> getDistricts(
+  Future<List<District>> getDistricts({
     String? state,
-  ) async {
+    int? stateId,
+  }) async {
     String endpoint = '/districts';
+    final queryParams = <String, String>{};
 
-    if (state != null &&
-        state.isNotEmpty) {
-      endpoint += '?state=$state';
+    if (state != null && state.isNotEmpty) {
+      queryParams['state'] = state;
+    }
+    if (stateId != null) {
+      queryParams['state_id'] = stateId.toString();
     }
 
-    final response = await http.get(
-      Uri.parse('$baseUrl$endpoint'),
-    );
+    final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+
+    final response = await http.get(uri);
 
     if (response.statusCode != 200) {
       throw Exception(

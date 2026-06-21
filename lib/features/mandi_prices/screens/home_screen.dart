@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mandi_intelligence_app/data/models/state_model.dart';
 import '../../../data/models/mandi_price.dart';
 import '../../../data/models/district_model.dart';
 import '../widgets/price_card.dart';
@@ -238,10 +239,16 @@ Widget _buildFilterSection() {
   // ...
 
     final statesAsync = ref.watch(statesProvider);
-    final districtsAsync =
-    ref.watch(
+    
+    // Find selected state ID to pass to districtsProvider
+    final selectedStateObj = statesAsync.value?.firstWhere(
+      (s) => s.name == _selectedState,
+      orElse: () => StateModel(id: -1, name: ''),
+    );
+    
+    final districtsAsync = ref.watch(
       districtsProvider(
-        _selectedState,
+        selectedStateObj?.id != -1 ? selectedStateObj?.id : null,
       ),
     );
     District? selectedDistrictObj;
@@ -277,7 +284,6 @@ Widget _buildFilterSection() {
                   hintText: 'Crop',
                   items: cropsAsync.value ?? [],
                   value: _selectedCrop,
-                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedCrop = value;
@@ -288,14 +294,17 @@ Widget _buildFilterSection() {
               const SizedBox(width: 12),
               SizedBox(
                 width: 160,
-                child: FilterDropdownButton<String>(
+                child: FilterDropdownButton<StateModel>(
                   hintText: 'State',
                   items: statesAsync.value ?? [],
-                  value: _selectedState,
-                  showAllOption: true,
+                  itemToString: (state) => state.name,
+                  value: statesAsync.value?.firstWhere(
+                    (s) => s.name == _selectedState,
+                    orElse: () => StateModel(id: -1, name: _selectedState ?? ''),
+                  ),
                   onChanged: (value) {
                     setState(() {
-                      _selectedState = value;
+                      _selectedState = value?.name;
                       _selectedDistrict = null;
                       _selectedMarket = null;
                     });
@@ -308,7 +317,6 @@ Widget _buildFilterSection() {
                 width: 160,
                 child: FilterDropdownButton<String>(
                   hintText: 'District',
-
                   items: districtsAsync.maybeWhen(
                     data: (districts) =>
                         districts
@@ -318,7 +326,6 @@ Widget _buildFilterSection() {
                   ),
 
                   value: _selectedDistrict,
-                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedDistrict = value;
@@ -334,7 +341,6 @@ Widget _buildFilterSection() {
                   hintText: 'Market',
                   items: marketsAsync.value ?? [],
                   value: _selectedMarket,
-                  showAllOption: true,
                   onChanged: (value) {
                     setState(() {
                       _selectedMarket = value;

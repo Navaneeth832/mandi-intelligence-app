@@ -6,6 +6,7 @@ import '../models/paginated_mandi_response.dart';
 import '../models/paginated_market_response.dart';
 import '../models/district_model.dart';
 import '../models/commodity_model.dart';
+import '../models/state_model.dart';
 
 // TASK 5: TESTING CONTROLS
 const bool simulateLoading = false;
@@ -49,7 +50,7 @@ class MandiRepository {
       commodity: filter.crop,
     );
   }
-  Future<List<String>> getStates() {
+  Future<List<StateModel>> getStates() {
     return _apiService.getStates();
   }
 
@@ -66,6 +67,7 @@ class MandiRepository {
 }
 
   Future<PaginatedMarketResponse> getMarketDirectory(
+    int? stateId,
     int? districtId,
     int? commodityId, {
     int page = 1,
@@ -75,6 +77,7 @@ class MandiRepository {
     return _apiService.getMarketDirectory(
       page: page,
       pageSize: pageSize,
+      stateId: stateId,
       districtId: districtId,
       commodityId: commodityId,
       search: search,
@@ -91,11 +94,13 @@ class MandiRepository {
       market: market,
     );
   }
-  Future<List<District>> getDistricts(
-  String? state,
-) {
+  Future<List<District>> getDistricts({
+    String? state,
+    int? stateId,
+  }) {
   return _apiService.getDistricts(
-    state,
+    state: state,
+    stateId: stateId,
   );
 }
 }

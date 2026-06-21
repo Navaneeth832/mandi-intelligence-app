@@ -55,47 +55,37 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final List<DropdownMenuEntry<T>> entries = [];
-    if (widget.showAllOption) {
-      // We use a cast here because the value must be T, but for "All" we want to conceptually pass null.
-      // Since T is String, we use the _allLabel string as the value.
-      entries.add(DropdownMenuEntry<T>(
-        value: _allLabel as T,
-        label: _allLabel,
-      ));
-    }
+    final List<DropdownMenuEntry<T?>> entries = [];
 
-    entries.addAll(widget.items.map<DropdownMenuEntry<T>>((T item) {
+    entries.addAll(widget.items.map<DropdownMenuEntry<T?>>((T item) {
       final label = widget.itemToString != null ? widget.itemToString!(item) : item.toString();
-      return DropdownMenuEntry<T>(
+      return DropdownMenuEntry<T?>(
         value: item,
         label: label,
       );
     }).toList());
 
-    return DropdownMenu<T>(
+    return DropdownMenu<T?>(
       controller: _controller,
       width: 160,
+      menuHeight: 350,
       textStyle: const TextStyle(
         color: Color(0xFF111111),
         fontWeight: FontWeight.w500,
         fontSize: 14,
       ),
       onSelected: (value) {
-        if (value == _allLabel as T) {
-          widget.onChanged(null);
-        } else {
-          widget.onChanged(value);
-        }
+        widget.onChanged(value);
       },
       hintText: widget.hintText,
       enableSearch: true,
       enableFilter: true,
       requestFocusOnTap: true,
       inputDecorationTheme: InputDecorationTheme(
+        isDense: false,
         filled: true,
         fillColor: const Color(0xFFE2E5E8),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24.0),
           borderSide: const BorderSide(color: Color(0xFFC4C7CC), width: 1.0),

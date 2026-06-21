@@ -84,17 +84,33 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${widget.price.market}, ${widget.price.district}',
+                              widget.price.commodity,
                               style: const TextStyle(
-                                fontSize: 22,
+                                fontSize: 26,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF111111),
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              '${widget.price.market}, ${widget.price.district}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF555555),
                                 height: 1.25,
                               ),
-                              maxLines: 4,
-                              overflow: TextOverflow.visible,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                                                        const SizedBox(height: 6),
+
+                            const SizedBox(height: 6),
+
                             Text(
                               'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
                               style: TextStyle(

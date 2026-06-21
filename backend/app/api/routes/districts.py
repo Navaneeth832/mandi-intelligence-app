@@ -14,6 +14,7 @@ router = APIRouter()
 @router.get("/")
 def get_districts(
     state: str | None = None,
+    state_id: int | None = None,
     db: Session = Depends(get_db)
 ):
     query = (
@@ -24,6 +25,11 @@ def get_districts(
     if state:
         query = query.filter(
             State.name == state
+        )
+    
+    if state_id:
+        query = query.filter(
+            District.state_id == state_id
         )
 
     return (
