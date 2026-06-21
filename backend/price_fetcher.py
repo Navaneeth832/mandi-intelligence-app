@@ -161,7 +161,7 @@ def fetch_and_display_mandi_data(
     variety=None,
     grade=None,
     arrival_date=datetime.today().strftime("%d/%m/%Y"),
-    limit=10000,
+    limit=2,
     offset=0,
     group=None
 ):
@@ -241,19 +241,31 @@ def fetch_and_display_mandi_data(
 
 
 def run_fetching_pipeline():
-    active_crop_log = ["Tomato","Paddy(Common)","Coffee","Water Melon","Tapioca","Potato"]
-    for crop in active_crop_log:
-        # Normalize crop name
-        norm_result = commodity_normalizer.resolve_commodities(crop)
-        if isinstance(norm_result, dict) and norm_result.get("error") == "commodity_not_found":
-            print(f"[INFO] No commodity mapping found for '{crop}'. Skipping.")
-            continue
-        # Process up to top 5 canonical names (already limited by resolver)
-        for canonical in norm_result[:5]:
-            try:
-                fetch_and_display_mandi_data(commodity=canonical["canonical_name"])
-            except Exception as e:
-                print(f"[ERROR] API call failed for '{canonical['canonical_name']}' (original query '{crop}'): {e}")
+    if not SessionLocal:
+        print("[Warning] Database SessionLocal not available. Skipping fetching pipeline.")
+        return
+
+    db = SessionLocal()
+    try:
+        from app.models.active_commodity import ActiveCommodity
+        active_commodities = db.query(ActiveCommodity).all()
+        for active in active_commodities:
+            crop = active.commodity.name
+            # Normalize crop name
+            norm_result = commodity_normalizer.resolve_commodities(crop)
+            if isinstance(norm_result, dict) and norm_result.get("error") == "commodity_not_found":
+                print(f"[INFO] No commodity mapping found for '{crop}'. Skipping.")
+                continue
+            # Process up to top 5 canonical names (already limited by resolver)
+            for canonical in norm_result[:5]:
+                try:
+                    fetch_and_display_mandi_data(commodity=canonical["canonical_name"])
+                except Exception as e:
+                    print(f"[ERROR] API call failed for '{canonical['canonical_name']}' (original query '{crop}'): {e}")
+    except Exception as e:
+        print(f"[ERROR] Failed to run fetching pipeline: {e}")
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":
