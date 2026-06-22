@@ -116,6 +116,31 @@ def insert_data():
         session.commit()
         print(f"Grades     — inserted: {inserted}, updated: {updated}, unchanged: {unchanged}")
 
+        # Active Commodities Seeding
+        print("\nSeeding Active Commodities...")
+        from app.models.active_commodity import ActiveCommodity
+        import commodity_normalizer
+        active_crops = ["Banana", "Brinjal", "Chilli", "Coriander", "Cotton", "Ginger", "Groundnut",
+        "Maize", "Paddy", "Pineapple", "Sugarcane", "Sunflower", "Tomato", "Turmeric", "Water Melon", "Wheat"]
+        active_count = 0
+        for crop_name in active_crops:
+            norm_result = commodity_normalizer.resolve_commodities(crop_name)
+            if isinstance(norm_result, list) and len(norm_result) > 0:
+                best_match = norm_result[0]
+                commodity_id = best_match["cmdt_id"]
+                commodity = session.query(Commodity).get(commodity_id)
+                if commodity:
+                    exists = session.query(ActiveCommodity).filter(ActiveCommodity.commodity_id == commodity.id).first()
+                    if not exists:
+                        active_comm = ActiveCommodity(commodity_id=commodity.id)
+                        session.add(active_comm)
+                        active_count += 1
+                        print(f"Matched active crop '{crop_name}' -> '{commodity.name}' (ID: {commodity.id})")
+            else:
+                print(f"[Warning] Could not resolve active crop '{crop_name}' to any commodity.")
+        session.commit()
+        print(f"Active Commodities seeded — inserted: {active_count}")
+
         print("\nAll reference data synced successfully.")
 
     except Exception as e:

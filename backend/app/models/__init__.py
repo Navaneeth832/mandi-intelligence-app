@@ -6,3 +6,4 @@ from .commodity import Commodity
 from .variety import Variety
 from .grade import Grade
 from .mandi_price import MandiPrice
+from .active_commodity import ActiveCommodity

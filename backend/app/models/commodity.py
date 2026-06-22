@@ -36,3 +36,10 @@ class Commodity(Base):
         "MandiPrice",
         back_populates="commodity"
     )
+
+    active_commodity = relationship(
+        "ActiveCommodity",
+        back_populates="commodity",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
