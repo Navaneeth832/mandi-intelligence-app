@@ -86,18 +86,33 @@ def get_markets(
     )
     
     
+def matches_state(state_api: str, state_db: str) -> bool:
+    s_api = state_api.strip().lower()
+    s_db = state_db.strip().lower()
+    if s_api == s_db:
+        return True
+    aliases = {
+        "kerala": "keralam",
+        "delhi": "nct of delhi",
+        "pondicherry": "pondicherry",
+    }
+    return aliases.get(s_api, s_api) == aliases.get(s_db, s_db)
+
+
 @router.get("/{market_id}/commodities")
 def get_market_commodities(
     market_id: int,
     db: Session = Depends(get_db)
 ):
-    # 1. 🕵️‍♂️ Grab the Market Name from the DB using the ID
-    # (Assuming you have a Market model. If not, you'll need a mapping dict!)
+    # 1. 🕵️‍♂️ Grab the Market Name and State from the DB using the ID
     market = db.query(Market).filter(Market.id == market_id).first()
     if not market:
         raise HTTPException(status_code=404, detail="Market not found, bro! 🛑")
     
     market_name = market.name.strip()
+    state_name = None
+    if market.district and market.district.state:
+        state_name = market.district.state.name
 
     # 2. 🚀 FAST PATH: Try the live Data.gov.in API first
     try:
@@ -118,16 +133,26 @@ def get_market_commodities(
         records = response.json().get("records", [])
         
         if records:
-            # Set comprehension for O(1) deduplication + sorting 🧠
-            unique_commodities = sorted({r["commodity"] for r in records if "commodity" in r})
+            # Filter in-memory to ensure matching market name and state name
+            filtered_records = []
+            for r in records:
+                r_market = r.get("market", "").strip().lower()
+                r_state = r.get("state", "")
+                if r_market == market_name.lower():
+                    if not state_name or matches_state(r_state, state_name):
+                        filtered_records.append(r)
             
-            return {
-                "market_id": market_id,
-                "market_name": market_name,
-                "commodity_count": len(unique_commodities),
-                "commodities": unique_commodities,
-                "source": "live_api"  # Flexing that we got fresh data 🎯
-            }
+            if filtered_records:
+                # Set comprehension for O(1) deduplication + sorting 🧠
+                unique_commodities = sorted({r["commodity"] for r in filtered_records if "commodity" in r})
+                
+                return {
+                    "market_id": market_id,
+                    "market_name": market_name,
+                    "commodity_count": len(unique_commodities),
+                    "commodities": unique_commodities,
+                    "source": "live_api"  # Flexing that we got fresh data 🎯
+                }
             
     except Exception as e:
         # Log the failure silently without crashing the app 🤫
