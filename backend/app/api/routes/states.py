@@ -17,7 +17,6 @@ def get_states(db: Session = Depends(get_db)):
         db.query(State)
         .join(District, State.id == District.state_id)
         .join(Market, District.id == Market.district_id)
-        .join(MandiPrice, Market.id == MandiPrice.market_id)
         .distinct()
         .all()
     )

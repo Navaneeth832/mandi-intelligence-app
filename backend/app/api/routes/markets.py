@@ -71,7 +71,6 @@ def get_markets(
 ):
     query = (
         db.query(Market)
-        .join(MandiPrice, Market.id == MandiPrice.market_id)
     )
 
     if district_id:
