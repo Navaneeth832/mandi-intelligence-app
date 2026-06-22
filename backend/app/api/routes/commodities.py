@@ -15,8 +15,6 @@ def get_commodities(db: Session = Depends(get_db)):
     today = date.today()
     return (
         db.query(Commodity)
-        .join(MandiPrice, Commodity.id == MandiPrice.commodity_id)
-        .filter(MandiPrice.arrival_date == today)
         .distinct()
         .all()
     )

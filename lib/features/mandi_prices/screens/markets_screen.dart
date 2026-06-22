@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/market_directory_model.dart';
+import '../../../data/models/state_model.dart';
+import '../../../data/models/district_model.dart';
 import '../providers/mandi_prices_provider.dart';
+import '../widgets/filter_dropdown.dart';
 import 'market_directory_detail_screen.dart';
 
 class MarketsScreen extends ConsumerStatefulWidget {
@@ -15,8 +18,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
-  int? _selectedStateId;
-  int? _selectedDistrictId;
+  StateModel? _selectedState;
+  District? _selectedDistrict;
 
   @override
   void initState() {
@@ -25,14 +28,14 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   }
 
   void _onScroll() {
-    if (_selectedStateId == null) return; // Don't load if state not selected
+    if (_selectedState == null) return; // Don't load if state not selected
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref
           .read(marketDirectoryProvider((
-            stateId: _selectedStateId,
-            districtId: _selectedDistrictId,
+            stateId: _selectedState!.id,
+            districtId: _selectedDistrict?.id,
             commodityId: null,
             search: _searchQuery
           )).notifier)
@@ -50,13 +53,13 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   @override
   Widget build(BuildContext context) {
     final statesAsync = ref.watch(statesProvider);
-    final districtsAsync = ref.watch(districtsProvider(_selectedStateId));
+    final districtsAsync = ref.watch(districtsProvider(_selectedState?.id));
     
-    final marketsState = _selectedStateId == null
+    final marketsState = _selectedState == null
         ? null
         : ref.watch(marketDirectoryProvider((
-            stateId: _selectedStateId,
-            districtId: _selectedDistrictId,
+            stateId: _selectedState!.id,
+            districtId: _selectedDistrict?.id,
             commodityId: null,
             search: _searchQuery
           )));
@@ -85,18 +88,15 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                     children: [
                       Expanded(
                         child: statesAsync.when(
-                          data: (states) => DropdownButtonFormField<int>(
-                            value: _selectedStateId,
-                            hint: const Text('Select State'),
-                            isExpanded: true,
-                            items: states.map((state) => DropdownMenuItem(
-                              value: state.id,
-                              child: Text(state.name),
-                            )).toList(),
+                          data: (states) => FilterDropdownButton<StateModel>(
+                            hintText: 'Select State',
+                            items: states,
+                            value: _selectedState,
+                            itemToString: (s) => s.name,
                             onChanged: (value) {
                               setState(() {
-                                _selectedStateId = value;
-                                _selectedDistrictId = null;
+                                _selectedState = value;
+                                _selectedDistrict = null;
                               });
                             },
                           ),
@@ -106,23 +106,17 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _selectedStateId == null
+                        child: _selectedState == null
                             ? const Text('Select state first')
                             : districtsAsync.when(
-                                data: (districts) => DropdownButtonFormField<int>(
-                                  value: _selectedDistrictId,
-                                  hint: const Text('Select District'),
-                                  isExpanded: true,
-                                  items: [
-                                    const DropdownMenuItem(value: null, child: Text('All Districts')),
-                                    ...districts.map((d) => DropdownMenuItem(
-                                      value: d.id,
-                                      child: Text(d.name),
-                                    ))
-                                  ],
+                                data: (districts) => FilterDropdownButton<District>(
+                                  hintText: 'All Districts',
+                                  items: districts,
+                                  value: _selectedDistrict,
+                                  itemToString: (d) => d.name,
                                   onChanged: (value) {
                                     setState(() {
-                                      _selectedDistrictId = value;
+                                      _selectedDistrict = value;
                                     });
                                   },
                                 ),
@@ -159,7 +153,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
             ),
             // Market List
             Expanded(
-              child: _selectedStateId == null
+              child: _selectedState == null
                   ? const Center(child: Text('Please select a state to see markets'))
                   : marketsState!.when(
                 loading: () => const Center(

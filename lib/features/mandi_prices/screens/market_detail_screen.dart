@@ -141,7 +141,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF4A5568),
                             ),
-                            maxLines: 1,
+                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),

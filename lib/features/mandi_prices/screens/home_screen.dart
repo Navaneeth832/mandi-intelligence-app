@@ -151,12 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               pricesAsync.maybeWhen(
                 data: (state) =>
                     state.items.isNotEmpty
-                        ? state.items
-                            .map((p) => p.createdAt)
-                            .reduce(
-                              (a, b) =>
-                                  a.isAfter(b) ? a : b,
-                            )
+                        ? state.items.first.createdAt
                         : DateTime.now(),
                 orElse: () => DateTime.now(),
               ),
@@ -281,7 +276,7 @@ Widget _buildFilterSection() {
               SizedBox(
                 width: 160,
                 child: FilterDropdownButton<String>(
-                  hintText: 'Crop',
+                  hintText: 'Commodity',
                   items: cropsAsync.value ?? [],
                   value: _selectedCrop,
                   onChanged: (value) {
@@ -298,10 +293,11 @@ Widget _buildFilterSection() {
                   hintText: 'State',
                   items: statesAsync.value ?? [],
                   itemToString: (state) => state.name,
-                  value: statesAsync.value?.firstWhere(
-                    (s) => s.name == _selectedState,
-                    orElse: () => StateModel(id: -1, name: _selectedState ?? ''),
-                  ),
+                  value: _selectedState == null
+                    ? null
+                    : statesAsync.value?.firstWhere(
+                        (s) => s.name == _selectedState,
+                      ),
                   onChanged: (value) {
                     setState(() {
                       _selectedState = value?.name;

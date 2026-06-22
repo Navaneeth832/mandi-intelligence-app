@@ -1,5 +1,4 @@
 .dart_tool/
-build/
 .idea/
 *.iml
 hs_err_pid34400.log
@@ -11,3 +10,11 @@ backend/app/models/__pycache__/
 backend/app/__pycache__/
 backend/app/core/__pycache__/
 venv
+/build/*
+!/build/app/
+/build/app/*
+!/build/app/outputs/
+/build/app/outputs/*
+!/build/app/outputs/flutter-apk/
+/build/app/outputs/flutter-apk/*
+!/build/app/outputs/flutter-apk/app-release.apk
