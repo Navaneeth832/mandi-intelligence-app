@@ -35,6 +35,8 @@ def fetch_and_display_mandi_data_v2(
     market="[100002]",
     variety="[100007]",
     grade="[100003]",
+    from_date= datetime.today().strftime("%Y-%m-%d"),
+    to_date = datetime.today().strftime("%Y-%m-%d"),
     limit=10000,
     page=1
 ):
@@ -60,11 +62,24 @@ def fetch_and_display_mandi_data_v2(
         if db:
             db.close()
 
-    current_day = datetime.today().strftime("%Y-%m-%d")
+    # Convert from_date and to_date from %d/%m/%Y to %Y-%m-%d if they contain slashes
+    from_date_formatted = from_date
+    if from_date and "/" in from_date:
+        try:
+            from_date_formatted = datetime.strptime(from_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+
+    to_date_formatted = to_date
+    if to_date and "/" in to_date:
+        try:
+            to_date_formatted = datetime.strptime(to_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
 
     payload = {
-        "from_date": current_day,
-        "to_date": current_day,
+        "from_date": from_date_formatted,
+        "to_date": to_date_formatted,
         "data_type": "100006",
         "group": group_id,
         "commodity": commodity_id,

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date, timedelta
 
 from app.core.database import get_db
 
@@ -49,7 +49,7 @@ def get_mandi_prices(
                     for canonical in norm_result[:5]:
                         try:
                             print(f"[On-Demand Fetch] Triggering price fetch for '{canonical['canonical_name']}'...")
-                            fetch_and_display_mandi_data(commodity=canonical["canonical_name"])
+                            fetch_and_display_mandi_data(commodity=canonical["canonical_name"],to_date=date.today().strftime("%d/%m/%Y"),from_date=(date.today()-timedelta(days=7)).strftime("%d/%m/%Y"))
                         except Exception as e:
                             print(f"[ERROR] On-demand API fetch failed for '{canonical['canonical_name']}': {e}")
                 else:
@@ -79,9 +79,14 @@ def get_mandi_prices(
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
 
-    query = query.filter(
-        MandiPrice.arrival_date == date.today()
-    )
+    if commodity:
+        query = query.filter(
+            MandiPrice.arrival_date >= date.today() - timedelta(days=7)
+        )
+    else:
+        query = query.filter(
+            MandiPrice.arrival_date == date.today()
+        )
 
     if state:
         query = query.filter(
