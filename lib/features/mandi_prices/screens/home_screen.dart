@@ -56,6 +56,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _navigateToFilterResults() {
+    if (_selectedCrop == null &&
+      _selectedState == null &&
+      _selectedDistrict == null &&
+      _selectedMarket == null) {
+    return;
+  }
     Navigator.push(
       context,
       MaterialPageRoute(

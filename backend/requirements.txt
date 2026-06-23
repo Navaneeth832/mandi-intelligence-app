@@ -7,3 +7,4 @@ httpx
 datetime
 watchfiles
 requests
+tzdata

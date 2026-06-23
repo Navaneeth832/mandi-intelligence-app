@@ -100,7 +100,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                               });
                             },
                           ),
-                          loading: () => const CircularProgressIndicator(),
+                          loading: () => const Text('Loading states...'),
                           error: (_, __) => const Text('Error loading states'),
                         ),
                       ),
@@ -120,7 +120,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                                     });
                                   },
                                 ),
-                                loading: () => const CircularProgressIndicator(),
+                                loading: () => const Text('Loading districts...'),
                                 error: (_, __) => const Text('Error loading districts'),
                               ),
                       ),

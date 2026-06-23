@@ -62,105 +62,101 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         ),
       ),*/
       body: SafeArea(
-      top: false,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeaderImage(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.price.commodity,
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF111111),
-                                height: 1.2,
+        top: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderImage(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.price.commodity,
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF111111),
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              const SizedBox(height: 6),
+                              Text(
+                                '${widget.price.market}, ${widget.price.district}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF555555),
+                                  height: 1.25,
+                                ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          flex: 1,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFECEFF1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-
-                            const SizedBox(height: 6),
-
-                            Text(
-                              '${widget.price.market}, ${widget.price.district}',
+                            child: Text(
+                              widget.price.variety,
                               style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF555555),
-                                height: 1.25,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF4A5568),
                               ),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                             ),
-
-                            const SizedBox(height: 6),
-
-                            Text(
-                              'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFECEFF1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            widget.price.variety,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF4A5568),
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  _buildPriceSummaryCard(context),
-                  const SizedBox(height: 20),
-                  _buildTrendSection(),
-                  const SizedBox(height: 40),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildPriceSummaryCard(context),
+                    const SizedBox(height: 20),
+                    _buildTrendSection(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      )
     );
   }
 
@@ -210,31 +206,6 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     return FutureBuilder<List<PriceHistory>>(
       future: _historyFuture,
       builder: (context, snapshot) {
-        final history = snapshot.data ?? [];
-        
-        double? percentageChange;
-        if (history.length >= 2) {
-          final oldPrice = history.first.modalPrice;
-          final newPrice = history.last.modalPrice;
-          if (oldPrice != 0) {
-            percentageChange = ((newPrice - oldPrice) / oldPrice) * 100;
-          }
-        } else if (history.length == 1) {
-          percentageChange = 0.0;
-        }
-
-        final priceChangeColor = (percentageChange == null || percentageChange == 0)
-            ? const Color(0xFF616161) // Neutral
-            : (percentageChange > 0 ? const Color(0xFF007A33) : const Color(0xFFD32F2F));
-            
-        final priceChangeIcon = (percentageChange == null || percentageChange == 0)
-            ? null
-            : (percentageChange > 0 ? Icons.arrow_upward : Icons.arrow_downward);
-
-        final displayPercentage = percentageChange != null
-            ? '${percentageChange >= 0 ? "+" : ""}${percentageChange.toStringAsFixed(2)}%'
-            : 'N/A';
-
         final currencyFormatter = NumberFormat.currency(
             locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
@@ -255,39 +226,15 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Price Summary',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF111111),
-                      ),
-                    ),
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: priceChangeColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        children: [
-                          if (priceChangeIcon != null) ...[
-                            Icon(priceChangeIcon, color: priceChangeColor, size: 16),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            displayPercentage,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: priceChangeColor,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
@@ -329,50 +276,50 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     );
   }
 
- Widget _buildPriceRow(
-  String label,
-  String value, {
-  required Color priceColor,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16.0,
-      vertical: 12.0,
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Color(0xFF444444),
-              fontWeight: FontWeight.w500,
+  Widget _buildPriceRow(
+    String label,
+    String value, {
+    required Color priceColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 12.0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF444444),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: priceColor,
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: priceColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildTrendSection() {
     return FutureBuilder<List<PriceHistory>>(
@@ -380,7 +327,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
-            height: 250,
+            height: 350,
             child: Center(
               child: CircularProgressIndicator(color: Color(0xFF007A33)),
             ),
@@ -389,7 +336,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
 
         if (snapshot.hasError) {
           return SizedBox(
-            height: 250,
+            height: 350,
             child: Center(
               child: Text(
                 snapshot.error.toString(),
@@ -403,7 +350,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
 
         if (history.isEmpty) {
           return const SizedBox(
-            height: 250,
+            height: 350,
             child: Center(
               child: Text(
                 'No historical data available',
@@ -429,19 +376,47 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${history.length}-Day Trend',
-                  style: const TextStyle(
+                const Text(
+                  'Recent Trend',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF111111),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
+                Text(
+                  '${history.length} recent records • Missing dates may exist',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Modal Price (₹/Quintal)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 SizedBox(
-                  height: 190,
+                  height: 250,
                   child: BarChart(
                     _buildChartData(history),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    'Dates',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
                   ),
                 ),
               ],
@@ -456,8 +431,14 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     final maxPrice = history
         .map((e) => e.modalPrice)
         .reduce((a, b) => a > b ? a : b);
-        
+
     final interval = maxPrice > 0 ? (maxPrice / 3).ceilToDouble() : 1000.0;
+
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     return BarChartData(
       maxY: maxPrice * 1.2,
@@ -475,16 +456,13 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
           getTooltipColor: (group) => const Color(0xFF111111),
-          tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          tooltipPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           tooltipMargin: 8,
           getTooltipItem: (group, groupIndex, rod, rodIndex) {
             final date = history[group.x.toInt()].date;
             final dateStr = DateFormat('MMM d').format(date);
-            final priceStr = NumberFormat.currency(
-              locale: 'en_IN',
-              symbol: '₹',
-              decimalDigits: 0,
-            ).format(rod.toY);
+            final priceStr = currencyFormatter.format(rod.toY);
 
             return BarTooltipItem(
               '$priceStr\n',
@@ -517,27 +495,21 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 40,
+            reservedSize: 72,
             interval: interval,
             getTitlesWidget: (value, meta) {
-              if (value == 0) {
-                return SideTitleWidget(
-                  meta: meta, // 👈 FIXED HERE
-                  child: Text(
-                    '0',
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                  ),
-                );
-              }
               return SideTitleWidget(
-                meta: meta, // 👈 FIXED HERE
+                meta: meta,
+                space: 8.0,
                 child: Text(
-                  '${(value / 1000).toStringAsFixed(value % 1000 == 0 ? 0 : 1)}K',
+                  value == 0 ? '₹0' : currencyFormatter.format(value),
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w600,
                   ),
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
                 ),
               );
             },
@@ -546,14 +518,15 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 40,
+            reservedSize: 44,
             getTitlesWidget: (value, meta) {
               if (value.toInt() >= history.length || value.toInt() < 0) {
                 return const SizedBox();
               }
 
               return SideTitleWidget(
-                meta: meta, // 👈 FIXED HERE
+                meta: meta,
+                space: 12.0,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(
@@ -561,7 +534,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -579,7 +552,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
               barRods: [
                 BarChartRodData(
                   toY: entry.value.modalPrice,
-                  width: 24,
+                  width: 16,
                   color: const Color(0xFF007A33),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(6),

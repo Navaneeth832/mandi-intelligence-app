@@ -13,7 +13,7 @@ import '../models/state_model.dart';
 class MandiApiService {
 
   static const String baseUrl =
-      'https://mandi-intelligence-app-production.up.railway.app';//'http://192.168.29.253:8000';
+      /*'https://mandi-intelligence-app-production.up.railway.app';*/'http://192.168.29.253:8000';
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,
