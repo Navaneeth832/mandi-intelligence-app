@@ -121,7 +121,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 8.0),
                       child: Text(
-                        '${state.items.length} Results Found',
+                        '${state.totalRecords} Results Found',
                         style: const TextStyle(
                           color: Color(0xFF111111),
                           fontSize: 16,
@@ -180,7 +180,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const FilterResultsScreen(),
+                      builder: (_) => const HomeScreen(),
                     ),
                   );
                 },

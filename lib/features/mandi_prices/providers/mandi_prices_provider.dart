@@ -26,6 +26,7 @@ class MandiPricesState {
   final List<MandiPrice> items;
   final int currentPage;
   final int totalPages;
+  final int totalRecords;
   final bool isLoadingMore;
   final bool hasMorePages;
 
@@ -33,6 +34,7 @@ class MandiPricesState {
     required this.items,
     required this.currentPage,
     required this.totalPages,
+    required this.totalRecords,
     required this.isLoadingMore,
     required this.hasMorePages,
   });
@@ -41,6 +43,7 @@ class MandiPricesState {
     List<MandiPrice>? items,
     int? currentPage,
     int? totalPages,
+    int? totalRecords,
     bool? isLoadingMore,
     bool? hasMorePages,
   }) {
@@ -49,6 +52,7 @@ class MandiPricesState {
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      totalRecords: totalRecords ?? this.totalRecords,
       hasMorePages: hasMorePages ?? this.hasMorePages,
     );
   }
@@ -70,6 +74,7 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
         items: response.data,
         currentPage: response.page,
         totalPages: response.totalPages,
+        totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
       ));
@@ -94,6 +99,7 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
         items: [...currentState.items, ...response.data],
         currentPage: response.page,
         totalPages: response.totalPages,
+        totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
       ));
