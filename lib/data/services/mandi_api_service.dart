@@ -152,12 +152,17 @@ class MandiApiService {
   Future<List<PriceHistory>> getPriceHistory({
     required String commodity,
     required String market,
+    required String variety,
   }) async {
-    final response = await http.get(
-      Uri.parse(
-        '$baseUrl/price-history?commodity=$commodity&market=$market',
-      ),
-    );
+    final queryParams = {
+      'commodity': commodity,
+      'market': market,
+      'variety': variety,
+    };
+
+    final uri = Uri.parse('$baseUrl/price-history').replace(queryParameters: queryParams);
+    
+    final response = await http.get(uri);
 
     if (response.statusCode != 200) {
       throw Exception(

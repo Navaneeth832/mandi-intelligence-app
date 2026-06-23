@@ -88,10 +88,12 @@ class MandiRepository {
       getPriceHistory({
     required String commodity,
     required String market,
+    required String variety,
       }) {
     return _apiService.getPriceHistory(
       commodity: commodity,
       market: market,
+      variety: variety,
     );
   }
   Future<List<District>> getDistricts({

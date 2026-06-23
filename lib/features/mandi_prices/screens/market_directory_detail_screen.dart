@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/services/mandi_api_service.dart';
-import '../providers/filter_selection_provider.dart';
-import '../providers/filter_model.dart';
-import '../../../main_screen.dart';
+import 'filter_results_screen.dart';
 
 class MarketDirectoryDetailScreen extends ConsumerStatefulWidget {
   final MarketDirectory market;
@@ -237,14 +235,17 @@ Widget build(BuildContext context) {
                         .map(
                           (commodity) => InkWell(
                             onTap: () {
-                              ref.read(filterSelectionProvider.notifier).state = Filter(
-                                crop: commodity,
-                                state: widget.market.state,
-                                district: widget.market.district,
-                                market: widget.market.name,
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => FilterResultsScreen(
+                                    selectedCrop: commodity,
+                                    selectedState: widget.market.state,
+                                    selectedDistrict: widget.market.district,
+                                    selectedMarket: widget.market.name,
+                                  ),
+                                ),
                               );
-                              // Pop back to main and hope it updates home screen
-                              Navigator.popUntil(context, (route) => route.isFirst);
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(

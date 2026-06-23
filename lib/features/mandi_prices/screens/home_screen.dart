@@ -23,10 +23,18 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String? _selectedCrop;
-  String? _selectedState;
-  String? _selectedDistrict;
-  String? _selectedMarket;
+  // Temporary state for dropdowns
+  String? _tempCrop;
+  String? _tempState;
+  String? _tempDistrict;
+  String? _tempMarket;
+
+  // Actual applied filter state
+  String? _appliedCrop;
+  String? _appliedState;
+  String? _appliedDistrict;
+  String? _appliedMarket;
+
   late final ScrollController _scrollController;
 
   @override
@@ -34,20 +42,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-
-    // Listen for filter updates
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-       final filter = ref.read(filterSelectionProvider);
-       if (filter != null) {
-        setState(() {
-          _selectedCrop = filter.crop;
-          _selectedState = filter.state;
-          _selectedDistrict = filter.district;
-          _selectedMarket = filter.market;
-        });
-        ref.read(filterSelectionProvider.notifier).state = null;
-       }
-    });
   }
 
   @override
@@ -60,30 +54,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       final filter = Filter(
-        crop: _selectedCrop,
-        state: _selectedState,
-        district: _selectedDistrict,
-        market: _selectedMarket,
+        crop: _appliedCrop,
+        state: _appliedState,
+        district: _appliedDistrict,
+        market: _appliedMarket,
       );
       ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
     }
   }
 
+  void _applyFilters() {
+    setState(() {
+      _appliedCrop = _tempCrop;
+      _appliedState = _tempState;
+      _appliedDistrict = _tempDistrict;
+      _appliedMarket = _tempMarket;
+    });
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _tempCrop = null;
+      _tempState = null;
+      _tempDistrict = null;
+      _tempMarket = null;
+      _appliedCrop = null;
+      _appliedState = null;
+      _appliedDistrict = null;
+      _appliedMarket = null;
+    });
+  }
+
   void _navigateToFilterResults() {
-    if (_selectedCrop == null &&
-      _selectedState == null &&
-      _selectedDistrict == null &&
-      _selectedMarket == null) {
+    if (_appliedCrop == null &&
+      _appliedState == null &&
+      _appliedDistrict == null &&
+      _appliedMarket == null) {
     return;
   }
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => FilterResultsScreen(
-          selectedCrop: _selectedCrop,
-          selectedState: _selectedState,
-          selectedDistrict: _selectedDistrict,
-          selectedMarket: _selectedMarket,
+          selectedCrop: _appliedCrop,
+          selectedState: _appliedState,
+          selectedDistrict: _appliedDistrict,
+          selectedMarket: _appliedMarket,
         ),
       ),
     );
@@ -145,10 +161,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
  Widget _buildBody() {
     final filter = Filter(
-      crop: _selectedCrop,
-      state: _selectedState,
-      district: _selectedDistrict,
-      market: _selectedMarket,
+      crop: _appliedCrop,
+      state: _appliedState,
+      district: _appliedDistrict,
+      market: _appliedMarket,
     );
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
@@ -255,164 +271,159 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 Widget _buildFilterSection() {
   final cropsAsync = ref.watch(commodityListProvider);
-  // ...
+  final statesAsync = ref.watch(statesProvider);
 
-    final statesAsync = ref.watch(statesProvider);
-    
-    // Find selected state ID to pass to districtsProvider
-    final selectedStateObj = statesAsync.value?.firstWhere(
-      (s) => s.name == _selectedState,
-      orElse: () => StateModel(id: -1, name: ''),
-    );
-    
-    final districtsAsync = ref.watch(
-      districtsProvider(
-        selectedStateObj?.id != -1 ? selectedStateObj?.id : null,
-      ),
-    );
-    District? selectedDistrictObj;
+  final states = statesAsync.value ?? [];
 
+  // Find selected state ID
+  StateModel? selectedStateObj;
+  if (_tempState != null) {
+    try {
+      selectedStateObj = states.firstWhere((s) => s.name == _tempState);
+    } catch (_) {
+      selectedStateObj = null;
+    }
+  }
+
+  final districtsAsync = ref.watch(
+    districtsProvider(
+      selectedStateObj?.id,
+    ),
+  );
+
+  District? selectedDistrictObj;
+  if (_tempDistrict != null) {
     districtsAsync.whenData((districts) {
       try {
         selectedDistrictObj = districts.firstWhere(
-          (d) => d.name == _selectedDistrict,
+          (d) => d.name == _tempDistrict,
         );
       } catch (_) {
         selectedDistrictObj = null;
       }
     });
+  }
 
-    final marketsAsync =
-    ref.watch(
-      marketsProvider(
-        selectedDistrictObj?.id,
-      ),
-    );
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none,
-          child: Row(
-            children: [
-              SizedBox(
-                width: 160,
-                child: FilterDropdownButton<String>(
-                  hintText: 'Commodity',
-                  items: cropsAsync.value ?? [],
-                  value: _selectedCrop,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCrop = value;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 160,
-                child: FilterDropdownButton<StateModel>(
-                  hintText: 'State',
-                  items: statesAsync.value ?? [],
-                  itemToString: (state) => state.name,
-                  value: _selectedState == null
-                    ? null
-                    : statesAsync.value?.firstWhere(
-                        (s) => s.name == _selectedState,
-                      ),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedState = value?.name;
-                      _selectedDistrict = null;
-                      _selectedMarket = null;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
+  final marketsAsync =
+  ref.watch(
+    marketsProvider(
+      selectedDistrictObj?.id,
+    ),
+  );
 
-              SizedBox(
-                width: 160,
-                child: FilterDropdownButton<String>(
-                  hintText: 'District',
-                  items: districtsAsync.maybeWhen(
-                    data: (districts) =>
-                        districts
-                            .map((d) => d.name)
-                            .toList(),
-                    orElse: () => [],
-                  ),
-
-                  value: _selectedDistrict,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDistrict = value;
-                      _selectedMarket = null;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 160,
-                child: FilterDropdownButton<String>(
-                  hintText: 'Market',
-                  items: marketsAsync.value ?? [],
-                  value: _selectedMarket,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedMarket = value;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Buttons retained to keep your logic unbroken, styled to vibe with the UI
-        Row(
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        child: Row(
           children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 39, 163, 45),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: _navigateToFilterResults,
-                child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(
+              width: 160,
+              child: FilterDropdownButton<String>(
+                hintText: 'Commodity',
+                items: cropsAsync.value ?? [],
+                value: _tempCrop,
+                onChanged: (value) {
+                  setState(() {
+                    _tempCrop = value;
+                  });
+                },
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color.fromARGB(255, 39, 163, 45),
-                  side: const BorderSide(color: Color.fromARGB(255, 39, 163, 45), width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: () {
+            SizedBox(
+              width: 160,
+              child: FilterDropdownButton<StateModel>(
+                hintText: 'State',
+                items: states,
+                itemToString: (state) => state.name,
+                value: selectedStateObj,
+                onChanged: (value) {
                   setState(() {
-                    _selectedCrop = null;
-                    _selectedState = null;
-                    _selectedDistrict = null;
-                    _selectedMarket = null;
+                    _tempState = value?.name;
+                    _tempDistrict = null;
+                    _tempMarket = null;
                   });
                 },
-                child: const Text('Clear', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            SizedBox(
+              width: 160,
+              child: FilterDropdownButton<String>(
+                hintText: 'District',
+                items: districtsAsync.maybeWhen(
+                  data: (districts) =>
+                      districts
+                          .map((d) => d.name)
+                          .toList(),
+                  orElse: () => [],
+                ),
+
+                value: _tempDistrict,
+                onChanged: (value) {
+                  setState(() {
+                    _tempDistrict = value;
+                    _tempMarket = null;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 160,
+              child: FilterDropdownButton<String>(
+                hintText: 'Market',
+                items: marketsAsync.value ?? [],
+                value: _tempMarket,
+                onChanged: (value) {
+                  setState(() {
+                    _tempMarket = value;
+                  });
+                },
               ),
             ),
           ],
         ),
-      ],
-    );
-  }
+      ),
+      const SizedBox(height: 16),
+      // Buttons updated
+      Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 39, 163, 45),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: _applyFilters,
+              child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color.fromARGB(255, 39, 163, 45),
+                side: const BorderSide(color: Color.fromARGB(255, 39, 163, 45), width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: _clearFilters,
+              child: const Text('Clear All', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _buildPriceList(Filter filter) {
     final pricesAsync = ref.watch(mandiPricesProvider(filter));

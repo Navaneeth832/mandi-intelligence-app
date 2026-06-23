@@ -26,6 +26,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     _historyFuture = _repository.getPriceHistory(
       commodity: widget.price.commodity,
       market: widget.price.market,
+      variety: widget.price.variety,
     );
   }
 

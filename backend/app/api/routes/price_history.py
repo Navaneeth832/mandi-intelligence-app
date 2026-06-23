@@ -15,10 +15,11 @@ router = APIRouter()
 def get_price_history(
     commodity: str,
     market: str,
-    db: Session = Depends(get_db),
-):
-    return fetch_price_history(
-        db,
-        commodity,
-        market,
-    )
+    variety: str,
+    db: Session = Depends(get_db),):
+        return fetch_price_history(
+            db,
+            commodity,
+            market,
+            variety,
+        )
