@@ -14,7 +14,7 @@ import '../providers/mandi_prices_provider.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
-
+import '../providers/filter_selection_provider.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -34,6 +34,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+
+    // Listen for filter updates
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       final filter = ref.read(filterSelectionProvider);
+       if (filter != null) {
+        setState(() {
+          _selectedCrop = filter.crop;
+          _selectedState = filter.state;
+          _selectedDistrict = filter.district;
+          _selectedMarket = filter.market;
+        });
+        ref.read(filterSelectionProvider.notifier).state = null;
+       }
+    });
   }
 
   @override

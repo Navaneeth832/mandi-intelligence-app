@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/services/mandi_api_service.dart';
+import '../providers/filter_selection_provider.dart';
+import '../providers/filter_model.dart';
+import '../../../main_screen.dart';
 
-class MarketDirectoryDetailScreen extends StatefulWidget {
+class MarketDirectoryDetailScreen extends ConsumerStatefulWidget {
   final MarketDirectory market;
 
   const MarketDirectoryDetailScreen({super.key, required this.market});
 
   @override
-  State<MarketDirectoryDetailScreen> createState() => _MarketDirectoryDetailScreenState();
+  ConsumerState<MarketDirectoryDetailScreen> createState() => _MarketDirectoryDetailScreenState();
 }
 
-class _MarketDirectoryDetailScreenState extends State<MarketDirectoryDetailScreen> {
+class _MarketDirectoryDetailScreenState extends ConsumerState<MarketDirectoryDetailScreen> {
   late Future<Map<String, dynamic>> _commodityFuture;
 
   @override
@@ -231,24 +235,36 @@ Widget build(BuildContext context) {
                     runSpacing: 10,
                     children: commodities
                         .map(
-                          (commodity) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: const Color(0xFFB7E4C7),
+                          (commodity) => InkWell(
+                            onTap: () {
+                              ref.read(filterSelectionProvider.notifier).state = Filter(
+                                crop: commodity,
+                                state: widget.market.state,
+                                district: widget.market.district,
+                                market: widget.market.name,
+                              );
+                              // Pop back to main and hope it updates home screen
+                              Navigator.popUntil(context, (route) => route.isFirst);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
                               ),
-                            ),
-                            child: Text(
-                              commodity,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2E7D32),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: const Color(0xFFB7E4C7),
+                                ),
+                              ),
+                              child: Text(
+                                commodity,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2E7D32),
+                                ),
                               ),
                             ),
                           ),
