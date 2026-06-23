@@ -130,14 +130,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
  Widget _buildBody() {
-    // HomeScreen always shows default, unfiltered data
-    const filter = Filter();
+    final filter = Filter(
+      crop: _selectedCrop,
+      state: _selectedState,
+      district: _selectedDistrict,
+      market: _selectedMarket,
+    );
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
     return RefreshIndicator(
       onRefresh: () async {
-        // Refresh the default filter
-        ref.invalidate(mandiPricesProvider(const Filter()));
+        // Refresh the current filter
+        ref.invalidate(mandiPricesProvider(filter));
         ref.invalidate(statesProvider);
         ref.invalidate(commoditiesProvider);
         ref.invalidate(marketsProvider);
@@ -165,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 24),
           _buildFilterSection(),
           const SizedBox(height: 20),
-          _buildPriceList(),
+          _buildPriceList(filter),
         ],
       ),
     );
@@ -396,10 +400,7 @@ Widget _buildFilterSection() {
     );
   }
 
-  Widget _buildPriceList() {
-    // HomeScreen always shows default, unfiltered data
-    const filter = Filter();
-
+  Widget _buildPriceList(Filter filter) {
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
 
     return pricesAsync.when(

@@ -8,6 +8,7 @@ from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
 from app.models.district import District
 from app.models.state import State
+from datetime import date
 
 router = APIRouter()
 
@@ -21,6 +22,8 @@ def get_market_directory(
     search: str | None = None,
     db: Session = Depends(get_db)
 ):
+    today = date.today()
+
     query = (
         db.query(Market)
         .options(
@@ -29,6 +32,9 @@ def get_market_directory(
         )
         .join(District)
         .join(State)
+        .join(MandiPrice, MandiPrice.market_id == Market.id)
+        .filter(MandiPrice.arrival_date == today)
+        .distinct()
     )
 
     if state_id:
@@ -38,7 +44,7 @@ def get_market_directory(
         query = query.filter(Market.district_id == district_id)
 
     if commodity_id:
-        query = query.join(MandiPrice).filter(
+        query = query.filter(
             MandiPrice.commodity_id == commodity_id
         )
 

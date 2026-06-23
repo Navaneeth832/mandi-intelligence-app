@@ -177,13 +177,9 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
               const SizedBox(width: 8),
               InkWell(
                 onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HomeScreen(),
-                    ),
-                  );
-                },
+                // This pops all screens until it hits the very first one (your root screen)
+                Navigator.popUntil(context, (route) => route.isFirst);
+              },
                 child: const Text(
                   'Clear All',
                   style: TextStyle(
@@ -228,6 +224,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                           String? district = widget.selectedDistrict;
                           String? market = widget.selectedMarket;
 
+                          // 1. Remove the selected filter
                           switch (entry.key) {
                             case 'crop':
                               crop = null;
@@ -246,17 +243,24 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                               break;
                           }
 
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => FilterResultsScreen(
-                                selectedCrop: crop,
-                                selectedState: state,
-                                selectedDistrict: district,
-                                selectedMarket: market,
+                          // 2. CHECK IF ALL FILTERS ARE NOW GONE
+                          if (crop == null && state == null && district == null && market == null) {
+                            // If no filters are left, pop back to the Home Screen with the navbar! 🚀
+                            Navigator.popUntil(context, (route) => route.isFirst);
+                          } else {
+                            // If some filters still remain, just reload this screen with the updated filters
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FilterResultsScreen(
+                                  selectedCrop: crop,
+                                  selectedState: state,
+                                  selectedDistrict: district,
+                                  selectedMarket: market,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: const Icon(
                           Icons.close,

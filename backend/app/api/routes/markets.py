@@ -10,11 +10,12 @@ from app.repositories.mandi_price_repository import get_latest_arrival_date
 import logging
 import requests
 import urllib3
+from datetime import date
 
 router = APIRouter()
 
 
-
+'''
     
 # 🤫 Mute SSL warnings globally so they don't flood your server logs
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -33,8 +34,8 @@ GOV_API_SESSION.headers.update({
 GOV_API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 # PRO TIP: Move this key to your .env file in production! (e.g., os.getenv("DATA_GOV_API_KEY"))
 API_KEY = "579b464db66ec23bdd000001d9a99f360c4043a457f5d16ef11380d9" 
-
-'''@router.get("/{market_id}/commodities")
+'''
+@router.get("/{market_id}/commodities")
 def get_market_commodities(
     market_id: int,
     db: Session = Depends(get_db)
@@ -58,7 +59,7 @@ def get_market_commodities(
         "market_id": market_id,
         "commodity_count": len(commodity_names),
         "commodities": commodity_names
-    } temporarly removed '''
+    } 
 
 
 
@@ -72,7 +73,7 @@ def get_markets(
     query = (
         db.query(Market)
     )
-
+    today = date.today()
     if district_id:
         query = query.filter(
             Market.district_id == district_id
@@ -81,11 +82,14 @@ def get_markets(
     return (
         query
         .distinct()
+        .join(MandiPrice)
+        .filter(MandiPrice.market_id == Market.id)
+        .filter(MandiPrice.arrival_date == today)
         .order_by(Market.name)
         .all()
     )
     
-    
+'''
 def matches_state(state_api: str, state_db: str) -> bool:
     s_api = state_api.strip().lower()
     s_db = state_db.strip().lower()
@@ -178,4 +182,4 @@ def get_market_commodities(
         "commodity_count": len(commodity_names),
         "commodities": commodity_names,
         "source": "database_fallback" # Letting the frontend know we used plan B 📉
-    }
+    }'''

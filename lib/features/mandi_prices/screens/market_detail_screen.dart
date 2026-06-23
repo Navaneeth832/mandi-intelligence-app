@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 import '../../../data/models/mandi_price.dart';
 import '../../../data/models/price_history.dart';
 import '../../../data/repositories/mandi_repository.dart';
@@ -206,6 +207,31 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     return FutureBuilder<List<PriceHistory>>(
       future: _historyFuture,
       builder: (context, snapshot) {
+        final history = snapshot.data ?? [];
+        
+        double? percentageChange;
+        if (history.length >= 2) {
+          final oldPrice = history.first.modalPrice;
+          final newPrice = history.last.modalPrice;
+          if (oldPrice != 0) {
+            percentageChange = ((newPrice - oldPrice) / oldPrice) * 100;
+          }
+        } else if (history.length == 1) {
+          percentageChange = 0.0;
+        }
+
+        final priceChangeColor = (percentageChange == null || percentageChange == 0)
+            ? const Color(0xFF616161) // Neutral
+            : (percentageChange > 0 ? const Color(0xFF007A33) : const Color(0xFFD32F2F));
+            
+        final priceChangeIcon = (percentageChange == null || percentageChange == 0)
+            ? null
+            : (percentageChange > 0 ? Icons.arrow_upward : Icons.arrow_downward);
+
+        final displayPercentage = percentageChange != null
+            ? '${percentageChange >= 0 ? "+" : ""}${percentageChange.toStringAsFixed(2)}%'
+            : 'N/A';
+
         final currencyFormatter = NumberFormat.currency(
             locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
@@ -225,11 +251,12 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Price Summary',
                       style: TextStyle(
                         fontSize: 16,
@@ -237,7 +264,40 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                         color: Color(0xFF111111),
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: priceChangeColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          if (priceChangeIcon != null) ...[
+                            Icon(priceChangeIcon, color: priceChangeColor, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            displayPercentage,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: priceChangeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
+                ),
+                const SizedBox(height: 4),
+                // Mentor's requested note about the percentage
+                Text(
+                  '*Trend indicates the overall price shift compared to the oldest available historic record.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -518,7 +578,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 44,
+            reservedSize: 50, // Increased size to allow room for angled text
             getTitlesWidget: (value, meta) {
               if (value.toInt() >= history.length || value.toInt() < 0) {
                 return const SizedBox();
@@ -527,14 +587,18 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
               return SideTitleWidget(
                 meta: meta,
                 space: 12.0,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    DateFormat('MMM d').format(history[value.toInt()].date),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w600,
+                // Rotating the text prevents overlapping when there are many dates
+                child: Transform.rotate(
+                  angle: -math.pi / 4, // Angles text 45 degrees
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      DateFormat('MMM d').format(history[value.toInt()].date),
+                      style: TextStyle(
+                        fontSize: 10, // Slightly smaller font for better fit
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

@@ -161,9 +161,8 @@ def fetch_and_display_mandi_data(
     commodity=None,
     variety=None,
     grade=None,
-    from_date= datetime.today().strftime("%d/%m/%Y"),
-    to_date= datetime.today().strftime("%d/%m/%Y"),
-    arrival_date=datetime.today().strftime("%d/%m/%Y"),
+    from_date= "21/06/2026",
+    to_date= "23/06/2026",
     limit=10000,
     offset=0,
     group=None

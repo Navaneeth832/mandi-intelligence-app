@@ -163,22 +163,39 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                   if (state.items.isEmpty) {
                     return const Center(child: Text('No markets found'));
                   }
-                  return ListView.separated(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      if (index < state.items.length) {
-                        final market = state.items[index];
-                        return _buildMarketCard(context, market);
-                      }
-                      return const Center(
-                          child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
-                      ));
-                    },
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          '${state.totalRecords} Markets Found',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            if (index < state.items.length) {
+                              final market = state.items[index];
+                              return _buildMarketCard(context, market);
+                            }
+                            return const Center(
+                                child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(),
+                            ));
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

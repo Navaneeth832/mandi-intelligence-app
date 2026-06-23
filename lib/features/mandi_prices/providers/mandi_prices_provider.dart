@@ -119,6 +119,7 @@ class MarketDirectoryState {
   final List<MarketDirectory> items;
   final int currentPage;
   final int totalPages;
+  final int totalRecords;
   final bool isLoadingMore;
   final bool hasMorePages;
 
@@ -126,6 +127,7 @@ class MarketDirectoryState {
     required this.items,
     required this.currentPage,
     required this.totalPages,
+    required this.totalRecords,
     required this.isLoadingMore,
     required this.hasMorePages,
   });
@@ -134,6 +136,7 @@ class MarketDirectoryState {
     List<MarketDirectory>? items,
     int? currentPage,
     int? totalPages,
+    int? totalRecords,
     bool? isLoadingMore,
     bool? hasMorePages,
   }) {
@@ -141,6 +144,7 @@ class MarketDirectoryState {
       items: items ?? this.items,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
+      totalRecords: totalRecords ?? this.totalRecords,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMorePages: hasMorePages ?? this.hasMorePages,
     );
@@ -166,6 +170,7 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
         items: response.data,
         currentPage: response.page,
         totalPages: response.totalPages,
+        totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
       ));
@@ -190,6 +195,7 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
         items: [...currentState.items, ...response.data],
         currentPage: response.page,
         totalPages: response.totalPages,
+        totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
       ));

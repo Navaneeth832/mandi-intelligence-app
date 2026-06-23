@@ -31,32 +31,6 @@ def get_mandi_prices(
 
     page_size = min(page_size, 100)
 
-    # --- Check Active Commodity and Fetch On-Demand if Needed ---
-    if commodity:
-        from app.models.active_commodity import ActiveCommodity
-        is_active = (
-            db.query(ActiveCommodity)
-            .join(Commodity, ActiveCommodity.commodity_id == Commodity.id)
-            .filter(Commodity.name.ilike(f"%{commodity}%"))
-            .first()
-        )
-        if not is_active:
-            try:
-                from price_fetcher import fetch_and_display_mandi_data
-                import commodity_normalizer
-                norm_result = commodity_normalizer.resolve_commodities(commodity)
-                if isinstance(norm_result, list) and len(norm_result) > 0:
-                    for canonical in norm_result[:5]:
-                        try:
-                            print(f"[On-Demand Fetch] Triggering price fetch for '{canonical['canonical_name']}'...")
-                            fetch_and_display_mandi_data(commodity=canonical["canonical_name"],to_date=date.today().strftime("%d/%m/%Y"),from_date=(date.today()-timedelta(days=7)).strftime("%d/%m/%Y"))
-                        except Exception as e:
-                            print(f"[ERROR] On-demand API fetch failed for '{canonical['canonical_name']}': {e}")
-                else:
-                    print(f"[INFO] No commodity mapping found for '{commodity}'. Skipping on-demand fetch.")
-            except Exception as e:
-                print(f"[ERROR] On-demand fetch failed initialization: {e}")
-
     query = (
         db.query(
             State.name.label("state"),
@@ -79,15 +53,9 @@ def get_mandi_prices(
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
 
-    if commodity:
-        query = query.filter(
-            MandiPrice.arrival_date >= date.today() - timedelta(days=7)
-        )
-    else:
-        query = query.filter(
-            MandiPrice.arrival_date == date.today()
-        )
-
+ 
+    query = query.filter(MandiPrice.arrival_date == date.today())
+    
     if state:
         query = query.filter(
             State.name.ilike(f"%{state}%")
