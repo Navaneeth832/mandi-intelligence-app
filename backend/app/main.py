@@ -26,7 +26,7 @@ async def fetch_prices_task():
         await asyncio.sleep(3600)
 
 
-'''async def generate_mapping_task():
+async def generate_mapping_task():
     """Periodic task to generate mappings every 12 hours."""
     await asyncio.sleep(50)
     while True:
@@ -38,7 +38,7 @@ async def fetch_prices_task():
         except Exception as e:
             print(f"[Scheduler Error] Task 2 generate_mapping encountered an error: {e}. Retrying in 12 hours.")
         await asyncio.sleep(12 * 3600)
-'''
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
