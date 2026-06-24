@@ -98,14 +98,14 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '${widget.price.market}, ${widget.price.district}',
+                                '${widget.price.market}, ${widget.price.district}, ${widget.price.state}',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF555555),
                                   height: 1.25,
                                 ),
-                                maxLines: 3,
+                                maxLines: 4,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 6),

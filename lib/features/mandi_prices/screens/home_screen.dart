@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mandi_intelligence_app/data/models/state_model.dart';
-import '../../../data/models/mandi_price.dart';
 import '../../../data/models/district_model.dart';
 import '../widgets/price_card.dart';
 import '../widgets/filter_dropdown.dart';
-import '../widgets/bottom_nav_bar.dart';
 import 'filter_results_screen.dart';
 import 'market_detail_screen.dart';
 import '../providers/filter_model.dart';
@@ -14,7 +12,6 @@ import '../providers/mandi_prices_provider.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
-import '../providers/filter_selection_provider.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -28,12 +25,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _tempState;
   String? _tempDistrict;
   String? _tempMarket;
-
-  // Actual applied filter state
-  String? _appliedCrop;
-  String? _appliedState;
-  String? _appliedDistrict;
-  String? _appliedMarket;
 
   late final ScrollController _scrollController;
 
@@ -53,23 +44,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      final filter = Filter(
-        crop: _appliedCrop,
-        state: _appliedState,
-        district: _appliedDistrict,
-        market: _appliedMarket,
-      );
+      const filter = Filter();
       ref.read(mandiPricesProvider(filter).notifier).loadNextPage();
     }
   }
 
   void _applyFilters() {
-    setState(() {
-      _appliedCrop = _tempCrop;
-      _appliedState = _tempState;
-      _appliedDistrict = _tempDistrict;
-      _appliedMarket = _tempMarket;
-    });
+    if (_tempCrop == null &&
+        _tempState == null &&
+        _tempDistrict == null &&
+        _tempMarket == null) {
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterResultsScreen(
+          selectedCrop: _tempCrop,
+          selectedState: _tempState,
+          selectedDistrict: _tempDistrict,
+          selectedMarket: _tempMarket,
+        ),
+      ),
+    );
   }
 
   void _clearFilters() {
@@ -78,32 +75,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _tempState = null;
       _tempDistrict = null;
       _tempMarket = null;
-      _appliedCrop = null;
-      _appliedState = null;
-      _appliedDistrict = null;
-      _appliedMarket = null;
     });
   }
 
-  void _navigateToFilterResults() {
-    if (_appliedCrop == null &&
-      _appliedState == null &&
-      _appliedDistrict == null &&
-      _appliedMarket == null) {
-    return;
-  }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FilterResultsScreen(
-          selectedCrop: _appliedCrop,
-          selectedState: _appliedState,
-          selectedDistrict: _appliedDistrict,
-          selectedMarket: _appliedMarket,
-        ),
-      ),
-    );
-  }
   String getRelativeTime(DateTime lastUpdated) {
     final now = DateTime.now();
     final difference = now.difference(lastUpdated);
@@ -160,12 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
  Widget _buildBody() {
-    final filter = Filter(
-      crop: _appliedCrop,
-      state: _appliedState,
-      district: _appliedDistrict,
-      market: _appliedMarket,
-    );
+    const filter = Filter();
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
     return RefreshIndicator(
