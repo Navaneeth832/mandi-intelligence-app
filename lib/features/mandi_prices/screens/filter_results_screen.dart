@@ -7,7 +7,6 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
-import 'home_screen.dart';
 
 class FilterResultsScreen extends ConsumerStatefulWidget {
   final String? selectedCrop;
@@ -24,7 +23,8 @@ class FilterResultsScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FilterResultsScreen> createState() => _FilterResultsScreenState();
+  ConsumerState<FilterResultsScreen> createState() =>
+      _FilterResultsScreenState();
 }
 
 class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
@@ -177,9 +177,9 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
               const SizedBox(width: 8),
               InkWell(
                 onTap: () {
-                // This pops all screens until it hits the very first one (your root screen)
-                Navigator.popUntil(context, (route) => route.isFirst);
-              },
+                  // This pops all screens until it hits the very first one (your root screen)
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                },
                 child: const Text(
                   'Clear All',
                   style: TextStyle(
@@ -188,6 +188,58 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                     fontSize: 14,
                   ),
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // NEAT INDICATOR LEGEND ADDED HERE 👇
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEAEAEA), // Commodity Color
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Commodity',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF666666),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 84, 152, 201), // Variety Color
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Variety',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF666666),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -244,9 +296,13 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                           }
 
                           // 2. CHECK IF ALL FILTERS ARE NOW GONE
-                          if (crop == null && state == null && district == null && market == null) {
+                          if (crop == null &&
+                              state == null &&
+                              district == null &&
+                              market == null) {
                             // If no filters are left, pop back to the Home Screen with the navbar! 🚀
-                            Navigator.popUntil(context, (route) => route.isFirst);
+                            Navigator.popUntil(
+                                context, (route) => route.isFirst);
                           } else {
                             // If some filters still remain, just reload this screen with the updated filters
                             Navigator.pushReplacement(
@@ -331,18 +387,18 @@ class _FilterResultCard extends StatelessWidget {
     String trendPrefix;
 
     if (price.priceChange > 0) {
-      trendBgColor = const Color(0xFFE8F5E9); 
-      trendTextColor = const Color(0xFF2E7D32); 
+      trendBgColor = const Color(0xFFE8F5E9);
+      trendTextColor = const Color(0xFF2E7D32);
       trendIcon = Icons.arrow_upward;
       trendPrefix = '';
     } else if (price.priceChange < 0) {
-      trendBgColor = const Color(0xFFFFEBEE); 
-      trendTextColor = const Color(0xFFD32F2F); 
+      trendBgColor = const Color(0xFFFFEBEE);
+      trendTextColor = const Color(0xFFD32F2F);
       trendIcon = Icons.arrow_downward;
       trendPrefix = '';
     } else {
-      trendBgColor = const Color(0xFFEEEEEE); 
-      trendTextColor = const Color(0xFF616161); 
+      trendBgColor = const Color(0xFFEEEEEE);
+      trendTextColor = const Color(0xFF616161);
       trendIcon = Icons.remove;
       trendPrefix = '';
     }
@@ -382,25 +438,51 @@ class _FilterResultCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                // UPDATED COMMODITY & VARIETY TAGS 👇
                 Flexible(
                   flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAEAEA),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      price.commodity,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF333333),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEAEAEA),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          price.commodity,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF333333),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(height: 6), // Spacer between tags
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 84, 152, 201), // Distinct blue color for variety
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          price.variety ?? 'N/A', // Assuming `variety` is a property on price
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1565C0), // Dark blue text for contrast
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

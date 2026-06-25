@@ -7,3 +7,6 @@ from .variety import Variety
 from .grade import Grade
 from .mandi_price import MandiPrice
 from .active_commodity import ActiveCommodity
+from app.models.user import User
+from app.models.user_crop_preference import UserCropPreference
+from app.models.refresh_token import RefreshToken

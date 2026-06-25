@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mandi_intelligence_app/data/models/state_model.dart';
 import '../../../data/models/mandi_price.dart';
-import '../../../data/models/paginated_mandi_response.dart';
-import '../../../data/models/paginated_market_response.dart';
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';

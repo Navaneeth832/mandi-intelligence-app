@@ -1,4 +1,3 @@
-import '../models/mandi_price.dart';
 import '../services/mandi_api_service.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 import '../models/price_history.dart';

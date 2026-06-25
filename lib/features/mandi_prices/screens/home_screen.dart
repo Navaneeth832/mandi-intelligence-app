@@ -50,12 +50,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _applyFilters() {
-    if (_tempCrop == null &&
-        _tempState == null &&
-        _tempDistrict == null &&
-        _tempMarket == null) {
-      return;
-    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -279,6 +273,10 @@ Widget _buildFilterSection() {
       selectedDistrictObj?.id,
     ),
   );
+  final bool hasFilters = _tempCrop != null || 
+                          _tempState != null || 
+                          _tempDistrict != null || 
+                          _tempMarket != null;
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,12 +364,15 @@ Widget _buildFilterSection() {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 39, 163, 45),
+                // Notice: disabled background/foreground colors are handled automatically
+                // by Material when onPressed is null, but you can override them here if needed!
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              onPressed: _applyFilters,
+              // 👇 The magic sauce goes right here 
+              onPressed: hasFilters ? _applyFilters : null,
               child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
@@ -384,7 +385,8 @@ Widget _buildFilterSection() {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              onPressed: _clearFilters,
+              // Optional: You can also disable the Clear button if there are no filters!
+              onPressed: hasFilters ? _clearFilters : null, 
               child: const Text('Clear All', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
