@@ -33,9 +33,30 @@ jobs:
 
       - run: flutter build apk --release
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: "3.x"
+
+      - name: Install QR Library
+        run: pip install qrcode[pil]
+
+      - name: Generate QR Code
+        run: |
+          python <<EOF
+          import qrcode
+      
+          url = "https://github.com/Navaneeth832/mandi-intelligence-app/releases/download/latest/app-release.apk"
+      
+          img = qrcode.make(url)
+          img.save("latest-release-qr.png")
+          EOF
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Latest APK
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            latest-release-qr.png
