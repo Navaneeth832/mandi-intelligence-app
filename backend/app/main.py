@@ -12,6 +12,8 @@ from app.api.routes import price_history
 from app.api.routes import districts
 from app.api.routes import market_directory
 from app.api.auth import router as auth_router
+from app.api.profile import router as profile_router
+from app.api.crop_preferences import router as crop_preferences_router
 
 '''
 async def fetch_prices_task():
@@ -117,3 +119,7 @@ app.include_router(
 )
 
 app.include_router(auth_router)
+
+app.include_router(profile_router)
+
+app.include_router(crop_preferences_router)

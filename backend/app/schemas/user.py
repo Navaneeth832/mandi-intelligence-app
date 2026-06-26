@@ -35,3 +35,11 @@ class UserResponse(BaseModel):
 
 class CropPreferenceUpdate(BaseModel):
     commodity_ids: List[int]
+    
+class CropPreferenceResponse(BaseModel):
+    commodity_id: int
+    commodity_name: str
+
+
+class CropPreferenceListResponse(BaseModel):
+    preferences: List[CropPreferenceResponse]

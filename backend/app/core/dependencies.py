@@ -23,9 +23,7 @@ def get_current_user(
             detail="Invalid token"
         )
 
-    user = db.query(User).filter(
-        User.id == payload["sub"]
-    ).first()
+    user = db.get(User, payload["sub"])
 
     if user is None:
         raise HTTPException(
