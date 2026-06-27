@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-
+import '../../core/constants/api_constants.dart';
 
 import '../models/price_history.dart';
 import '../models/district_model.dart';
@@ -12,8 +12,7 @@ import '../models/state_model.dart';
 
 class MandiApiService {
 
-  static const String baseUrl =
-      'https://mandi-intelligence-app-production.up.railway.app';//'http://192.168.29.253:8000';
+  static const String baseUrl = ApiConstants.baseUrl;
 
   Future<PaginatedMandiResponse> getMandiPrices({
     int page = 1,

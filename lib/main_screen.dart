@@ -4,6 +4,7 @@ import 'features/mandi_prices/screens/home_screen.dart';
 import 'features/mandi_prices/screens/markets_screen.dart';
 import 'features/mandi_prices/widgets/bottom_nav_bar.dart';
 import 'features/mandi_prices/providers/filter_selection_provider.dart';
+import 'features/auth/providers/auth_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -19,7 +20,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     const HomeScreen(),
     const MarketsScreen(),
     const Scaffold(body: Center(child: Text('Alerts Screen'))),
-    const Scaffold(body: Center(child: Text('Profile Screen'))),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -43,6 +44,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            ref.read(authProvider.notifier).logout();
+          },
+          child: const Text('Logout'),
+        ),
       ),
     );
   }

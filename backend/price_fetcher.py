@@ -161,8 +161,8 @@ def fetch_and_display_mandi_data(
     commodity=None,
     variety=None,
     grade=None,
-    from_date= datetime.today().strftime("%d/%m/%Y"),
-    to_date= datetime.today().strftime("%d/%m/%Y"),
+    from_date= None,
+    to_date= None,
     limit=10000,
     offset=0,
     group=None
@@ -189,10 +189,10 @@ def fetch_and_display_mandi_data(
         v2_args["variety"] = variety
     if grade is not None:
         v2_args["grade"] = grade
-    if to_date is not None:
-        v2_args["to_date"] = to_date
-    if from_date is not None:
-        v2_args["from_date"] = from_date
+    if to_date is None:
+        v2_args["to_date"] = datetime.today().strftime("%d/%m/%Y")
+    if from_date is None:
+        v2_args["from_date"] = datetime.today().strftime("%d/%m/%Y")
     if limit:
         v2_args["limit"] = limit
 

@@ -226,7 +226,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                     width: 10,
                     height: 10,
                     decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 84, 152, 201), // Variety Color
+                      color: Color.fromARGB(255, 47, 229, 95), // Variety Color
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -468,7 +468,7 @@ class _FilterResultCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 84, 152, 201), // Distinct blue color for variety
+                          color: const Color.fromARGB(255, 47, 229, 95), 
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
@@ -476,7 +476,7 @@ class _FilterResultCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1565C0), // Dark blue text for contrast
+                            color: Color(0xFF333333), 
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

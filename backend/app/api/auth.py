@@ -29,7 +29,7 @@ def register(
         )
 
 
-@router.post("/login")
+@router.post("/login")#, response_model=LoginResponse)
 def login(
     user: UserLogin,
     db: Session = Depends(get_db)
