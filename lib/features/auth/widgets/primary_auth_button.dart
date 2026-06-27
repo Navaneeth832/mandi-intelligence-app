@@ -17,7 +17,7 @@ class PrimaryAuthButton extends StatelessWidget {
     this.isDisabled = false,
   });
 
-  static const Color _primaryGreen = Color(0xFF006B33);
+  static const Color _primaryGreen = Color.fromARGB(255, 26, 152, 9);
 
   @override
   Widget build(BuildContext context) {
