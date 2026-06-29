@@ -20,19 +20,51 @@ class AuthRepository {
   }
 
   Future<AuthResponse> login(LoginRequest request) async {
-    final response = await _apiService.login(request);
-    if (response.accessToken != null) {
-      await _storage.write(key: _tokenKey, value: response.accessToken);
-    }
-    return response;
-  }
+        await _storage.deleteAll();
+
+        final response = await _apiService.login(request);
+
+        if (response.accessToken != null) {
+          await _storage.write(
+            key: _tokenKey,
+            value: response.accessToken!,
+          );
+        }
+
+        return response;
+      }
 
   Future<void> logout() async {
-    await _storage.delete(key: _tokenKey);
+    await _storage.deleteAll();
   }
 
   Future<String?> getToken() async {
     return await _storage.read(key: _tokenKey);
+  }
+
+  Future<UserProfile?> getProfile() async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+    final response = await _apiService.getProfile(token);
+    return response.user;
+  }
+
+  Future<List<dynamic>> getPreferredCrops() async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+    return await _apiService.getPreferredCrops(token);
+  }
+
+  Future<void> updateProfile(Map<String, dynamic> body) async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+    await _apiService.updateProfile(token, body);
+  }
+
+  Future<void> savePreferredCrops(List<int> cropIds) async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+    await _apiService.savePreferredCrops(token, cropIds);
   }
 
   Future<UserProfile?> getCurrentUser() async {
@@ -49,7 +81,15 @@ class AuthRepository {
   }
 
   Future<bool> isAuthenticated() async {
-    final token = await getToken();
-    return token != null;
-  }
+      final token = await getToken();
+      if (token == null) return false;
+
+      try {
+        final response = await _apiService.getCurrentUser(token);
+        return response.user != null;
+      } catch (_) {
+        await logout();
+        return false;
+      }
+    }
 }

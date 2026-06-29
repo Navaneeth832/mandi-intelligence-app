@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/screens/onboarding_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'main_screen.dart';
@@ -39,11 +40,16 @@ class AuthWrapper extends ConsumerWidget {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    
+
     if (authState.isAuthenticated) {
+      final user = authState.currentUser;
+      // If user is authenticated but profile is incomplete, redirect to OnboardingScreen
+      if (user != null && (user.stateId == null || user.districtId == null)) {
+        return const OnboardingScreen();
+      }
       return const MainScreen();
     }
-    
+
     return const LoginScreen();
   }
 }
