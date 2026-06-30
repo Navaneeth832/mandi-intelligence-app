@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'signup_screen.dart';
@@ -172,24 +173,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                       ],
-                      PrimaryAuthButton(
-                        text: authState.isLoading ? 'Logging in...' : 'Login',
-                        onPressed: authState.isLoading
-                            ? null
-                            : () {
-                                if (_formKey.currentState!.validate()) {
+                    PrimaryAuthButton(
+                      text: authState.isLoading
+                          ? AppLocalizations.of(context)!.loggingIn
+                          : AppLocalizations.of(context)!.login,
+                      onPressed: authState.isLoading
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                FocusScope.of(context).unfocus();
 
-                                  FocusScope.of(context).unfocus();
+                                TextInput.finishAutofillContext();
 
-                                  TextInput.finishAutofillContext();
-
-                                  ref.read(authProvider.notifier).login(
-                                        _emailController.text.trim(),
-                                        _passwordController.text,
-                                      );
-                                }
-                              },
-                      ),
+                                ref.read(authProvider.notifier).login(
+                                      _emailController.text.trim(),
+                                      _passwordController.text,
+                                    );
+                              }
+                            },
+                    ),
                     ],
                   ),
                 ),

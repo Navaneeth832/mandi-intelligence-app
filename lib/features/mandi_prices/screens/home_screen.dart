@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mandi_intelligence_app/data/models/state_model.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import '../../../data/models/district_model.dart';
 import '../widgets/price_card.dart';
 import '../widgets/filter_dropdown.dart';
@@ -185,9 +186,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Live Mandi Prices',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.liveMandiPrices,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF111111),

@@ -4,7 +4,10 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/screens/onboarding_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'core/providers/locale_provider.dart';
 import 'main_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 void main() {
   runApp(
@@ -14,17 +17,27 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Mandi Intelligence',
-      theme: AppTheme.lightTheme,
-      home: const AuthWrapper(),
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'Mandi Intelligence',
+        theme: AppTheme.lightTheme,
+
+        locale: locale,
+
+        localizationsDelegates:
+            AppLocalizations.localizationsDelegates,
+
+        supportedLocales:
+            AppLocalizations.supportedLocales,
+
+        home: const AuthWrapper(),
+      );
   }
 }
 
@@ -34,6 +47,7 @@ class AuthWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final locale = ref.watch(localeProvider);
 
     if (authState.isLoading) {
       return const Scaffold(

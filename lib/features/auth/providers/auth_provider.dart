@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
 import '../../../core/providers/providers.dart';
 import '../../../data/models/auth/login_request.dart';
@@ -37,6 +38,9 @@ class AuthNotifier extends Notifier<AuthState> {
       
       // Attempt to get user directly. This implicitly checks authentication status.
       final user = await repo.getCurrentUser();
+      if (user?.preferredLanguage != null) {
+            ref.read(localeProvider.notifier).setLocale(user!.preferredLanguage!);
+      }
       print("DEBUG: getCurrentUser result: ${user != null ? 'User found' : 'No user'}");
       
       state = AuthState(
@@ -61,6 +65,10 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.invalidate(profileNotifierProvider);
       ref.invalidate(preferredCropsNotifierProvider);
       final user = await repo.getCurrentUser();
+      if (user?.preferredLanguage != null) {
+        ref.read(localeProvider.notifier)
+            .setLocale(user!.preferredLanguage!);
+      }
       state = AuthState(
         currentUser: user,
         isAuthenticated: user != null,
@@ -85,6 +93,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = AuthState(isLoading: true);
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();
+    ref.read(localeProvider.notifier).setLocale('en');
     ref.invalidate(profileNotifierProvider);
     ref.invalidate(preferredCropsNotifierProvider);
     state = AuthState(isAuthenticated: false);

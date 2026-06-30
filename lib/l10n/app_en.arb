@@ -1,0 +1,10 @@
+{
+  "@@locale": "en",
+  "login": "Login",
+  "loggingIn": "Logging in...",
+  "signup": "Sign Up",
+  "liveMandiPrices": "Live Mandi Prices",
+  "profile": "Profile",
+  "logout": "Logout",
+  "language": "Language"
+}
