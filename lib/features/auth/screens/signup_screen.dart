@@ -71,25 +71,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(4.0),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: _primaryGreen.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.park_outlined,
+                          Icons.agriculture_outlined,
                           color: _primaryGreen,
                           size: 28,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.help_outline,
-                          color: _subtitleColor,
                         ),
                       ),
                     ],

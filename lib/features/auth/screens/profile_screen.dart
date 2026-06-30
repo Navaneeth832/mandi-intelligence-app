@@ -40,13 +40,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: const [],
       ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: _primaryGreen)),
@@ -74,34 +68,17 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 16),
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CircleAvatar(
-                      radius: 54,
-                      backgroundColor: _primaryGreen,
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                          fontSize: 44,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                CircleAvatar(
+                  radius: 54,
+                  backgroundColor: _primaryGreen,
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      fontSize: 44,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: _backgroundColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const CircleAvatar(
-                        radius: 14,
-                        backgroundColor: _primaryGreen,
-                        child: Icon(Icons.edit, size: 16, color: Colors.white),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -193,7 +170,12 @@ class ProfileScreen extends ConsumerWidget {
         side: BorderSide(color: Colors.grey.shade300, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: 32,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -320,12 +302,16 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           const Icon(Icons.grass, color: Colors.orange, size: 18),
           const SizedBox(width: 8),
-          Text(
-            name,
-            style: const TextStyle(
-              color: _primaryGreen,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+          Flexible(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(
+                color: _primaryGreen,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

@@ -368,26 +368,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 },
               ),
             ),
-            
+            const SizedBox(height: 120),
             if (_selectedCrops.isNotEmpty) ...[
+               Transform.translate(
+                  offset: const Offset(0, -108),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: -4,
+                    children: _selectedCrops.map((crop) => Chip(
+                        label: Text(
+                          '🌾 ${crop.name}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+                        ),
+                        backgroundColor: _bgColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        deleteIcon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                        onDeleted: () => setState(() => _selectedCrops.remove(crop)),
+                      )).toList(),
+                  ),
+                ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: -4.0,
-                children: _selectedCrops.map((crop) => Chip(
-                  label: Text(
-                    '🌾 ${crop.name}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
-                  ),
-                  backgroundColor: _bgColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: 16, color: Colors.grey),
-                  onDeleted: () => setState(() => _selectedCrops.remove(crop)),
-                )).toList(),
-              ),
             ]
           ],
         ),

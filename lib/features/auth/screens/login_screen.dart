@@ -54,6 +54,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     final authState = ref.watch(authProvider);
+    String? displayError;
+
+    if (authState.error != null) {
+      displayError = authState.error!;
+
+      // Extract FastAPI {"detail":"..."} message
+      final match = RegExp(r'\{"detail":"([^"]+)"\}').firstMatch(displayError);
+
+      if (match != null) {
+        displayError = match.group(1);
+      }
+
+      // Remove common prefixes
+      displayError = displayError
+          ?.replaceFirst('Exception: ', '')
+          .replaceFirst('ClientException: ', '')
+          .trim();
+    }
 
     return Scaffold(
       backgroundColor: _backgroundColor,
@@ -127,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       }
                                             ),
                       const SizedBox(height: 12.0),
-                      Align(
+                      /*Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {},
@@ -140,9 +158,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                      ),
+                      ),*/
                       const SizedBox(height: 24.0),
-                      if (authState.error != null) ...[
+                      if (displayError!= null) ...[
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -161,7 +179,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  authState.error!,
+                                  displayError!,
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 13,
