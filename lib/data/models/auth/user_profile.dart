@@ -17,6 +17,25 @@ class UserProfile {
     this.profileComplete,
   });
 
+  static String _normalizeLanguageCode(String? value) {
+    switch (value) {
+      case 'en':
+      case 'English':
+      case 'english':
+        return 'en';
+      case 'ml':
+      case 'Malayalam':
+      case 'മലയാളം':
+        return 'ml';
+      case 'hi':
+      case 'Hindi':
+      case 'हिंदी':
+        return 'hi';
+      default:
+        return 'en';
+    }
+  }
+
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'],
@@ -24,7 +43,7 @@ class UserProfile {
       email: json['email'],
       stateId: json['state_id'],
       districtId: json['district_id'],
-      preferredLanguage: json['preferred_language'] ?? 'English',
+      preferredLanguage: _normalizeLanguageCode(json['preferred_language']),
       profileComplete: json['is_profile_complete'],
     );
   }

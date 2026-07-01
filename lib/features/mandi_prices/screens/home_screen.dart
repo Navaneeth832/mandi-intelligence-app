@@ -216,16 +216,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Icon(Icons.history, size: 18, color: Colors.grey.shade700),
               const SizedBox(width: 6),
-              Text(
-                AppLocalizations.of(context)!.lastUpdated(getRelativeTime(context, latestUpdate)),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
+              Flexible(
+                child: Text(
+                  AppLocalizations.of(context)!
+                      .lastUpdated(getRelativeTime(context, latestUpdate)),
+                  maxLines: 2,
+                  softWrap: true,
+                  overflow: TextOverflow.fade,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
               ),
             ],
-          ),
+          )
         ),
       ],
     );

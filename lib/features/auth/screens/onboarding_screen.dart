@@ -199,21 +199,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       try {
                         final authRepo = ref.read(authRepositoryProvider);
                         final user = await authRepo.getCurrentUser();
-                        String languageCode;
-
-                        switch (_selectedLanguage) {
-                          case 'en':
-                            languageCode = 'en';
-                            break;
-                          case 'മലയാളം':
-                            languageCode = 'ml';
-                            break;
-                          case 'हिंदी':
-                            languageCode = 'hi';
-                            break;
-                          default:
-                            languageCode = 'en';
-                        }
+                        final languageCode = switch (_selectedLanguage) {
+                          'en' => 'en',
+                          'ml' => 'ml',
+                          'hi' => 'hi',
+                          _ => 'en',
+                        };
                         await authRepo.updateProfile({
                           "name": user?.name ?? 'User',
                           "state_id": _selectedState!.id,

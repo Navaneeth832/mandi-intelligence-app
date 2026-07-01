@@ -167,7 +167,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
     const String? imageUrl =
         "https://farm.ws/wp-content/uploads/2024/11/What-is-Crop-Farming_-Everything-You-Need-to-Know-930x620.webp";
 
-    if (imageUrl == null || imageUrl.isEmpty) {
+    if (imageUrl.isEmpty) {
       return Container(
         height: 220,
         width: double.infinity,

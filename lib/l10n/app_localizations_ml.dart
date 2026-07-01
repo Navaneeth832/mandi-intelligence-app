@@ -12,22 +12,22 @@ class AppLocalizationsMl extends AppLocalizations {
   String get appName => 'മണ്ഡി ഇന്റലിജൻസ്';
 
   @override
-  String get alertsScreen => 'അലേർട്ടുകൾ';
+  String get alertsScreen => 'അലർട്ടുകൾ';
 
   @override
   String get help => 'സഹായം';
 
   @override
-  String get somethingWentWrong => 'അയ്യോ, എന്തോ പിഴച്ചു!';
+  String get somethingWentWrong => 'അയ്യോ, എന്തോ കുഴപ്പമുണ്ടല്ലോ!';
 
   @override
   String get tryAgain => 'വീണ്ടും ശ്രമിക്കുക';
 
   @override
-  String get noPricesFound => 'വിലകൾ ലഭിച്ചില്ല';
+  String get noPricesFound => 'വിലകൾ ലഭ്യമാക്കാനായില്ല';
 
   @override
-  String get noPricesFoundSubtitle => 'നിങ്ങൾ തെരഞ്ഞെടുത്തതിനായി വിപണി വിലകൾ ലഭിച്ചില്ല.';
+  String get noPricesFoundSubtitle => 'നിങ്ങൾ തിരഞ്ഞെടുത്തവയ്ക്ക് മാർക്കറ്റ് വിലകളൊന്നും കണ്ടെത്താനായില്ല.';
 
   @override
   String get loadingPrices => 'വിലകൾ ലോഡ് ചെയ്യുന്നു...';
@@ -36,10 +36,10 @@ class AppLocalizationsMl extends AppLocalizations {
   String get search => 'തിരയുക...';
 
   @override
-  String get noOptionsFound => 'ഓപ്ഷനുകൾ ലഭിച്ചില്ല';
+  String get noOptionsFound => 'ഓപ്ഷനുകളൊന്നും കണ്ടെത്തിയില്ല';
 
   @override
-  String get high => 'ഉയർന്നത്';
+  String get high => 'കൂടിയത്';
 
   @override
   String get modal => 'മോഡൽ';
@@ -54,13 +54,13 @@ class AppLocalizationsMl extends AppLocalizations {
   String get markets => 'മാർക്കറ്റുകൾ';
 
   @override
-  String get alerts => 'അലേർട്ടുകൾ';
+  String get alerts => 'അലർട്ടുകൾ';
 
   @override
   String get profile => 'പ്രൊഫൈൽ';
 
   @override
-  String get justNow => 'ഇപ്പോൾ മാത്രം';
+  String get justNow => 'ഇപ്പോൾ';
 
   @override
   String minutesAgo(Object count) {
@@ -92,7 +92,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String lastUpdated(Object relativeTime) {
-    return 'അവസാനം പുതുക്കിയത്: $relativeTime';
+    return 'അവസാനം അപ്ഡേറ്റ് ചെയ്തത്: $relativeTime';
   }
 
   @override
@@ -108,19 +108,19 @@ class AppLocalizationsMl extends AppLocalizations {
   String get market => 'മാർക്കറ്റ്';
 
   @override
-  String get applyFilters => 'ഫിൽട്ടറുകൾ പ്രയോഗിക്കുക';
+  String get applyFilters => 'ഫിൽറ്ററുകൾ പ്രയോഗിക്കുക';
 
   @override
-  String get clearAll => 'എല്ലാം മായ്ക്കുക';
+  String get clearAll => 'എല്ലാം മായ്‌ക്കുക';
 
   @override
-  String get marketDirectory => 'മാർക്കറ്റ് ഡയറക്ടറി';
+  String get marketDirectory => 'മാർക്കറ്റ് ഡയറക്‌ടറി';
 
   @override
   String get selectState => 'സംസ്ഥാനം തിരഞ്ഞെടുക്കുക';
 
   @override
-  String get selectDistrict => 'Select District';
+  String get selectDistrict => 'ജില്ല തിരഞ്ഞെടുക്കുക';
 
   @override
   String get loadingStates => 'സംസ്ഥാനങ്ങൾ ലോഡ് ചെയ്യുന്നു...';
@@ -144,46 +144,46 @@ class AppLocalizationsMl extends AppLocalizations {
   String get searchMarkets => 'മാർക്കറ്റുകൾ തിരയുക...';
 
   @override
-  String get marketDirectoryIntro => 'ലഭ്യമായ മാർക്കറ്റുകൾ കാണാൻ ഒരു സംസ്ഥാനം തിരഞ്ഞെടുക്കുക.\nജില്ലപ്രകാരവും പ്രത്യേക മാർക്കറ്റുകളും തിരയാം.';
+  String get marketDirectoryIntro => 'ലഭ്യമായ മാർക്കറ്റുകൾ കാണാൻ ഒരു സംസ്ഥാനം തിരഞ്ഞെടുക്കുക.\nനിങ്ങൾക്ക് ജില്ല തിരിച്ച് ഫിൽട്ടർ ചെയ്യാനും പ്രത്യേക മാർക്കറ്റുകൾക്കായി തിരയാനും കഴിയും.';
 
   @override
-  String get noMarketsFound => 'മാർക്കറ്റുകൾ ലഭിച്ചില്ല';
+  String get noMarketsFound => 'മാർക്കറ്റുകളൊന്നും കണ്ടെത്തിയില്ല';
 
   @override
   String marketsFound(Object count) {
-    return '$count മാർക്കറ്റുകൾ ലഭിച്ചു';
+    return '$count മാർക്കറ്റുകൾ കണ്ടെത്തി';
   }
 
   @override
-  String get filterResults => 'ഫിൽട്ടർ ഫലങ്ങൾ';
+  String get filterResults => 'ഫലങ്ങൾ ഫിൽട്ടർ ചെയ്യുക';
 
   @override
   String resultsFound(Object count) {
-    return '$count ഫലങ്ങൾ ലഭിച്ചു';
+    return '$count ഫലങ്ങൾ കണ്ടെത്തി';
   }
 
   @override
   String activeFilters(Object count) {
-    return '$count സജീവ ഫിൽട്ടറുകൾ';
+    return '$count സജീവ ഫിൽറ്ററുകൾ';
   }
 
   @override
-  String get variety => 'വൈവിധ്യം';
+  String get variety => 'ഇനം';
 
   @override
   String get currentPricePerQuintal => 'നിലവിലെ വില / ക്വിന്റൽ';
 
   @override
-  String get viewDetails => 'വിശദാംശങ്ങൾ കാണുക';
+  String get viewDetails => 'കൂടുതൽ വിവരങ്ങൾ';
 
   @override
   String get noPreviewAvailable => 'പ്രിവ്യൂ ലഭ്യമല്ല';
 
   @override
-  String get priceSummary => 'വില സംഗ്രഹം';
+  String get priceSummary => 'വില വിവരണം';
 
   @override
-  String get trendNote => '*ട്രെൻഡ് ഏറ്റവും പഴയ ലഭ്യമായ ചരിത്രരേഖയുമായി താരതമ്യം ചെയ്തുള്ള മൊത്തം വിലമാറ്റം കാണിക്കുന്നു.';
+  String get trendNote => '*ഏറ്റവും പഴയ റെക്കോർഡുമായി താരതമ്യം ചെയ്യുമ്പോൾ വിലയിലുള്ള മൊത്തത്തിലുള്ള മാറ്റത്തെയാണ് ട്രെൻഡ് സൂചിപ്പിക്കുന്നത്.';
 
   @override
   String get highPrice => 'ഉയർന്ന വില';
@@ -195,14 +195,14 @@ class AppLocalizationsMl extends AppLocalizations {
   String get lowPrice => 'കുറഞ്ഞ വില';
 
   @override
-  String get noHistoricalDataAvailable => 'ചരിത്ര ഡാറ്റ ലഭ്യമല്ല';
+  String get noHistoricalDataAvailable => 'പഴയ ഡാറ്റകളൊന്നും ലഭ്യമല്ല';
 
   @override
-  String get recentTrend => 'സമീപകാല പ്രവണതി';
+  String get recentTrend => 'സമീപകാല ട്രെൻഡ്';
 
   @override
   String recentRecordsMissingDates(Object count) {
-    return '$count സമീപകാല രേഖകൾ • ചില തീയതികൾ ഇല്ലായിരിക്കാം';
+    return '$count സമീപകാല റെക്കോർഡുകൾ • ചില തീയതികൾ നഷ്‌ടപ്പെട്ടിട്ടുണ്ടാകാം';
   }
 
   @override
@@ -212,19 +212,19 @@ class AppLocalizationsMl extends AppLocalizations {
   String get dates => 'തീയതികൾ';
 
   @override
-  String get failedToLoadCommodities => 'ഉൽപ്പന്നങ്ങൾ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല';
+  String get failedToLoadCommodities => 'ഉൽപ്പന്നങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു';
 
   @override
   String get marketInformation => 'മാർക്കറ്റ് വിവരങ്ങൾ';
 
   @override
-  String get availableCommoditiesToday => 'ഇന്നത്തെ ലഭ്യമായ ഉൽപ്പന്നങ്ങൾ';
+  String get availableCommoditiesToday => 'ഇന്ന് ലഭ്യമായ ഉൽപ്പന്നങ്ങൾ';
 
   @override
   String get todaysCommodities => 'ഇന്നത്തെ ഉൽപ്പന്നങ്ങൾ';
 
   @override
-  String get noCommoditiesAvailableToday => 'ഇന്ന് ഉൽപ്പന്നങ്ങൾ ലഭ്യമല്ല';
+  String get noCommoditiesAvailableToday => 'ഇന്ന് ഉൽപ്പന്നങ്ങളൊന്നും ലഭ്യമല്ല';
 
   @override
   String errorWithDetails(Object error) {
@@ -244,17 +244,17 @@ class AppLocalizationsMl extends AppLocalizations {
   String get personalInformation => 'വ്യക്തിഗത വിവരങ്ങൾ';
 
   @override
-  String get preferredCrops => 'ഇഷ്ടപ്പെട്ട വിളകൾ';
+  String get preferredCrops => 'താൽപ്പര്യമുള്ള വിളകൾ';
 
   @override
-  String get noPreferredCropsSelected => 'ഇഷ്ടപ്പെട്ട വിളകൾ തിരഞ്ഞെടുക്കപ്പെട്ടിട്ടില്ല.';
+  String get noPreferredCropsSelected => 'താൽപ്പര്യമുള്ള വിളകളൊന്നും തിരഞ്ഞെടുത്തിട്ടില്ല.';
 
   @override
-  String get completeProfileDescription => 'നിങ്ങളുടെ പ്രൊഫൈൽ പൂർത്തിയാക്കി വ്യക്തിഗത മാർക്കറ്റ് വിലകളും വിള നിർദ്ദേശങ്ങളും അലർട്ടുകളും നേടുക.';
+  String get completeProfileDescription => 'നിങ്ങൾക്ക് അനുയോജ്യമായ മണ്ഡി വിലകളും വിള നിർദ്ദേശങ്ങളും മാർക്കറ്റ് അലർട്ടുകളും ലഭിക്കാൻ നിങ്ങളുടെ പ്രൊഫൈൽ പൂർത്തിയാക്കുക.';
 
   @override
   String failedToUpdateProfile(Object error) {
-    return 'പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യാൻ കഴിഞ്ഞില്ല: $error';
+    return 'പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു: $error';
   }
 
   @override
@@ -264,19 +264,19 @@ class AppLocalizationsMl extends AppLocalizations {
   String get continueLabel => 'തുടരുക';
 
   @override
-  String get preferredLanguage => 'ഇഷ്ടമുള്ള ഭാഷ';
+  String get preferredLanguage => 'താൽപ്പര്യമുള്ള ഭാഷ';
 
   @override
   String get selectLanguage => 'ഭാഷ തിരഞ്ഞെടുക്കുക';
 
   @override
-  String get chooseUpTo5Crops => 'പരമാവധി 5 വിളകൾ തിരഞ്ഞെടുക്കാം.';
+  String get chooseUpTo5Crops => 'പരമാവധി 5 വിളകൾ വരെ തിരഞ്ഞെടുക്കുക.';
 
   @override
   String get searchCrops => 'വിളകൾ തിരയുക...';
 
   @override
-  String get maxPreferredCrops => 'പരമാവധി 5 ഇഷ്ടപ്പെട്ട വിളകൾ മാത്രം തിരഞ്ഞെടുക്കാം.';
+  String get maxPreferredCrops => 'നിങ്ങൾക്ക് പരമാവധി 5 വിളകൾ മാത്രമേ തിരഞ്ഞെടുക്കാൻ കഴിയൂ.';
 
   @override
   String get english => 'ഇംഗ്ലീഷ്';
@@ -297,20 +297,20 @@ class AppLocalizationsMl extends AppLocalizations {
   String get signup => 'സൈൻ അപ്പ്';
 
   @override
-  String get liveMandiPrices => 'തത്സമയ മണ്ടി വിലകൾ';
+  String get liveMandiPrices => 'തത്സമയ മണ്ഡി വിലകൾ';
 
   @override
   String get language => 'ഭാഷ';
 
   @override
-  String get setupProfile => 'പ്രൊഫൈൽ സജ്ജമാക്കുക';
+  String get setupProfile => 'പ്രൊഫൈൽ സെറ്റപ്പ് ചെയ്യുക';
 
   @override
-  String get skip => 'ഒഴിവാക്കുക';
+  String get skip => 'സ്കിപ്പ് ചെയ്യുക';
 
   @override
   String get updateProfile => 'നിങ്ങളുടെ പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുക';
 
   @override
-  String get finishProfile => 'പ്രൊഫൈൽ സജ്ജീകരണം പൂർത്തിയാക്കുക';
+  String get finishProfile => 'പ്രൊഫൈൽ സെറ്റപ്പ് പൂർത്തിയാക്കുക';
 }
