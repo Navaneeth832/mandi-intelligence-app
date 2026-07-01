@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
+import 'package:mandi_intelligence_app/main_screen.dart';
+import 'onboarding_screen.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'signup_screen.dart';
 import '../providers/auth_provider.dart';
-import '../../../main_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _navigateToSignup() {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => const SignupScreen(),
@@ -43,16 +44,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      if (!(previous?.isAuthenticated ?? false) &&
-          next.isAuthenticated){
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-          (route) => false,
-        );
-      }
-    });
-
     final authState = ref.watch(authProvider);
     String? displayError;
 
@@ -197,16 +188,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : AppLocalizations.of(context)!.login,
                       onPressed: authState.isLoading
                           ? null
-                          : () {
+                          : () async {
                               if (_formKey.currentState!.validate()) {
                                 FocusScope.of(context).unfocus();
 
                                 TextInput.finishAutofillContext();
 
-                                ref.read(authProvider.notifier).login(
+                                final user = await ref.read(authProvider.notifier).login(
                                       _emailController.text.trim(),
                                       _passwordController.text,
                                     );
+
+                                if (!mounted || user == null) {
+                                  return;
+                                }
+
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => user.hasCompletedProfile
+                                        ? const MainScreen()
+                                        : const OnboardingScreen(),
+                                  ),
+                                  (route) => false,
+                                );
                               }
                             },
                     ),

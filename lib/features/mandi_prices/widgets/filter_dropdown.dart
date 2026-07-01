@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class FilterDropdownButton<T> extends StatefulWidget {
   final String hintText;
@@ -113,7 +114,7 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
                           focusNode: _searchFocusNode,
                           autofocus: true,
                           decoration: InputDecoration(
-                            hintText: 'Search...',
+                            hintText: AppLocalizations.of(context)!.search,
                             hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                             prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
                             isDense: true,
@@ -144,11 +145,11 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
                             }).toList();
 
                             if (filteredItems.isEmpty) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16.0),
+                              return Padding(
+                                padding: const EdgeInsets.all(16.0),
                                 child: Text(
-                                  'No options found',
-                                  style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                                  AppLocalizations.of(context)!.noOptionsFound,
+                                  style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
                                 ),
                               );
                             }

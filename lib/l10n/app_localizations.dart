@@ -97,6 +97,516 @@ abstract class AppLocalizations {
     Locale('ml')
   ];
 
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'Mandi Intelligence'**
+  String get appName;
+
+  /// No description provided for @alertsScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get alertsScreen;
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Oh no, something went wrong!'**
+  String get somethingWentWrong;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @noPricesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Prices Found'**
+  String get noPricesFound;
+
+  /// No description provided for @noPricesFoundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find any market prices for your current selection.'**
+  String get noPricesFoundSubtitle;
+
+  /// No description provided for @loadingPrices.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading prices...'**
+  String get loadingPrices;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search...'**
+  String get search;
+
+  /// No description provided for @noOptionsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No options found'**
+  String get noOptionsFound;
+
+  /// No description provided for @high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get high;
+
+  /// No description provided for @modal.
+  ///
+  /// In en, this message translates to:
+  /// **'Modal'**
+  String get modal;
+
+  /// No description provided for @low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get low;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @markets.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get markets;
+
+  /// No description provided for @alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get alerts;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} mins ago'**
+  String minutesAgo(Object count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hours ago'**
+  String hoursAgo(Object count);
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String daysAgo(Object count);
+
+  /// No description provided for @weeksAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks ago'**
+  String weeksAgo(Object count);
+
+  /// No description provided for @monthsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months ago'**
+  String monthsAgo(Object count);
+
+  /// No description provided for @lastUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: {relativeTime}'**
+  String lastUpdated(Object relativeTime);
+
+  /// No description provided for @commodity.
+  ///
+  /// In en, this message translates to:
+  /// **'Commodity'**
+  String get commodity;
+
+  /// No description provided for @state.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get state;
+
+  /// No description provided for @district.
+  ///
+  /// In en, this message translates to:
+  /// **'District'**
+  String get district;
+
+  /// No description provided for @market.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get market;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// No description provided for @clearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get clearAll;
+
+  /// No description provided for @marketDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Directory'**
+  String get marketDirectory;
+
+  /// No description provided for @selectState.
+  ///
+  /// In en, this message translates to:
+  /// **'Select State'**
+  String get selectState;
+
+  /// No description provided for @selectDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Select District'**
+  String get selectDistrict;
+
+  /// No description provided for @loadingStates.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading states...'**
+  String get loadingStates;
+
+  /// No description provided for @errorLoadingStates.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading states'**
+  String get errorLoadingStates;
+
+  /// No description provided for @selectStateFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Select state first'**
+  String get selectStateFirst;
+
+  /// No description provided for @allDistricts.
+  ///
+  /// In en, this message translates to:
+  /// **'All Districts'**
+  String get allDistricts;
+
+  /// No description provided for @loadingDistricts.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading districts...'**
+  String get loadingDistricts;
+
+  /// No description provided for @errorLoadingDistricts.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading districts'**
+  String get errorLoadingDistricts;
+
+  /// No description provided for @searchMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Search markets...'**
+  String get searchMarkets;
+
+  /// No description provided for @marketDirectoryIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a state to browse available markets.\nYou can further filter by district and search for specific markets.'**
+  String get marketDirectoryIntro;
+
+  /// No description provided for @noMarketsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No markets found'**
+  String get noMarketsFound;
+
+  /// No description provided for @marketsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Markets Found'**
+  String marketsFound(Object count);
+
+  /// No description provided for @filterResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter Results'**
+  String get filterResults;
+
+  /// No description provided for @resultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Results Found'**
+  String resultsFound(Object count);
+
+  /// No description provided for @activeFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Active Filters'**
+  String activeFilters(Object count);
+
+  /// No description provided for @variety.
+  ///
+  /// In en, this message translates to:
+  /// **'Variety'**
+  String get variety;
+
+  /// No description provided for @currentPricePerQuintal.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Price / Quintal'**
+  String get currentPricePerQuintal;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
+  /// No description provided for @noPreviewAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No preview available'**
+  String get noPreviewAvailable;
+
+  /// No description provided for @priceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Summary'**
+  String get priceSummary;
+
+  /// No description provided for @trendNote.
+  ///
+  /// In en, this message translates to:
+  /// **'*Trend indicates the overall price shift compared to the oldest available historic record.'**
+  String get trendNote;
+
+  /// No description provided for @highPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'High Price'**
+  String get highPrice;
+
+  /// No description provided for @modalPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Modal Price'**
+  String get modalPrice;
+
+  /// No description provided for @lowPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Price'**
+  String get lowPrice;
+
+  /// No description provided for @noHistoricalDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No historical data available'**
+  String get noHistoricalDataAvailable;
+
+  /// No description provided for @recentTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Trend'**
+  String get recentTrend;
+
+  /// No description provided for @recentRecordsMissingDates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} recent records • Missing dates may exist'**
+  String recentRecordsMissingDates(Object count);
+
+  /// No description provided for @modalPricePerQuintal.
+  ///
+  /// In en, this message translates to:
+  /// **'Modal Price (₹/Quintal)'**
+  String get modalPricePerQuintal;
+
+  /// No description provided for @dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get dates;
+
+  /// No description provided for @failedToLoadCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load commodities'**
+  String get failedToLoadCommodities;
+
+  /// No description provided for @marketInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Information'**
+  String get marketInformation;
+
+  /// No description provided for @availableCommoditiesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Commodities Today'**
+  String get availableCommoditiesToday;
+
+  /// No description provided for @todaysCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Commodities'**
+  String get todaysCommodities;
+
+  /// No description provided for @noCommoditiesAvailableToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No commodities available today'**
+  String get noCommoditiesAvailableToday;
+
+  /// No description provided for @errorWithDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithDetails(Object error);
+
+  /// No description provided for @user.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get user;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @preferredCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Crops'**
+  String get preferredCrops;
+
+  /// No description provided for @noPreferredCropsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No preferred crops selected.'**
+  String get noPreferredCropsSelected;
+
+  /// No description provided for @completeProfileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile to receive personalized mandi prices, crop recommendations, and market alerts.'**
+  String get completeProfileDescription;
+
+  /// No description provided for @failedToUpdateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile: {error}'**
+  String failedToUpdateProfile(Object error);
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @preferredLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Language'**
+  String get preferredLanguage;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @chooseUpTo5Crops.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose up to 5 crops.'**
+  String get chooseUpTo5Crops;
+
+  /// No description provided for @searchCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Search crops...'**
+  String get searchCrops;
+
+  /// No description provided for @maxPreferredCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'You can select a maximum of 5 preferred crops.'**
+  String get maxPreferredCrops;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @malayalam.
+  ///
+  /// In en, this message translates to:
+  /// **'Malayalam'**
+  String get malayalam;
+
+  /// No description provided for @hindi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hindi'**
+  String get hindi;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
@@ -121,23 +631,35 @@ abstract class AppLocalizations {
   /// **'Live Mandi Prices'**
   String get liveMandiPrices;
 
-  /// No description provided for @profile.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile'**
-  String get profile;
-
-  /// No description provided for @logout.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get logout;
-
   /// No description provided for @language.
   ///
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
+
+  /// No description provided for @setupProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Profile'**
+  String get setupProfile;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @updateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Your Profile'**
+  String get updateProfile;
+
+  /// No description provided for @finishProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Setting Up Your Profile'**
+  String get finishProfile;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

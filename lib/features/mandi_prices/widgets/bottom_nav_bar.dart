@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -41,26 +42,26 @@ class BottomNavBar extends StatelessWidget {
         elevation: 0,
         selectedIndex: selectedIndex,
         onDestinationSelected: onItemTapped,
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Home',
+            label: AppLocalizations.of(context)!.home,
           ),
           NavigationDestination(
             icon: Icon(Icons.store_outlined),
             selectedIcon: Icon(Icons.store),
-            label: 'Markets',
+            label: AppLocalizations.of(context)!.markets,
           ),
           NavigationDestination(
             icon: Icon(Icons.notifications_none_outlined),
             selectedIcon: Icon(Icons.notifications),
-            label: 'Alerts',
+            label: AppLocalizations.of(context)!.alerts,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Profile',
+            label: AppLocalizations.of(context)!.profile,
           ),
         ],
       ),

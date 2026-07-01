@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 /// A reusable header for Auth screens containing the Logo, Help Icon, Title, and Subtitle.
 class AuthHeader extends StatelessWidget {
@@ -45,7 +46,7 @@ class AuthHeader extends StatelessWidget {
                 Icons.help_outline,
                 color: _subtitleColor,
               ),
-              tooltip: 'Help',
+              tooltip: AppLocalizations.of(context)!.help,
               splashRadius: 24.0,
             ),
           ],

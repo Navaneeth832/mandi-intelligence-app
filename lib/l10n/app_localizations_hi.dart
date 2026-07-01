@@ -9,10 +9,289 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
+  String get appName => 'मंडी इंटेलिजेंस';
+
+  @override
+  String get alertsScreen => 'अलर्ट';
+
+  @override
+  String get help => 'मदद';
+
+  @override
+  String get somethingWentWrong => 'अरे, कुछ गलत हो गया!';
+
+  @override
+  String get tryAgain => 'फिर से कोशिश करें';
+
+  @override
+  String get noPricesFound => 'कोई मूल्य नहीं मिला';
+
+  @override
+  String get noPricesFoundSubtitle => 'आपकी चुनी हुई श्रेणी के लिए कोई मंडी भाव नहीं मिला।';
+
+  @override
+  String get loadingPrices => 'मूल्य लोड हो रहे हैं...';
+
+  @override
+  String get search => 'खोजें...';
+
+  @override
+  String get noOptionsFound => 'कोई विकल्प नहीं मिला';
+
+  @override
+  String get high => 'उच्च';
+
+  @override
+  String get modal => 'मोडल';
+
+  @override
+  String get low => 'न्यूनतम';
+
+  @override
+  String get home => 'होम';
+
+  @override
+  String get markets => 'मंडी';
+
+  @override
+  String get alerts => 'अलर्ट';
+
+  @override
+  String get profile => 'प्रोफ़ाइल';
+
+  @override
+  String get justNow => 'अभी अभी';
+
+  @override
+  String minutesAgo(Object count) {
+    return '$count मिनट पहले';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '$count घंटे पहले';
+  }
+
+  @override
+  String get yesterday => 'कल';
+
+  @override
+  String daysAgo(Object count) {
+    return '$count दिन पहले';
+  }
+
+  @override
+  String weeksAgo(Object count) {
+    return '$count सप्ताह पहले';
+  }
+
+  @override
+  String monthsAgo(Object count) {
+    return '$count महीने पहले';
+  }
+
+  @override
+  String lastUpdated(Object relativeTime) {
+    return 'अंतिम अपडेट: $relativeTime';
+  }
+
+  @override
+  String get commodity => 'फसल';
+
+  @override
+  String get state => 'राज्य';
+
+  @override
+  String get district => 'जिला';
+
+  @override
+  String get market => 'मंडी';
+
+  @override
+  String get applyFilters => 'फ़िल्टर लागू करें';
+
+  @override
+  String get clearAll => 'सभी हटाएँ';
+
+  @override
+  String get marketDirectory => 'मंडी निर्देशिका';
+
+  @override
+  String get selectState => 'राज्य चुनें';
+
+  @override
+  String get selectDistrict => 'Select District';
+
+  @override
+  String get loadingStates => 'राज्य लोड हो रहे हैं...';
+
+  @override
+  String get errorLoadingStates => 'राज्य लोड करने में त्रुटि';
+
+  @override
+  String get selectStateFirst => 'पहले राज्य चुनें';
+
+  @override
+  String get allDistricts => 'सभी जिले';
+
+  @override
+  String get loadingDistricts => 'जिले लोड हो रहे हैं...';
+
+  @override
+  String get errorLoadingDistricts => 'जिले लोड करने में त्रुटि';
+
+  @override
+  String get searchMarkets => 'मंडी खोजें...';
+
+  @override
+  String get marketDirectoryIntro => 'उपलब्ध मंडियों को देखने के लिए राज्य चुनें.\nआप जिले के अनुसार फ़िल्टर कर सकते हैं और खास मंडियाँ खोज सकते हैं.';
+
+  @override
+  String get noMarketsFound => 'कोई मंडी नहीं मिली';
+
+  @override
+  String marketsFound(Object count) {
+    return '$count मंडियाँ मिलीं';
+  }
+
+  @override
+  String get filterResults => 'फ़िल्टर परिणाम';
+
+  @override
+  String resultsFound(Object count) {
+    return '$count परिणाम मिले';
+  }
+
+  @override
+  String activeFilters(Object count) {
+    return '$count सक्रिय फ़िल्टर';
+  }
+
+  @override
+  String get variety => 'किस्म';
+
+  @override
+  String get currentPricePerQuintal => 'वर्तमान मूल्य / क्विंटल';
+
+  @override
+  String get viewDetails => 'विवरण देखें';
+
+  @override
+  String get noPreviewAvailable => 'पूर्वावलोकन उपलब्ध नहीं';
+
+  @override
+  String get priceSummary => 'मूल्य सारांश';
+
+  @override
+  String get trendNote => '*रुझान सबसे पुराने उपलब्ध रिकॉर्ड की तुलना में कुल मूल्य बदलाव दिखाता है.';
+
+  @override
+  String get highPrice => 'उच्च मूल्य';
+
+  @override
+  String get modalPrice => 'मोडल मूल्य';
+
+  @override
+  String get lowPrice => 'न्यूनतम मूल्य';
+
+  @override
+  String get noHistoricalDataAvailable => 'ऐतिहासिक डेटा उपलब्ध नहीं';
+
+  @override
+  String get recentTrend => 'हाल की प्रवृत्ति';
+
+  @override
+  String recentRecordsMissingDates(Object count) {
+    return '$count हाल की प्रविष्टियाँ • कुछ तारीखें गायब हो सकती हैं';
+  }
+
+  @override
+  String get modalPricePerQuintal => 'मोडल मूल्य (₹/क्विंटल)';
+
+  @override
+  String get dates => 'तिथियाँ';
+
+  @override
+  String get failedToLoadCommodities => 'फसलें लोड नहीं हो सकीं';
+
+  @override
+  String get marketInformation => 'मंडी जानकारी';
+
+  @override
+  String get availableCommoditiesToday => 'आज उपलब्ध फसलें';
+
+  @override
+  String get todaysCommodities => 'आज की फसलें';
+
+  @override
+  String get noCommoditiesAvailableToday => 'आज कोई फसल उपलब्ध नहीं';
+
+  @override
+  String errorWithDetails(Object error) {
+    return 'त्रुटि: $error';
+  }
+
+  @override
+  String get user => 'उपयोगकर्ता';
+
+  @override
+  String get editProfile => 'प्रोफ़ाइल संपादित करें';
+
+  @override
+  String get logout => 'लॉग आउट';
+
+  @override
+  String get personalInformation => 'व्यक्तिगत जानकारी';
+
+  @override
+  String get preferredCrops => 'पसंदीदा फसलें';
+
+  @override
+  String get noPreferredCropsSelected => 'कोई पसंदीदा फसल नहीं चुनी गई.';
+
+  @override
+  String get completeProfileDescription => 'व्यक्तिगत मंडी भाव, फसल सुझाव और अलर्ट पाने के लिए अपनी प्रोफ़ाइल पूरी करें.';
+
+  @override
+  String failedToUpdateProfile(Object error) {
+    return 'प्रोफ़ाइल अपडेट करने में विफल: $error';
+  }
+
+  @override
+  String get saveChanges => 'बदलाव सहेजें';
+
+  @override
+  String get continueLabel => 'जारी रखें';
+
+  @override
+  String get preferredLanguage => 'पसंदीदा भाषा';
+
+  @override
+  String get selectLanguage => 'भाषा चुनें';
+
+  @override
+  String get chooseUpTo5Crops => 'अधिकतम 5 फसलें चुनें.';
+
+  @override
+  String get searchCrops => 'फसलें खोजें...';
+
+  @override
+  String get maxPreferredCrops => 'आप अधिकतम 5 पसंदीदा फसलें चुन सकते हैं.';
+
+  @override
+  String get english => 'अंग्रेज़ी';
+
+  @override
+  String get malayalam => 'मलयालम';
+
+  @override
+  String get hindi => 'हिंदी';
+
+  @override
   String get login => 'लॉगिन';
 
   @override
-  String get loggingIn => 'प्रवेश किया...';
+  String get loggingIn => 'प्रवेश किया जा रहा है...';
 
   @override
   String get signup => 'साइन अप';
@@ -21,11 +300,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get liveMandiPrices => 'लाइव मंडी मूल्य';
 
   @override
-  String get profile => 'प्रोफ़ाइल';
-
-  @override
-  String get logout => 'लॉग आउट';
-
-  @override
   String get language => 'भाषा';
+
+  @override
+  String get setupProfile => 'प्रोफ़ाइल सेट करें';
+
+  @override
+  String get skip => 'छोड़ें';
+
+  @override
+  String get updateProfile => 'अपनी प्रोफ़ाइल अपडेट करें';
+
+  @override
+  String get finishProfile => 'प्रोफ़ाइल सेट करना पूरा करें';
 }

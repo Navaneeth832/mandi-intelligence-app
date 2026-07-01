@@ -6,6 +6,7 @@ import '../../../data/models/mandi_price.dart';
 import '../../../data/models/price_history.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MarketDetailScreen extends StatefulWidget {
   final MandiPrice price;
@@ -110,7 +111,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.price.createdAt)}',
+                                AppLocalizations.of(context)!.lastUpdated(DateFormat.yMMMd().add_jm().format(widget.price.createdAt)),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey.shade600,
@@ -178,7 +179,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 size: 44, color: Colors.grey.shade500),
             const SizedBox(height: 4),
             Text(
-              'No preview available',
+              AppLocalizations.of(context)!.noPreviewAvailable,
               style: TextStyle(
                 color: Colors.grey.shade600,
                 fontSize: 14,
@@ -257,8 +258,8 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Price Summary',
+                    Text(
+                      AppLocalizations.of(context)!.priceSummary,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -293,7 +294,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 const SizedBox(height: 4),
                 // Mentor's requested note about the percentage
                 Text(
-                  '*Trend indicates the overall price shift compared to the oldest available historic record.',
+                  AppLocalizations.of(context)!.trendNote,
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,
@@ -309,14 +310,14 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildPriceRow('High Price', formattedHigh,
+                      _buildPriceRow(AppLocalizations.of(context)!.highPrice, formattedHigh,
                           priceColor: const Color(0xFF007A33)),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
                         child: Divider(color: Color(0xFFE2E8F0), height: 1),
                       ),
                       _buildPriceRow(
-                        'Modal Price',
+                        AppLocalizations.of(context)!.modalPrice,
                         formattedModal,
                         priceColor: const Color(0xFF111111),
                       ),
@@ -324,7 +325,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
                         child: Divider(color: Color(0xFFE2E8F0), height: 1),
                       ),
-                      _buildPriceRow('Low Price', formattedLow,
+                      _buildPriceRow(AppLocalizations.of(context)!.lowPrice, formattedLow,
                           priceColor: const Color(0xFFD32F2F)),
                     ],
                   ),
@@ -410,11 +411,11 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
         final history = snapshot.data ?? [];
 
         if (history.isEmpty) {
-          return const SizedBox(
+          return SizedBox(
             height: 350,
             child: Center(
               child: Text(
-                'No historical data available',
+                AppLocalizations.of(context)!.noHistoricalDataAvailable,
                 style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -437,8 +438,8 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Recent Trend',
+                Text(
+                  AppLocalizations.of(context)!.recentTrend,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -447,7 +448,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${history.length} recent records • Missing dates may exist',
+                  AppLocalizations.of(context)!.recentRecordsMissingDates(history.length),
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade600,
@@ -455,7 +456,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Modal Price (₹/Quintal)',
+                  AppLocalizations.of(context)!.modalPricePerQuintal,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -472,7 +473,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 const SizedBox(height: 12),
                 Center(
                   child: Text(
-                    'Dates',
+                    AppLocalizations.of(context)!.dates,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

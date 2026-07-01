@@ -25,17 +25,11 @@ class MyApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Mandi Intelligence',
         theme: AppTheme.lightTheme,
-
         locale: locale,
-
-        localizationsDelegates:
-            AppLocalizations.localizationsDelegates,
-
-        supportedLocales:
-            AppLocalizations.supportedLocales,
-
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
         home: const AuthWrapper(),
       );
   }
@@ -47,7 +41,6 @@ class AuthWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final locale = ref.watch(localeProvider);
 
     if (authState.isLoading) {
       return const Scaffold(
@@ -57,8 +50,7 @@ class AuthWrapper extends ConsumerWidget {
 
     if (authState.isAuthenticated) {
       final user = authState.currentUser;
-      // If user is authenticated but profile is incomplete, redirect to OnboardingScreen
-      if (user != null && (user.stateId == null || user.districtId == null)) {
+      if (user != null && !user.hasCompletedProfile) {
         return const OnboardingScreen();
       }
       return const MainScreen();

@@ -1,10 +1,157 @@
 {
   "@@locale": "ml",
+  "appName": "മണ്ഡി ഇന്റലിജൻസ്",
+  "alertsScreen": "അലേർട്ടുകൾ",
+  "help": "സഹായം",
+  "somethingWentWrong": "അയ്യോ, എന്തോ പിഴച്ചു!",
+  "tryAgain": "വീണ്ടും ശ്രമിക്കുക",
+  "noPricesFound": "വിലകൾ ലഭിച്ചില്ല",
+  "noPricesFoundSubtitle": "നിങ്ങൾ തെരഞ്ഞെടുത്തതിനായി വിപണി വിലകൾ ലഭിച്ചില്ല.",
+  "loadingPrices": "വിലകൾ ലോഡ് ചെയ്യുന്നു...",
+  "search": "തിരയുക...",
+  "noOptionsFound": "ഓപ്ഷനുകൾ ലഭിച്ചില്ല",
+  "high": "ഉയർന്നത്",
+  "modal": "മോഡൽ",
+  "low": "കുറഞ്ഞത്",
+  "home": "ഹോം",
+  "markets": "മാർക്കറ്റുകൾ",
+  "alerts": "അലേർട്ടുകൾ",
+  "profile": "പ്രൊഫൈൽ",
+  "justNow": "ഇപ്പോൾ മാത്രം",
+  "selectDistrict":"Select District",
+  "minutesAgo": "{count} മിനിറ്റ് മുമ്പ്",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "hoursAgo": "{count} മണിക്കൂർ മുമ്പ്",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "yesterday": "ഇന്നലെ",
+  "daysAgo": "{count} ദിവസം മുമ്പ്",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "weeksAgo": "{count} ആഴ്ച മുമ്പ്",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "monthsAgo": "{count} മാസം മുമ്പ്",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lastUpdated": "അവസാനം പുതുക്കിയത്: {relativeTime}",
+  "@lastUpdated": {
+    "placeholders": {
+      "relativeTime": {}
+    }
+  },
+  "commodity": "ഉൽപ്പന്നം",
+  "state": "സംസ്ഥാനം",
+  "district": "ജില്ല",
+  "market": "മാർക്കറ്റ്",
+  "applyFilters": "ഫിൽട്ടറുകൾ പ്രയോഗിക്കുക",
+  "clearAll": "എല്ലാം മായ്ക്കുക",
+  "marketDirectory": "മാർക്കറ്റ് ഡയറക്ടറി",
+  "selectState": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
+  "loadingStates": "സംസ്ഥാനങ്ങൾ ലോഡ് ചെയ്യുന്നു...",
+  "errorLoadingStates": "സംസ്ഥാനങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പിശക്",
+  "selectStateFirst": "ആദ്യം സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
+  "allDistricts": "എല്ലാ ജില്ലകളും",
+  "loadingDistricts": "ജില്ലകൾ ലോഡ് ചെയ്യുന്നു...",
+  "errorLoadingDistricts": "ജില്ലകൾ ലോഡ് ചെയ്യുന്നതിൽ പിശക്",
+  "searchMarkets": "മാർക്കറ്റുകൾ തിരയുക...",
+  "marketDirectoryIntro": "ലഭ്യമായ മാർക്കറ്റുകൾ കാണാൻ ഒരു സംസ്ഥാനം തിരഞ്ഞെടുക്കുക.\nജില്ലപ്രകാരവും പ്രത്യേക മാർക്കറ്റുകളും തിരയാം.",
+  "noMarketsFound": "മാർക്കറ്റുകൾ ലഭിച്ചില്ല",
+  "marketsFound": "{count} മാർക്കറ്റുകൾ ലഭിച്ചു",
+  "@marketsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "filterResults": "ഫിൽട്ടർ ഫലങ്ങൾ",
+  "resultsFound": "{count} ഫലങ്ങൾ ലഭിച്ചു",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activeFilters": "{count} സജീവ ഫിൽട്ടറുകൾ",
+  "@activeFilters": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "variety": "വൈവിധ്യം",
+  "currentPricePerQuintal": "നിലവിലെ വില / ക്വിന്റൽ",
+  "viewDetails": "വിശദാംശങ്ങൾ കാണുക",
+  "noPreviewAvailable": "പ്രിവ്യൂ ലഭ്യമല്ല",
+  "priceSummary": "വില സംഗ്രഹം",
+  "trendNote": "*ട്രെൻഡ് ഏറ്റവും പഴയ ലഭ്യമായ ചരിത്രരേഖയുമായി താരതമ്യം ചെയ്തുള്ള മൊത്തം വിലമാറ്റം കാണിക്കുന്നു.",
+  "highPrice": "ഉയർന്ന വില",
+  "modalPrice": "മോഡൽ വില",
+  "lowPrice": "കുറഞ്ഞ വില",
+  "noHistoricalDataAvailable": "ചരിത്ര ഡാറ്റ ലഭ്യമല്ല",
+  "recentTrend": "സമീപകാല പ്രവണതി",
+  "recentRecordsMissingDates": "{count} സമീപകാല രേഖകൾ • ചില തീയതികൾ ഇല്ലായിരിക്കാം",
+  "@recentRecordsMissingDates": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "modalPricePerQuintal": "മോഡൽ വില (₹/ക്വിന്റൽ)",
+  "dates": "തീയതികൾ",
+  "failedToLoadCommodities": "ഉൽപ്പന്നങ്ങൾ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല",
+  "marketInformation": "മാർക്കറ്റ് വിവരങ്ങൾ",
+  "availableCommoditiesToday": "ഇന്നത്തെ ലഭ്യമായ ഉൽപ്പന്നങ്ങൾ",
+  "todaysCommodities": "ഇന്നത്തെ ഉൽപ്പന്നങ്ങൾ",
+  "noCommoditiesAvailableToday": "ഇന്ന് ഉൽപ്പന്നങ്ങൾ ലഭ്യമല്ല",
+  "errorWithDetails": "പിശക്: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "user": "ഉപയോക്താവ്",
+  "editProfile": "പ്രൊഫൈൽ എഡിറ്റ് ചെയ്യുക",
+  "logout": "ലോഗ് ഔട്ട്",
+  "personalInformation": "വ്യക്തിഗത വിവരങ്ങൾ",
+  "preferredCrops": "ഇഷ്ടപ്പെട്ട വിളകൾ",
+  "noPreferredCropsSelected": "ഇഷ്ടപ്പെട്ട വിളകൾ തിരഞ്ഞെടുക്കപ്പെട്ടിട്ടില്ല.",
+  "completeProfileDescription": "നിങ്ങളുടെ പ്രൊഫൈൽ പൂർത്തിയാക്കി വ്യക്തിഗത മാർക്കറ്റ് വിലകളും വിള നിർദ്ദേശങ്ങളും അലർട്ടുകളും നേടുക.",
+  "failedToUpdateProfile": "പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യാൻ കഴിഞ്ഞില്ല: {error}",
+  "@failedToUpdateProfile": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "saveChanges": "മാറ്റങ്ങൾ സേവ് ചെയ്യുക",
+  "continueLabel": "തുടരുക",
+  "preferredLanguage": "ഇഷ്ടമുള്ള ഭാഷ",
+  "selectLanguage": "ഭാഷ തിരഞ്ഞെടുക്കുക",
+  "chooseUpTo5Crops": "പരമാവധി 5 വിളകൾ തിരഞ്ഞെടുക്കാം.",
+  "searchCrops": "വിളകൾ തിരയുക...",
+  "maxPreferredCrops": "പരമാവധി 5 ഇഷ്ടപ്പെട്ട വിളകൾ മാത്രം തിരഞ്ഞെടുക്കാം.",
+  "english": "ഇംഗ്ലീഷ്",
+  "malayalam": "മലയാളം",
+  "hindi": "ഹിന്ദി",
   "login": "ലോഗിൻ",
   "loggingIn": "ലോഗിൻ ചെയ്യുന്നു...",
-  "liveMandiPrices": "തത്സമയ മണ്ടി വിലകൾ",
   "signup": "സൈൻ അപ്പ്",
-  "profile": "പ്രൊഫൈൽ",
-  "logout": "ലോഗ് ഔട്ട്",
-  "language": "ഭാഷ"
+  "liveMandiPrices": "തത്സമയ മണ്ടി വിലകൾ",
+  "language": "ഭാഷ",
+  "setupProfile": "പ്രൊഫൈൽ സജ്ജമാക്കുക",
+  "skip": "ഒഴിവാക്കുക",
+  "updateProfile": "നിങ്ങളുടെ പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുക",
+  "finishProfile": "പ്രൊഫൈൽ സജ്ജീകരണം പൂർത്തിയാക്കുക"
 }

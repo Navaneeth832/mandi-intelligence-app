@@ -9,6 +9,285 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get appName => 'Mandi Intelligence';
+
+  @override
+  String get alertsScreen => 'Alerts';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get somethingWentWrong => 'Oh no, something went wrong!';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get noPricesFound => 'No Prices Found';
+
+  @override
+  String get noPricesFoundSubtitle => 'We couldn\'t find any market prices for your current selection.';
+
+  @override
+  String get loadingPrices => 'Loading prices...';
+
+  @override
+  String get search => 'Search...';
+
+  @override
+  String get noOptionsFound => 'No options found';
+
+  @override
+  String get high => 'High';
+
+  @override
+  String get modal => 'Modal';
+
+  @override
+  String get low => 'Low';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get markets => 'Markets';
+
+  @override
+  String get alerts => 'Alerts';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(Object count) {
+    return '$count mins ago';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String daysAgo(Object count) {
+    return '$count days ago';
+  }
+
+  @override
+  String weeksAgo(Object count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String monthsAgo(Object count) {
+    return '$count months ago';
+  }
+
+  @override
+  String lastUpdated(Object relativeTime) {
+    return 'Last updated: $relativeTime';
+  }
+
+  @override
+  String get commodity => 'Commodity';
+
+  @override
+  String get state => 'State';
+
+  @override
+  String get district => 'District';
+
+  @override
+  String get market => 'Market';
+
+  @override
+  String get applyFilters => 'Apply Filters';
+
+  @override
+  String get clearAll => 'Clear All';
+
+  @override
+  String get marketDirectory => 'Market Directory';
+
+  @override
+  String get selectState => 'Select State';
+
+  @override
+  String get selectDistrict => 'Select District';
+
+  @override
+  String get loadingStates => 'Loading states...';
+
+  @override
+  String get errorLoadingStates => 'Error loading states';
+
+  @override
+  String get selectStateFirst => 'Select state first';
+
+  @override
+  String get allDistricts => 'All Districts';
+
+  @override
+  String get loadingDistricts => 'Loading districts...';
+
+  @override
+  String get errorLoadingDistricts => 'Error loading districts';
+
+  @override
+  String get searchMarkets => 'Search markets...';
+
+  @override
+  String get marketDirectoryIntro => 'Select a state to browse available markets.\nYou can further filter by district and search for specific markets.';
+
+  @override
+  String get noMarketsFound => 'No markets found';
+
+  @override
+  String marketsFound(Object count) {
+    return '$count Markets Found';
+  }
+
+  @override
+  String get filterResults => 'Filter Results';
+
+  @override
+  String resultsFound(Object count) {
+    return '$count Results Found';
+  }
+
+  @override
+  String activeFilters(Object count) {
+    return '$count Active Filters';
+  }
+
+  @override
+  String get variety => 'Variety';
+
+  @override
+  String get currentPricePerQuintal => 'Current Price / Quintal';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get noPreviewAvailable => 'No preview available';
+
+  @override
+  String get priceSummary => 'Price Summary';
+
+  @override
+  String get trendNote => '*Trend indicates the overall price shift compared to the oldest available historic record.';
+
+  @override
+  String get highPrice => 'High Price';
+
+  @override
+  String get modalPrice => 'Modal Price';
+
+  @override
+  String get lowPrice => 'Low Price';
+
+  @override
+  String get noHistoricalDataAvailable => 'No historical data available';
+
+  @override
+  String get recentTrend => 'Recent Trend';
+
+  @override
+  String recentRecordsMissingDates(Object count) {
+    return '$count recent records • Missing dates may exist';
+  }
+
+  @override
+  String get modalPricePerQuintal => 'Modal Price (₹/Quintal)';
+
+  @override
+  String get dates => 'Dates';
+
+  @override
+  String get failedToLoadCommodities => 'Failed to load commodities';
+
+  @override
+  String get marketInformation => 'Market Information';
+
+  @override
+  String get availableCommoditiesToday => 'Available Commodities Today';
+
+  @override
+  String get todaysCommodities => 'Today\'s Commodities';
+
+  @override
+  String get noCommoditiesAvailableToday => 'No commodities available today';
+
+  @override
+  String errorWithDetails(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get personalInformation => 'Personal Information';
+
+  @override
+  String get preferredCrops => 'Preferred Crops';
+
+  @override
+  String get noPreferredCropsSelected => 'No preferred crops selected.';
+
+  @override
+  String get completeProfileDescription => 'Complete your profile to receive personalized mandi prices, crop recommendations, and market alerts.';
+
+  @override
+  String failedToUpdateProfile(Object error) {
+    return 'Failed to update profile: $error';
+  }
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get preferredLanguage => 'Preferred Language';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get chooseUpTo5Crops => 'Choose up to 5 crops.';
+
+  @override
+  String get searchCrops => 'Search crops...';
+
+  @override
+  String get maxPreferredCrops => 'You can select a maximum of 5 preferred crops.';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get malayalam => 'Malayalam';
+
+  @override
+  String get hindi => 'Hindi';
+
+  @override
   String get login => 'Login';
 
   @override
@@ -21,11 +300,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveMandiPrices => 'Live Mandi Prices';
 
   @override
-  String get profile => 'Profile';
-
-  @override
-  String get logout => 'Logout';
-
-  @override
   String get language => 'Language';
+
+  @override
+  String get setupProfile => 'Setup Profile';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get updateProfile => 'Update Your Profile';
+
+  @override
+  String get finishProfile => 'Finish Setting Up Your Profile';
 }

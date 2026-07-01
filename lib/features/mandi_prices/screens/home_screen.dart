@@ -73,24 +73,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
-  String getRelativeTime(DateTime lastUpdated) {
+  String getRelativeTime(BuildContext context, DateTime lastUpdated) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(lastUpdated);
 
     if (difference.inSeconds < 60) {
-      return 'Just now';
+      return l10n.justNow;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} mins ago';
+      return l10n.minutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
+      return l10n.hoursAgo(difference.inHours);
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return l10n.yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return l10n.daysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).floor()} weeks ago';
+      return l10n.weeksAgo((difference.inDays / 7).floor());
     } else {
-      return '${(difference.inDays / 30).floor()} months ago';
+      return l10n.monthsAgo((difference.inDays / 30).floor());
     }
   }
 
@@ -102,18 +103,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: const Color(0xFFF7F8FA),
         elevation: 0,
         titleSpacing: 16,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.agriculture_outlined, color: Color.fromARGB(255, 39, 163, 45), size: 32),
-            SizedBox(width: 8),
-            Text(
-              '',
-              style: TextStyle(
-                color: Color.fromARGB(255, 26, 152, 9),
-                fontWeight: FontWeight.w900,
-                fontSize: 24,
-              ),
-            ),
           ],
         ),
         actions: [
@@ -225,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Icon(Icons.history, size: 18, color: Colors.grey.shade700),
               const SizedBox(width: 6),
               Text(
-                'Last updated: ${getRelativeTime(latestUpdate)}',
+                AppLocalizations.of(context)!.lastUpdated(getRelativeTime(context, latestUpdate)),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -295,7 +287,7 @@ Widget _buildFilterSection() {
             SizedBox(
               width: 160,
               child: FilterDropdownButton<String>(
-                hintText: 'Commodity',
+                hintText: AppLocalizations.of(context)!.commodity,
                 items: cropsAsync.value ?? [],
                 value: _tempCrop,
                 onChanged: (value) {
@@ -309,7 +301,7 @@ Widget _buildFilterSection() {
             SizedBox(
               width: 160,
               child: FilterDropdownButton<StateModel>(
-                hintText: 'State',
+                hintText: AppLocalizations.of(context)!.state,
                 items: states,
                 itemToString: (state) => state.name,
                 value: selectedStateObj,
@@ -327,7 +319,7 @@ Widget _buildFilterSection() {
             SizedBox(
               width: 160,
               child: FilterDropdownButton<String>(
-                hintText: 'District',
+                hintText: AppLocalizations.of(context)!.district,
                 items: districtsAsync.maybeWhen(
                   data: (districts) =>
                       districts
@@ -349,7 +341,7 @@ Widget _buildFilterSection() {
             SizedBox(
               width: 160,
               child: FilterDropdownButton<String>(
-                hintText: 'Market',
+                hintText: AppLocalizations.of(context)!.market,
                 items: marketsAsync.value ?? [],
                 value: _tempMarket,
                 onChanged: (value) {
@@ -379,7 +371,7 @@ Widget _buildFilterSection() {
               ),
               // 👇 The magic sauce goes right here 
               onPressed: hasFilters ? _applyFilters : null,
-              child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(AppLocalizations.of(context)!.applyFilters, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
           const SizedBox(width: 12),
@@ -393,7 +385,7 @@ Widget _buildFilterSection() {
               ),
               // Optional: You can also disable the Clear button if there are no filters!
               onPressed: hasFilters ? _clearFilters : null, 
-              child: const Text('Clear All', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(AppLocalizations.of(context)!.clearAll, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
         ],

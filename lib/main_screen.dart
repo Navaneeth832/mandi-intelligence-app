@@ -5,6 +5,7 @@ import 'features/mandi_prices/screens/markets_screen.dart';
 import 'features/mandi_prices/widgets/bottom_nav_bar.dart';
 import 'features/mandi_prices/providers/filter_selection_provider.dart';
 import 'features/auth/screens/profile_screen.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -16,7 +17,7 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
 
-  Widget _getPage(int index) {
+  Widget _getPage(BuildContext context, int index) {
     switch (index) {
       case 0:
         return const HomeScreen();
@@ -25,8 +26,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         return const MarketsScreen();
 
       case 2:
-        return const Scaffold(
-          body: Center(child: Text('Alerts Screen')),
+        return Scaffold(
+          body: Center(child: Text(AppLocalizations.of(context)!.alertsScreen)),
         );
 
       case 3:
@@ -54,7 +55,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
     
     return Scaffold(
-      body: _getPage(_selectedIndex),
+      body: _getPage(context, _selectedIndex),
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,

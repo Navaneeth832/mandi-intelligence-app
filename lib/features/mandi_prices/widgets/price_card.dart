@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/mandi_price.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class PriceCard extends StatelessWidget {
   final MandiPrice price;
@@ -111,17 +112,17 @@ class PriceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildPriceColumn('High', price.highPrice, isHigh: true, isLow: false)),
+          Expanded(child: _buildPriceColumn(context, AppLocalizations.of(context)!.high, price.highPrice, isHigh: true, isLow: false)),
           Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)), // Column borders
-          Expanded(child: _buildPriceColumn('Modal', price.modalPrice, isHigh: false, isLow: false)),
+          Expanded(child: _buildPriceColumn(context, AppLocalizations.of(context)!.modal, price.modalPrice, isHigh: false, isLow: false)),
           Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)),
-          Expanded(child: _buildPriceColumn('Low', price.lowPrice, isHigh: false, isLow: true)),
+          Expanded(child: _buildPriceColumn(context, AppLocalizations.of(context)!.low, price.lowPrice, isHigh: false, isLow: true)),
         ],
       ),
     );
   }
 
-  Widget _buildPriceColumn(String label, double priceValue, {required bool isHigh, required bool isLow}) {
+  Widget _buildPriceColumn(BuildContext context, String label, double priceValue, {required bool isHigh, required bool isLow}) {
     final formattedPrice = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(priceValue);
     
     Color priceColor = const Color(0xFF111111);

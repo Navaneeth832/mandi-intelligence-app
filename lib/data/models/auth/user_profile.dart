@@ -5,6 +5,7 @@ class UserProfile {
   final int? stateId;
   final int? districtId;
   final String preferredLanguage;
+  final bool? profileComplete;
 
   UserProfile({
     required this.id,
@@ -13,6 +14,7 @@ class UserProfile {
     this.stateId,
     this.districtId,
     required this.preferredLanguage,
+    this.profileComplete,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -23,7 +25,12 @@ class UserProfile {
       stateId: json['state_id'],
       districtId: json['district_id'],
       preferredLanguage: json['preferred_language'] ?? 'English',
+      profileComplete: json['is_profile_complete'],
     );
+  }
+
+  bool get hasCompletedProfile {
+    return profileComplete ?? (stateId != null && districtId != null);
   }
 
   Map<String, dynamic> toJson() {
@@ -34,6 +41,7 @@ class UserProfile {
       'state_id': stateId,
       'district_id': districtId,
       'preferred_language': preferredLanguage,
+      'is_profile_complete': profileComplete,
     };
   }
 }

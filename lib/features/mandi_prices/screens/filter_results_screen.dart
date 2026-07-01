@@ -7,6 +7,7 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class FilterResultsScreen extends ConsumerStatefulWidget {
   final String? selectedCrop;
@@ -85,8 +86,8 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF111111)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Filter Results',
+        title: Text(
+          AppLocalizations.of(context)!.filterResults,
           style: TextStyle(
             color: Color.fromARGB(255, 39, 163, 45),
             fontWeight: FontWeight.bold,
@@ -121,7 +122,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 8.0),
                       child: Text(
-                        '${state.totalRecords} Results Found',
+                        AppLocalizations.of(context)!.resultsFound(state.totalRecords),
                         style: const TextStyle(
                           color: Color(0xFF111111),
                           fontSize: 16,
@@ -164,7 +165,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  '${activeFiltersList.length} Active Filters',
+                  AppLocalizations.of(context)!.activeFilters(activeFiltersList.length),
                   style: TextStyle(
                     color: Colors.grey.shade700,
                     fontSize: 14,
@@ -180,9 +181,9 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                   // This pops all screens until it hits the very first one (your root screen)
                   Navigator.popUntil(context, (route) => route.isFirst);
                 },
-                child: const Text(
-                  'Clear All',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.clearAll,
+                  style: const TextStyle(
                     color: Color.fromARGB(255, 39, 163, 45),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -208,9 +209,9 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'Commodity',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.commodity,
+                    style: const TextStyle(
                       fontSize: 11,
                       color: Color(0xFF666666),
                       fontWeight: FontWeight.w500,
@@ -231,8 +232,8 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'Variety',
+                  Text(
+                    AppLocalizations.of(context)!.variety,
                     style: TextStyle(
                       fontSize: 11,
                       color: Color(0xFF666666),
@@ -521,7 +522,7 @@ class _FilterResultCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Current Price / Quintal',
+                        AppLocalizations.of(context)!.currentPricePerQuintal,
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey.shade600,
@@ -568,9 +569,9 @@ class _FilterResultCard extends StatelessWidget {
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         alignment: WrapAlignment.end,
-                        children: const [
+                        children:  [
                           Text(
-                            'View Details',
+                            AppLocalizations.of(context)!.viewDetails,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,

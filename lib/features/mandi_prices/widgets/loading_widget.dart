@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({super.key});
@@ -18,7 +19,10 @@ class LoadingWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Loading prices...', style: TextStyle(fontSize: 18)),
+                  Text(
+                    AppLocalizations.of(context)!.loadingPrices,
+                    style: const TextStyle(fontSize: 18),
+                  ),
                   const SizedBox(height: 24),
                   ...List.generate(5, (index) => const _SkeletonCard()),
                 ],

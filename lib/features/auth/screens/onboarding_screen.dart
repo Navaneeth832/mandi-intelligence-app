@@ -9,6 +9,7 @@ import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.
 import 'package:mandi_intelligence_app/features/auth/providers/edit_profile_data_provider.dart';
 import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
 import 'package:mandi_intelligence_app/features/mandi_prices/widgets/filter_dropdown.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import 'package:mandi_intelligence_app/main_screen.dart';
 
 const Color _primaryGreen = Color.fromARGB(255, 26, 152, 9);
@@ -29,9 +30,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final List<Commodity> _selectedCrops = [];
   bool _isDataPopulated = false;
 
-  final List<String> _languages = ['English', 'Malayalam', 'Hindi'];
+    final List<String> _languages = ['en', 'ml', 'hi'];
+
+  String _languageLabel(BuildContext context, String code) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (code) {
+      case 'ml':
+        return l10n.malayalam;
+      case 'hi':
+        return l10n.hindi;
+      case 'en':
+      default:
+        return l10n.english;
+    }
+  }
 
   void _populateFields(EditProfileData data) {
+
     if (_isDataPopulated) return;
 
     final user = data.user;
@@ -52,16 +67,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       
       switch (user.preferredLanguage) {
         case 'en':
-          _selectedLanguage = 'English';
+        case 'English':
+        case 'english':
+          _selectedLanguage = 'en';
           break;
         case 'ml':
-          _selectedLanguage = 'Malayalam';
+        case 'Malayalam':
+        case 'മലയാളം':
+          _selectedLanguage = 'ml';
           break;
         case 'hi':
-          _selectedLanguage = 'Hindi';
+        case 'Hindi':
+        case 'हिंदी':
+          _selectedLanguage = 'hi';
           break;
         default:
-          _selectedLanguage = 'English';
+          _selectedLanguage = 'en';
       }
       _selectedCrops.clear();
       _selectedCrops.addAll(data.allCrops.where((Commodity c) => data.prefs.any((Map<String, dynamic> p) => p['commodity_id'] == c.id)));
@@ -82,7 +103,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         error: (err, stack) => Scaffold(
           backgroundColor: _bgColor,
           appBar: _buildAppBar(),
-          body: Center(child: Text('Error: $err')),
+          body: Center(child: Text(AppLocalizations.of(context)!.errorWithDetails(err.toString()))),
         ),
         data: (data) {
           _populateFields(data);
@@ -100,8 +121,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       centerTitle: true,
       leading: const BackButton(color: Colors.black87),
       title: Text(
-        widget.isEditMode ? "Edit Profile" : "Setup Profile",
-        style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
+        widget.isEditMode
+            ? AppLocalizations.of(context)!.editProfile
+            : AppLocalizations.of(context)!.setupProfile,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       actions: widget.isEditMode
           ? null
@@ -110,7 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
                 },
-                child: const Text('Skip', style: TextStyle(color: _primaryGreen, fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text( AppLocalizations.of(context)!.skip, style: TextStyle(color: _primaryGreen, fontWeight: FontWeight.bold, fontSize: 14)),
               ),
               const SizedBox(width: 8),
             ],
@@ -141,13 +168,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              widget.isEditMode ? "Update Your Profile" : "Finish Setting Up Your Profile",
+              widget.isEditMode ? AppLocalizations.of(context)!.updateProfile : AppLocalizations.of(context)!.finishProfile,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
             const SizedBox(height: 4),
             Text(
-              "Complete your profile to receive personalized mandi prices, crop recommendations, and market alerts.",
+              AppLocalizations.of(context)!.completeProfileDescription,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.3),
             ),
@@ -175,13 +202,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         String languageCode;
 
                         switch (_selectedLanguage) {
-                          case 'English':
+                          case 'en':
                             languageCode = 'en';
                             break;
-                          case 'Malayalam':
+                          case 'മലയാളം':
                             languageCode = 'ml';
                             break;
-                          case 'Hindi':
+                          case 'हिंदी':
                             languageCode = 'hi';
                             break;
                           default:
@@ -210,13 +237,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         }
                       } catch (e) {
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.failedToUpdateProfile(e.toString()))));
                         }
                       }
                     }
                   : null,
               child: Text(
-                widget.isEditMode ? 'Save Changes' : 'Continue',
+                widget.isEditMode ? AppLocalizations.of(context)!.saveChanges : AppLocalizations.of(context)!.continueLabel,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -240,8 +267,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Personal Information",
+            Text(
+              AppLocalizations.of(context)!.personalInformation,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _primaryGreen),
             ),
             const SizedBox(height: 16),
@@ -258,9 +285,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Expanded(
                   child: statesAsync.when(
                     loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),
-                    error: (err, stack) => Text('Error: $err'),
+                    error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
                     data: (states) => FilterDropdownButton<StateModel>(
-                      hintText: 'Select State',
+                      hintText: AppLocalizations.of(context)!.selectState,
                       items: states,
                       value: _selectedState,
                       itemToString: (state) => state.name,
@@ -283,13 +310,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             borderRadius: BorderRadius.circular(12.0),
                             border: Border.all(color: Colors.grey.shade300),
                           ),
-                          child: const Text('Select District', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                          child: Text(AppLocalizations.of(context)!.selectDistrict, style: const TextStyle(color: Colors.grey, fontSize: 14)),
                         )
                       : districtsAsync.when(
                           loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),
-                          error: (err, stack) => Text('Error: $err'),
+                          error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
                           data: (districts) => FilterDropdownButton<District>(
-                            hintText: 'Select District',
+                            hintText: AppLocalizations.of(context)!.selectDistrict,
                             items: districts,
                             value: _selectedDistrict,
                             itemToString: (district) => district.name,
@@ -301,13 +328,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 12),
             
-            _buildLabel("🌐 Preferred Language"),
+            _buildLabel(AppLocalizations.of(context)!.preferredLanguage),
             DropdownButtonFormField<String>(
               value: _selectedLanguage,
-              hint: const Text('Select Language', style: TextStyle(fontSize: 14)),
+              hint: Text(AppLocalizations.of(context)!.selectLanguage, style: const TextStyle(fontSize: 14)),
               isDense: true,
               icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-              items: _languages.map((lang) => DropdownMenuItem(value: lang, child: Text(lang, style: const TextStyle(fontSize: 14)))).toList(),
+              items: _languages.map((code) => DropdownMenuItem(value: code, child: Text(_languageLabel(context, code), style: const TextStyle(fontSize: 14)))).toList(),
               onChanged: (val) => setState(() => _selectedLanguage = val),
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -337,22 +364,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Preferred Crops",
+            Text(
+              AppLocalizations.of(context)!.preferredCrops,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _primaryGreen),
             ),
             const SizedBox(height: 4),
             Text(
-              "Choose up to 5 crops.",
+              AppLocalizations.of(context)!.chooseUpTo5Crops,
               style: TextStyle(fontSize: 13, color: Colors.grey[600]),
             ),
             const SizedBox(height: 12),
             
             cropsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),
-              error: (err, stack) => Text('Error: $err'),
+              error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
               data: (crops) => FilterDropdownButton<Commodity>(
-                hintText: 'Search crops...',
+                hintText: AppLocalizations.of(context)!.searchCrops,
                 items: crops,
                 value: null,
                 itemToString: (crop) => crop.name,
@@ -363,7 +390,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   } else if (_selectedCrops.length < 5) {
                     setState(() => _selectedCrops.add(val));
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You can select a maximum of 5 preferred crops.")));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.maxPreferredCrops)));
                   }
                 },
               ),

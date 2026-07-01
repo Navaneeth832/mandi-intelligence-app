@@ -1,10 +1,157 @@
 {
   "@@locale": "en",
+  "appName": "Mandi Intelligence",
+  "alertsScreen": "Alerts",
+  "help": "Help",
+  "somethingWentWrong": "Oh no, something went wrong!",
+  "tryAgain": "Try Again",
+  "noPricesFound": "No Prices Found",
+  "noPricesFoundSubtitle": "We couldn't find any market prices for your current selection.",
+  "loadingPrices": "Loading prices...",
+  "search": "Search...",
+  "noOptionsFound": "No options found",
+  "high": "High",
+  "modal": "Modal",
+  "low": "Low",
+  "home": "Home",
+  "markets": "Markets",
+  "alerts": "Alerts",
+  "profile": "Profile",
+  "justNow": "Just now",
+  "minutesAgo": "{count} mins ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "hoursAgo": "{count} hours ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "yesterday": "Yesterday",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "weeksAgo": "{count} weeks ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "monthsAgo": "{count} months ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lastUpdated": "Last updated: {relativeTime}",
+  "@lastUpdated": {
+    "placeholders": {
+      "relativeTime": {}
+    }
+  },
+  "commodity": "Commodity",
+  "state": "State",
+  "district": "District",
+  "market": "Market",
+  "applyFilters": "Apply Filters",
+  "clearAll": "Clear All",
+  "marketDirectory": "Market Directory",
+  "selectState": "Select State",
+  "selectDistrict":"Select District",
+  "loadingStates": "Loading states...",
+  "errorLoadingStates": "Error loading states",
+  "selectStateFirst": "Select state first",
+  "allDistricts": "All Districts",
+  "loadingDistricts": "Loading districts...",
+  "errorLoadingDistricts": "Error loading districts",
+  "searchMarkets": "Search markets...",
+  "marketDirectoryIntro": "Select a state to browse available markets.\nYou can further filter by district and search for specific markets.",
+  "noMarketsFound": "No markets found",
+  "marketsFound": "{count} Markets Found",
+  "@marketsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "filterResults": "Filter Results",
+  "resultsFound": "{count} Results Found",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activeFilters": "{count} Active Filters",
+  "@activeFilters": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "variety": "Variety",
+  "currentPricePerQuintal": "Current Price / Quintal",
+  "viewDetails": "View Details",
+  "noPreviewAvailable": "No preview available",
+  "priceSummary": "Price Summary",
+  "trendNote": "*Trend indicates the overall price shift compared to the oldest available historic record.",
+  "highPrice": "High Price",
+  "modalPrice": "Modal Price",
+  "lowPrice": "Low Price",
+  "noHistoricalDataAvailable": "No historical data available",
+  "recentTrend": "Recent Trend",
+  "recentRecordsMissingDates": "{count} recent records • Missing dates may exist",
+  "@recentRecordsMissingDates": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "modalPricePerQuintal": "Modal Price (₹/Quintal)",
+  "dates": "Dates",
+  "failedToLoadCommodities": "Failed to load commodities",
+  "marketInformation": "Market Information",
+  "availableCommoditiesToday": "Available Commodities Today",
+  "todaysCommodities": "Today's Commodities",
+  "noCommoditiesAvailableToday": "No commodities available today",
+  "errorWithDetails": "Error: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "user": "User",
+  "editProfile": "Edit Profile",
+  "logout": "Logout",
+  "personalInformation": "Personal Information",
+  "preferredCrops": "Preferred Crops",
+  "noPreferredCropsSelected": "No preferred crops selected.",
+  "completeProfileDescription": "Complete your profile to receive personalized mandi prices, crop recommendations, and market alerts.",
+  "failedToUpdateProfile": "Failed to update profile: {error}",
+  "@failedToUpdateProfile": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "saveChanges": "Save Changes",
+  "continueLabel": "Continue",
+  "preferredLanguage": "Preferred Language",
+  "selectLanguage": "Select Language",
+  "chooseUpTo5Crops": "Choose up to 5 crops.",
+  "searchCrops": "Search crops...",
+  "maxPreferredCrops": "You can select a maximum of 5 preferred crops.",
+  "english": "English",
+  "malayalam": "Malayalam",
+  "hindi": "Hindi",
   "login": "Login",
   "loggingIn": "Logging in...",
   "signup": "Sign Up",
   "liveMandiPrices": "Live Mandi Prices",
-  "profile": "Profile",
-  "logout": "Logout",
-  "language": "Language"
+  "language": "Language",
+  "setupProfile": "Setup Profile",
+  "skip": "Skip",
+  "updateProfile": "Update Your Profile",
+  "finishProfile": "Finish Setting Up Your Profile"
 }

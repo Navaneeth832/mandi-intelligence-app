@@ -30,9 +30,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   void _navigateToLogin() {
-    Navigator.pushReplacement(
-      context,
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
     );
   }
 
@@ -43,20 +48,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      if (next.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
-        );
-      }
-      if (!next.isLoading && previous?.isLoading == true && next.error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully. Please login.'), backgroundColor: Colors.green),
-        );
-        _navigateToLogin();
-      }
-    });
-
     final authState = ref.watch(authProvider);
 
     return Scaffold(
@@ -215,13 +206,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     child: ElevatedButton(
                       onPressed: authState.isLoading
                           ? null
-                          : () {
+                          : () async {
                               if (_formKey.currentState!.validate()) {
-                                ref.read(authProvider.notifier).register(
+                                final success = await ref.read(authProvider.notifier).register(
                                       _nameController.text,
                                       _emailController.text,
                                       _passwordController.text,
                                     );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Account created successfully. Please login.'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  _navigateToLogin();
+                                  return;
+                                }
+
+                                final error = ref.read(authProvider).error;
+                                if (error != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(error), backgroundColor: Colors.red),
+                                  );
+                                }
                               }
                             },
                       style: ElevatedButton.styleFrom(

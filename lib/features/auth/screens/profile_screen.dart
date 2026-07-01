@@ -7,6 +7,7 @@ import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.
 import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
 import 'package:mandi_intelligence_app/features/auth/screens/onboarding_screen.dart';
 import 'package:mandi_intelligence_app/features/auth/screens/login_screen.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 const Color _primaryGreen = Color.fromARGB(255, 26, 152, 9);
 const Color _backgroundColor = Color(0xFFF8F9FA);
@@ -26,12 +27,12 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.person_outline, color: _primaryGreen),
-            SizedBox(width: 8),
+            const Icon(Icons.person_outline, color: _primaryGreen),
+            const SizedBox(width: 8),
             Text(
-              'Profile',
+              AppLocalizations.of(context)!.profile,
               style: TextStyle(
                 color: _primaryGreen,
                 fontWeight: FontWeight.bold,
@@ -44,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
       ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: _primaryGreen)),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text(AppLocalizations.of(context)!.errorWithDetails(err.toString()))),
         data: (user) {
           final String name = user?.name ?? '';
           final String email = user?.email ?? '';
@@ -82,7 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  name.isNotEmpty ? name : 'User',
+                  name.isNotEmpty ? name : AppLocalizations.of(context)!.user,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -99,9 +100,9 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 const SizedBox(height: 32),
-                _buildPersonalInfoCard(stateIdStr, districtIdStr, language),
+                _buildPersonalInfoCard(context,stateIdStr, districtIdStr, language),
                 const SizedBox(height: 16),
-                _buildPreferredCropsCard(prefsAsync, cropsAsync),
+                _buildPreferredCropsCard(context,prefsAsync, cropsAsync),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -121,8 +122,8 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: const Text(
-                    'Edit Profile',
+                  child: Text(
+                    AppLocalizations.of(context)!.editProfile,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -137,8 +138,8 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text(
-                    'Logout',
+                  label: Text(
+                    AppLocalizations.of(context)!.logout,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.red),
                   ),
                   onPressed: () async {
@@ -161,7 +162,12 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPersonalInfoCard(String state, String district, String language) {
+ Widget _buildPersonalInfoCard(
+  BuildContext context,
+  String state,
+  String district,
+  String language,
+) {
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -179,12 +185,12 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(Icons.contact_page_outlined, color: _primaryGreen),
                 SizedBox(width: 8),
                 Text(
-                  'Personal Information',
+                  AppLocalizations.of(context)!.personalInformation,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -194,18 +200,23 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
-            _buildInfoRow(Icons.public, 'State', state),
+            _buildInfoRow(context,Icons.public, AppLocalizations.of(context)!.state, state),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
-            _buildInfoRow(Icons.location_city, 'District', district),
+            _buildInfoRow(context,Icons.location_city, AppLocalizations.of(context)!.district, district),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
-            _buildInfoRow(Icons.translate, 'Language', language),
+            _buildInfoRow(context,Icons.translate, AppLocalizations.of(context)!.language, language),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+ Widget _buildInfoRow(
+  BuildContext context,
+  IconData icon,
+  String label,
+  String value,
+){
     return Row(
       children: [
         Container(
@@ -234,10 +245,11 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreferredCropsCard(
+Widget _buildPreferredCropsCard(
+  BuildContext context,
   AsyncValue<List<Map<String, dynamic>>> prefsAsync,
   AsyncValue<List<Commodity>> cropsAsync,
-) {
+){
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -250,8 +262,8 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Preferred Crops',
+            Text(
+              AppLocalizations.of(context)!.preferredCrops,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -261,18 +273,18 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             prefsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator(color: _primaryGreen)),
-              error: (err, stack) => Text('Error: $err'),
+              error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
               data: (prefs) {
                 return cropsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: _primaryGreen)),
-                  error: (err, stack) => Text('Error: $err'),
+                  error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
                   data: (List<Commodity> allCrops) {
                     final selectedCrops = allCrops.where(
                         (Commodity c) =>
                             prefs.any((Map<String, dynamic> p) => p['commodity_id'] == c.id),
                       ).toList();
                     if (selectedCrops.isEmpty) {
-                      return const Text('No preferred crops selected.', style: TextStyle(color: Colors.grey));
+                      return Text(AppLocalizations.of(context)!.noPreferredCropsSelected, style: const TextStyle(color: Colors.grey));
                     }
                     return Wrap(
                       spacing: 12.0,

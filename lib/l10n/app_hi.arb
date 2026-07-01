@@ -1,10 +1,157 @@
 {
   "@@locale": "hi",
-  "login": "लॉगिन",
-  "loggingIn": "प्रवेश किया...",
-  "liveMandiPrices": "लाइव मंडी मूल्य",
-  "signup": "साइन अप",
+  "appName": "मंडी इंटेलिजेंस",
+  "alertsScreen": "अलर्ट",
+  "help": "मदद",
+  "somethingWentWrong": "अरे, कुछ गलत हो गया!",
+  "tryAgain": "फिर से कोशिश करें",
+  "noPricesFound": "कोई मूल्य नहीं मिला",
+  "noPricesFoundSubtitle": "आपकी चुनी हुई श्रेणी के लिए कोई मंडी भाव नहीं मिला।",
+  "loadingPrices": "मूल्य लोड हो रहे हैं...",
+  "search": "खोजें...",
+  "noOptionsFound": "कोई विकल्प नहीं मिला",
+  "high": "उच्च",
+  "modal": "मोडल",
+  "low": "न्यूनतम",
+  "home": "होम",
+  "markets": "मंडी",
+  "alerts": "अलर्ट",
   "profile": "प्रोफ़ाइल",
+  "justNow": "अभी अभी",
+  "selectDistrict":"Select District",
+  "minutesAgo": "{count} मिनट पहले",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "hoursAgo": "{count} घंटे पहले",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "yesterday": "कल",
+  "daysAgo": "{count} दिन पहले",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "weeksAgo": "{count} सप्ताह पहले",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "monthsAgo": "{count} महीने पहले",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lastUpdated": "अंतिम अपडेट: {relativeTime}",
+  "@lastUpdated": {
+    "placeholders": {
+      "relativeTime": {}
+    }
+  },
+  "commodity": "फसल",
+  "state": "राज्य",
+  "district": "जिला",
+  "market": "मंडी",
+  "applyFilters": "फ़िल्टर लागू करें",
+  "clearAll": "सभी हटाएँ",
+  "marketDirectory": "मंडी निर्देशिका",
+  "selectState": "राज्य चुनें",
+  "loadingStates": "राज्य लोड हो रहे हैं...",
+  "errorLoadingStates": "राज्य लोड करने में त्रुटि",
+  "selectStateFirst": "पहले राज्य चुनें",
+  "allDistricts": "सभी जिले",
+  "loadingDistricts": "जिले लोड हो रहे हैं...",
+  "errorLoadingDistricts": "जिले लोड करने में त्रुटि",
+  "searchMarkets": "मंडी खोजें...",
+  "marketDirectoryIntro": "उपलब्ध मंडियों को देखने के लिए राज्य चुनें.\nआप जिले के अनुसार फ़िल्टर कर सकते हैं और खास मंडियाँ खोज सकते हैं.",
+  "noMarketsFound": "कोई मंडी नहीं मिली",
+  "marketsFound": "{count} मंडियाँ मिलीं",
+  "@marketsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "filterResults": "फ़िल्टर परिणाम",
+  "resultsFound": "{count} परिणाम मिले",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activeFilters": "{count} सक्रिय फ़िल्टर",
+  "@activeFilters": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "variety": "किस्म",
+  "currentPricePerQuintal": "वर्तमान मूल्य / क्विंटल",
+  "viewDetails": "विवरण देखें",
+  "noPreviewAvailable": "पूर्वावलोकन उपलब्ध नहीं",
+  "priceSummary": "मूल्य सारांश",
+  "trendNote": "*रुझान सबसे पुराने उपलब्ध रिकॉर्ड की तुलना में कुल मूल्य बदलाव दिखाता है.",
+  "highPrice": "उच्च मूल्य",
+  "modalPrice": "मोडल मूल्य",
+  "lowPrice": "न्यूनतम मूल्य",
+  "noHistoricalDataAvailable": "ऐतिहासिक डेटा उपलब्ध नहीं",
+  "recentTrend": "हाल की प्रवृत्ति",
+  "recentRecordsMissingDates": "{count} हाल की प्रविष्टियाँ • कुछ तारीखें गायब हो सकती हैं",
+  "@recentRecordsMissingDates": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "modalPricePerQuintal": "मोडल मूल्य (₹/क्विंटल)",
+  "dates": "तिथियाँ",
+  "failedToLoadCommodities": "फसलें लोड नहीं हो सकीं",
+  "marketInformation": "मंडी जानकारी",
+  "availableCommoditiesToday": "आज उपलब्ध फसलें",
+  "todaysCommodities": "आज की फसलें",
+  "noCommoditiesAvailableToday": "आज कोई फसल उपलब्ध नहीं",
+  "errorWithDetails": "त्रुटि: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "user": "उपयोगकर्ता",
+  "editProfile": "प्रोफ़ाइल संपादित करें",
   "logout": "लॉग आउट",
-  "language": "भाषा"
+  "personalInformation": "व्यक्तिगत जानकारी",
+  "preferredCrops": "पसंदीदा फसलें",
+  "noPreferredCropsSelected": "कोई पसंदीदा फसल नहीं चुनी गई.",
+  "completeProfileDescription": "व्यक्तिगत मंडी भाव, फसल सुझाव और अलर्ट पाने के लिए अपनी प्रोफ़ाइल पूरी करें.",
+  "failedToUpdateProfile": "प्रोफ़ाइल अपडेट करने में विफल: {error}",
+  "@failedToUpdateProfile": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "saveChanges": "बदलाव सहेजें",
+  "continueLabel": "जारी रखें",
+  "preferredLanguage": "पसंदीदा भाषा",
+  "selectLanguage": "भाषा चुनें",
+  "chooseUpTo5Crops": "अधिकतम 5 फसलें चुनें.",
+  "searchCrops": "फसलें खोजें...",
+  "maxPreferredCrops": "आप अधिकतम 5 पसंदीदा फसलें चुन सकते हैं.",
+  "english": "अंग्रेज़ी",
+  "malayalam": "मलयालम",
+  "hindi": "हिंदी",
+  "login": "लॉगिन",
+  "loggingIn": "प्रवेश किया जा रहा है...",
+  "signup": "साइन अप",
+  "liveMandiPrices": "लाइव मंडी मूल्य",
+  "language": "भाषा",
+  "setupProfile": "प्रोफ़ाइल सेट करें",
+  "skip": "छोड़ें",
+  "updateProfile": "अपनी प्रोफ़ाइल अपडेट करें",
+  "finishProfile": "प्रोफ़ाइल सेट करना पूरा करें"
 }

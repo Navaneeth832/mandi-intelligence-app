@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({super.key});
@@ -19,13 +20,13 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'No Prices Found',
+              AppLocalizations.of(context)!.noPricesFound,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
-              'We couldn\'t find any market prices for your current selection.',
+              AppLocalizations.of(context)!.noPricesFoundSubtitle,
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),

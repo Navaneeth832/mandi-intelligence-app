@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/services/mandi_api_service.dart';
 import 'filter_results_screen.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MarketDirectoryDetailScreen extends ConsumerStatefulWidget {
   final MarketDirectory market;
@@ -70,7 +71,7 @@ Widget build(BuildContext context) {
           }
 
           if (snapshot.hasError) {
-            return _buildErrorState(snapshot.error.toString());
+            return _buildErrorState(context, snapshot.error.toString());
           }
 
           final data = snapshot.data!;
@@ -96,8 +97,8 @@ Widget build(BuildContext context) {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Market Information',
+                    Text(
+                      AppLocalizations.of(context)!.marketInformation,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -158,8 +159,8 @@ Widget build(BuildContext context) {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Available Commodities Today',
+                    Text(
+                      AppLocalizations.of(context)!.availableCommoditiesToday,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
@@ -174,8 +175,8 @@ Widget build(BuildContext context) {
               const SizedBox(height: 24),
 
               /// SECTION TITLE
-              const Text(
-                "Today's Commodities",
+              Text(
+                AppLocalizations.of(context)!.todaysCommodities,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -197,16 +198,16 @@ Widget build(BuildContext context) {
                       color: const Color(0xFFE5E7EB),
                     ),
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.inventory_2_outlined,
                         size: 40,
                         color: Colors.grey,
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        'No commodities available today',
+                        AppLocalizations.of(context)!.noCommoditiesAvailableToday,
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 15,
@@ -291,7 +292,7 @@ Widget _buildLoadingState() {
   );
 }
 
-Widget _buildErrorState(String error) {
+Widget _buildErrorState(BuildContext context, String error) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(24),
@@ -309,7 +310,7 @@ Widget _buildErrorState(String error) {
         ),
         const SizedBox(height: 12),
         Text(
-          error,
+          AppLocalizations.of(context)!.errorWithDetails(error),
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.red,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class ErrorStateWidget extends StatelessWidget {
   final String errorMessage;
@@ -26,7 +27,7 @@ class ErrorStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Oh no, something went wrong!',
+              AppLocalizations.of(context)!.somethingWentWrong,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -40,7 +41,7 @@ class ErrorStateWidget extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context)!.tryAgain),
             ),
           ],
         ),

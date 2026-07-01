@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/models/state_model.dart';
 import '../../../data/models/district_model.dart';
+import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import '../providers/mandi_prices_provider.dart';
 import '../widgets/filter_dropdown.dart';
 import 'market_directory_detail_screen.dart';
@@ -75,8 +76,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Market Directory',
+                  Text(
+                    AppLocalizations.of(context)!.marketDirectory,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -89,7 +90,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                       Expanded(
                         child: statesAsync.when(
                           data: (states) => FilterDropdownButton<StateModel>(
-                            hintText: 'Select State',
+                            hintText: AppLocalizations.of(context)!.selectState,
                             items: states,
                             value: _selectedState,
                             itemToString: (s) => s.name,
@@ -100,17 +101,17 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                               });
                             },
                           ),
-                          loading: () => const Text('Loading states...'),
-                          error: (_, __) => const Text('Error loading states'),
+                          loading: () => Text(AppLocalizations.of(context)!.loadingStates),
+                          error: (_, __) => Text(AppLocalizations.of(context)!.errorLoadingStates),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: _selectedState == null
-                            ? const Text('Select state first')
+                            ? Text(AppLocalizations.of(context)!.selectStateFirst)
                             : districtsAsync.when(
                                 data: (districts) => FilterDropdownButton<District>(
-                                  hintText: 'All Districts',
+                                  hintText: AppLocalizations.of(context)!.allDistricts,
                                   items: districts,
                                   value: _selectedDistrict,
                                   itemToString: (d) => d.name,
@@ -120,8 +121,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                                     });
                                   },
                                 ),
-                                loading: () => const Text('Loading districts...'),
-                                error: (_, __) => const Text('Error loading districts'),
+                                loading: () => Text(AppLocalizations.of(context)!.loadingDistricts),
+                                error: (_, __) => Text(AppLocalizations.of(context)!.errorLoadingDistricts),
                               ),
                       ),
                     ],
@@ -134,11 +135,11 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                     ),
                     child: TextField(
                       controller: _searchController,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search, color: Color(0xFF5F6368)),
-                        hintText: 'Search markets...',
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFF5F6368)),
+                        hintText: AppLocalizations.of(context)!.searchMarkets,
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -166,8 +167,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 color: Color(0xFF14522B),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Market Directory',
+              Text(
+                AppLocalizations.of(context)!.marketDirectory,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -175,8 +176,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Select a state to browse available markets.\n'
-                'You can further filter by district and search for specific markets.',
+                AppLocalizations.of(context)!.marketDirectoryIntro,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade600,
@@ -190,17 +190,17 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                   : marketsState!.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: Color(0xFF14522B))),
-                error: (err, stack) => Center(child: Text('Error: $err')),
+                error: (err, stack) => Center(child: Text(AppLocalizations.of(context)!.errorWithDetails(err.toString()))),
                 data: (state) {
                   if (state.items.isEmpty) {
-                    return const Center(child: Text('No markets found'));
+                    return Center(child: Text(AppLocalizations.of(context)!.noMarketsFound));
                   }
                   return Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Text(
-                          '${state.totalRecords} Markets Found',
+                          AppLocalizations.of(context)!.marketsFound(state.totalRecords),
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
