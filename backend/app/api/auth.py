@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.user import UserRegister, UserLogin, UserResponse
+from app.schemas.user import (
+    SendOTPRequest,
+    UserRegister,
+    UserLogin,
+    UserResponse,
+    VerifyOTPRequest,
+)
 from app.services.auth_service import AuthService
 from app.core.database import get_db
 
@@ -12,6 +18,36 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
+
+@router.post("/send-otp")
+def send_otp(
+    request: SendOTPRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        return AuthService.send_otp(db, request)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.post("/verify-otp")
+def verify_otp(
+    request: VerifyOTPRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        return AuthService.verify_otp(db, request)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
 
 @router.post("/register", response_model=UserResponse)
@@ -29,7 +65,7 @@ def register(
         )
 
 
-@router.post("/login")#, response_model=LoginResponse)
+@router.post("/login")
 def login(
     user: UserLogin,
     db: Session = Depends(get_db)

@@ -3,14 +3,27 @@ from uuid import UUID
 from typing import List
 
 
+class SendOTPRequest(BaseModel):
+    identifier: str
+
+
+class VerifyOTPRequest(BaseModel):
+    identifier: str
+    otp: str
+
+
 class UserRegister(BaseModel):
     name: str
-    email: EmailStr
+    identifier: str
     password: str
+    verification_token: str
+    state_id: int | None = None
+    district_id: int | None = None
+    preferred_language: str = "en"
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    identifier: str
     password: str
 
 
@@ -24,7 +37,10 @@ class UserProfileUpdate(BaseModel):
 class UserResponse(BaseModel):
     id: UUID
     name: str
-    email: EmailStr
+    email: EmailStr | None = None
+    phone_number: str | None = None
+    registration_method: str
+    is_verified: bool
     state_id: int | None
     district_id: int | None
     preferred_language: str

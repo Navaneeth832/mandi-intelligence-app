@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import Boolean, CheckConstraint, Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -14,7 +14,9 @@ class User(Base):
 
     name = Column(String(100), nullable=False)
 
-    email = Column(String(255), unique=True, nullable=False)
+    email = Column(String(255), unique=True, nullable=True)
+
+    phone_number = Column(String(20), unique=True, nullable=True)
 
     password_hash = Column(String, nullable=False)
 
@@ -23,6 +25,10 @@ class User(Base):
     district_id = Column(Integer, ForeignKey("districts.id"))
 
     preferred_language = Column(String(20), default="en")
+
+    registration_method = Column(String(20), nullable=False)
+
+    is_verified = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -45,4 +51,16 @@ class User(Base):
         "RefreshToken",
         back_populates="user",
         cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(email IS NOT NULL AND phone_number IS NULL) OR "
+            "(email IS NULL AND phone_number IS NOT NULL)",
+            name="ck_users_exactly_one_identifier",
+        ),
+        CheckConstraint(
+            "registration_method IN ('email', 'phone')",
+            name="ck_users_registration_method",
+        ),
     )
