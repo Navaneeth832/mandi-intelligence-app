@@ -6,18 +6,79 @@ import '../../../data/models/auth/login_request.dart';
 import '../../../data/models/auth/signup_request.dart';
 import '../../../data/models/auth/user_profile.dart';
 
+const Object _unset = Object();
+
 class AuthState {
   final UserProfile? currentUser;
-  final bool isLoading;
+  final bool isInitializing;
+  final bool isLoginLoading;
+  final bool isSendingOtp;
+  final bool isVerifyingOtp;
+  final bool isRegistering;
   final String? error;
   final bool isAuthenticated;
+  final String? signupIdentifier;
+  final String? signupRegistrationMethod;
+  final String? verificationToken;
+  final bool otpVerified;
 
   AuthState({
     this.currentUser,
-    this.isLoading = false,
+    this.isInitializing = false,
+    this.isLoginLoading = false,
+    this.isSendingOtp = false,
+    this.isVerifyingOtp = false,
+    this.isRegistering = false,
     this.error,
     this.isAuthenticated = false,
+    this.signupIdentifier,
+    this.signupRegistrationMethod,
+    this.verificationToken,
+    this.otpVerified = false,
   });
+
+  bool get isBusy =>
+      isInitializing || isLoginLoading || isSendingOtp || isVerifyingOtp || isRegistering;
+
+  bool get hasRequestedOtp => signupIdentifier != null;
+
+  bool get canRegister => otpVerified && verificationToken != null;
+
+  AuthState copyWith({
+    UserProfile? currentUser,
+    bool? isInitializing,
+    bool? isLoginLoading,
+    bool? isSendingOtp,
+    bool? isVerifyingOtp,
+    bool? isRegistering,
+    Object? error = _unset,
+    bool? isAuthenticated,
+    Object? signupIdentifier = _unset,
+    Object? signupRegistrationMethod = _unset,
+    Object? verificationToken = _unset,
+    bool? otpVerified,
+  }) {
+    return AuthState(
+      currentUser: currentUser ?? this.currentUser,
+      isInitializing: isInitializing ?? this.isInitializing,
+      isLoginLoading: isLoginLoading ?? this.isLoginLoading,
+      isSendingOtp: isSendingOtp ?? this.isSendingOtp,
+      isVerifyingOtp: isVerifyingOtp ?? this.isVerifyingOtp,
+      isRegistering: isRegistering ?? this.isRegistering,
+      error: identical(error, _unset) ? this.error : error as String?,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      signupIdentifier: identical(signupIdentifier, _unset)
+          ? this.signupIdentifier
+          : signupIdentifier as String?,
+      signupRegistrationMethod: identical(signupRegistrationMethod, _unset)
+          ? this.signupRegistrationMethod
+          : signupRegistrationMethod as String?,
+      verificationToken: identical(verificationToken, _unset)
+          ? this.verificationToken
+          : verificationToken as String?,
+      otpVerified: otpVerified ?? this.otpVerified,
+    );
+  }
 }
 
 class AuthNotifier extends Notifier<AuthState> {
@@ -44,8 +105,32 @@ class AuthNotifier extends Notifier<AuthState> {
   AuthState build() {
     Future.microtask(_checkAuth);
 
-    return AuthState(
-      isLoading: true,
+    return AuthState(isInitializing: true);
+  }
+
+
+  String _formatError(Object error) {
+    final raw = error.toString();
+    return raw
+        .replaceFirst('Exception: ', '')
+        .replaceFirst('ClientException: ', '')
+        .trim();
+  }
+
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+
+  void resetSignupFlow() {
+    state = state.copyWith(
+      error: null,
+      signupIdentifier: null,
+      signupRegistrationMethod: null,
+      verificationToken: null,
+      otpVerified: false,
+      isSendingOtp: false,
+      isVerifyingOtp: false,
+      isRegistering: false,
     );
   }
 
@@ -64,18 +149,27 @@ class AuthNotifier extends Notifier<AuthState> {
       state = AuthState(
         currentUser: user,
         isAuthenticated: user != null,
-        isLoading: false,
+        isInitializing: false,
       );
     } catch (e) {
-      state = AuthState(isLoading: false, isAuthenticated: false, error: e.toString());
+      state = AuthState(
+        isInitializing: false,
+        isAuthenticated: false,
+        error: _formatError(e),
+      );
     }
   }
 
-  Future<UserProfile?> login(String email, String password) async {
-    state = AuthState(isLoading: true);
+  Future<UserProfile?> login(String identifier, String password) async {
+    state = state.copyWith(
+      isLoginLoading: true,
+      error: null,
+    );
     try {
       final repo = ref.read(authRepositoryProvider);
-      final response = await repo.login(LoginRequest(email: email, password: password));
+      final response = await repo.login(
+        LoginRequest(identifier: identifier, password: password),
+      );
       ref.invalidate(profileNotifierProvider);
       ref.invalidate(preferredCropsNotifierProvider);
       final user = response.user;
@@ -85,36 +179,128 @@ class AuthNotifier extends Notifier<AuthState> {
       state = AuthState(
         currentUser: user,
         isAuthenticated: true,
-        isLoading: false,
+        isInitializing: false,
+        isLoginLoading: false,
       );
       return user;
     } catch (e) {
-      state = AuthState(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        isLoginLoading: false,
+        error: _formatError(e),
+      );
       return null;
     }
   }
 
-  Future<bool> register(String name, String email, String password) async {
-    state = AuthState(isLoading: true);
+  Future<bool> sendOtp(String identifier) async {
+    if (state.isSendingOtp || state.isVerifyingOtp || state.isRegistering) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isSendingOtp: true,
+      error: null,
+      verificationToken: null,
+      otpVerified: false,
+    );
+
     try {
       final repo = ref.read(authRepositoryProvider);
-      await repo.register(SignupRequest(name: name, email: email, password: password));
-      state = AuthState(isLoading: false, isAuthenticated: false);
+      final response = await repo.sendOTP(identifier.trim());
+      state = state.copyWith(
+        isSendingOtp: false,
+        signupIdentifier: response.identifier,
+        signupRegistrationMethod: response.registrationMethod,
+        verificationToken: null,
+        otpVerified: false,
+        error: null,
+      );
       return true;
     } catch (e) {
-      state = AuthState(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        isSendingOtp: false,
+        error: _formatError(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyOtp(String otp) async {
+    final identifier = state.signupIdentifier;
+    if (identifier == null || state.isSendingOtp || state.isVerifyingOtp || state.isRegistering) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isVerifyingOtp: true,
+      error: null,
+    );
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.verifyOTP(identifier, otp.trim());
+      state = state.copyWith(
+        isVerifyingOtp: false,
+        verificationToken: response.verificationToken,
+        otpVerified: true,
+        error: null,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isVerifyingOtp: false,
+        error: _formatError(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> register(String name, String password) async {
+    final identifier = state.signupIdentifier;
+    final token = state.verificationToken;
+
+    if (identifier == null || token == null || !state.otpVerified) {
+      state = state.copyWith(error: 'Please verify your OTP before registering.');
+      return false;
+    }
+
+    if (state.isSendingOtp || state.isVerifyingOtp || state.isRegistering) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isRegistering: true,
+      error: null,
+    );
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.register(
+        SignupRequest(
+          name: name.trim(),
+          identifier: identifier,
+          password: password,
+          verificationToken: token,
+        ),
+      );
+      state = AuthState();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isRegistering: false,
+        error: _formatError(e),
+      );
       return false;
     }
   }
 
   Future<void> logout() async {
-    state = AuthState(isLoading: true);
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();
     ref.read(localeProvider.notifier).setLocale('en');
     ref.invalidate(profileNotifierProvider);
     ref.invalidate(preferredCropsNotifierProvider);
-    state = AuthState(isAuthenticated: false);
+    state = AuthState();
   }
 }
 

@@ -1,7 +1,10 @@
 class UserProfile {
   final String id;
   final String name;
-  final String email;
+  final String? email;
+  final String? phoneNumber;
+  final String registrationMethod;
+  final bool isVerified;
   final int? stateId;
   final int? districtId;
   final String preferredLanguage;
@@ -10,7 +13,10 @@ class UserProfile {
   UserProfile({
     required this.id,
     required this.name,
-    required this.email,
+    this.email,
+    this.phoneNumber,
+    required this.registrationMethod,
+    required this.isVerified,
     this.stateId,
     this.districtId,
     required this.preferredLanguage,
@@ -38,14 +44,24 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      email: json['email']?.toString(),
+      phoneNumber: json['phone_number']?.toString(),
+      registrationMethod: (json['registration_method'] ?? '').toString(),
+      isVerified: json['is_verified'] == true,
       stateId: json['state_id'],
       districtId: json['district_id'],
       preferredLanguage: _normalizeLanguageCode(json['preferred_language']),
       profileComplete: json['is_profile_complete'],
     );
+  }
+
+  String get primaryIdentifier {
+    if (registrationMethod == 'phone') {
+      return phoneNumber ?? email ?? '';
+    }
+    return email ?? phoneNumber ?? '';
   }
 
   bool get hasCompletedProfile {
@@ -57,6 +73,9 @@ class UserProfile {
       'id': id,
       'name': name,
       'email': email,
+      'phone_number': phoneNumber,
+      'registration_method': registrationMethod,
+      'is_verified': isVerified,
       'state_id': stateId,
       'district_id': districtId,
       'preferred_language': preferredLanguage,

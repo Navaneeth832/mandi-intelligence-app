@@ -13,26 +13,32 @@ class AuthRepository {
 
   static const _tokenKey = 'access_token';
 
-  Future<AuthResponse> register(SignupRequest request) async {
-    final response = await _apiService.register(request);
-    // Assuming registration doesn't automatically login
-    return response;
+  Future<SendOtpResponse> sendOTP(String identifier) async {
+    return _apiService.sendOTP(identifier);
+  }
+
+  Future<VerifyOtpResponse> verifyOTP(String identifier, String otp) async {
+    return _apiService.verifyOTP(identifier, otp);
+  }
+
+  Future<UserProfile> register(SignupRequest request) async {
+    return _apiService.register(request);
   }
 
   Future<AuthResponse> login(LoginRequest request) async {
-        await _storage.deleteAll();
+    await _storage.deleteAll();
 
-        final response = await _apiService.login(request);
+    final response = await _apiService.login(request);
 
-        if (response.accessToken != null) {
-          await _storage.write(
-            key: _tokenKey,
-            value: response.accessToken!,
-          );
-        }
+    if (response.accessToken != null) {
+      await _storage.write(
+        key: _tokenKey,
+        value: response.accessToken!,
+      );
+    }
 
-        return response;
-      }
+    return response;
+  }
 
   Future<void> logout() async {
     await _storage.deleteAll();

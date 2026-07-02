@@ -1,19 +1,22 @@
 class SignupRequest {
   final String name;
-  final String email;
+  final String identifier;
   final String password;
+  final String verificationToken;
 
   SignupRequest({
     required this.name,
-    required this.email,
+    required this.identifier,
     required this.password,
+    required this.verificationToken,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'email': email,
+      'identifier': identifier,
       'password': password,
+      'verification_token': verificationToken,
     };
   }
 }

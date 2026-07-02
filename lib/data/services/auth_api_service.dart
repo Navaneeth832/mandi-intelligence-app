@@ -4,11 +4,73 @@ import '../../core/constants/api_constants.dart';
 import '../models/auth/auth_response.dart';
 import '../models/auth/login_request.dart';
 import '../models/auth/signup_request.dart';
+import '../models/auth/user_profile.dart';
 
 class AuthApiService {
   final String baseUrl = ApiConstants.baseUrl;
 
-  Future<AuthResponse> register(SignupRequest request) async {
+  String _extractErrorMessage(http.Response response, String fallback) {
+    final body = response.body.trim();
+    if (body.isEmpty) {
+      return fallback;
+    }
+
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        final detail = decoded['detail'];
+        if (detail is String && detail.isNotEmpty) {
+          return detail;
+        }
+
+        final message = decoded['message'];
+        if (message is String && message.isNotEmpty) {
+          return message;
+        }
+      }
+    } catch (_) {
+      // Fall back to the raw body below.
+    }
+
+    return body;
+  }
+
+  Future<SendOtpResponse> sendOTP(String identifier) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/send-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'identifier': identifier}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to send OTP'),
+      );
+    }
+
+    return SendOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<VerifyOtpResponse> verifyOTP(String identifier, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/verify-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'identifier': identifier,
+        'otp': otp,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to verify OTP'),
+      );
+    }
+
+    return VerifyOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<UserProfile> register(SignupRequest request) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/register'),
       headers: {'Content-Type': 'application/json'},
@@ -16,10 +78,12 @@ class AuthApiService {
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to register: ${response.body}');
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to register'),
+      );
     }
 
-    return AuthResponse.fromJson(jsonDecode(response.body));
+    return UserProfile.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
   Future<AuthResponse> login(LoginRequest request) async {
@@ -30,10 +94,12 @@ class AuthApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to login: ${response.body}');
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to login'),
+      );
     }
 
-    return AuthResponse.fromJson(jsonDecode(response.body));
+    return AuthResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
   Future<AuthResponse> getProfile(String token) async {
@@ -121,7 +187,7 @@ Future<void> savePreferredCrops(
 
   if (response.statusCode != 200) {
     throw Exception(
-      'Failed to update profile: ${response.body}',
+      _extractErrorMessage(response, 'Failed to update profile'),
     );
   }
 }

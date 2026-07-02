@@ -17,7 +17,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   
@@ -28,9 +28,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(authProvider.notifier).clearError();
+      }
+    });
   }
 
   void _navigateToSignup() {
@@ -45,24 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    String? displayError;
-
-    if (authState.error != null) {
-      displayError = authState.error!;
-
-      // Extract FastAPI {"detail":"..."} message
-      final match = RegExp(r'\{"detail":"([^"]+)"\}').firstMatch(displayError);
-
-      if (match != null) {
-        displayError = match.group(1);
-      }
-
-      // Remove common prefixes
-      displayError = displayError
-          ?.replaceFirst('Exception: ', '')
-          .replaceFirst('ClientException: ', '')
-          .trim();
-    }
+    final displayError = authState.error;
 
     return Scaffold(
       backgroundColor: _backgroundColor,
@@ -105,16 +98,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     children: [
                       AuthTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        prefixIcon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
+                        controller: _identifierController,
+                        hintText: 'Email or Mobile Number',
+                        prefixIcon: Icons.badge_outlined,
+                        keyboardType: TextInputType.text,
+                        autofillHints: const [
+                          AutofillHints.username,
+                          AutofillHints.email,
+                          AutofillHints.telephoneNumber,
+                        ],
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your email';
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                            return 'Please enter a valid email';
-                          }
+                          if (value == null || value.trim().isEmpty) return 'Please enter your email or mobile number';
                           return null;
                         },
                       ),
@@ -171,6 +165,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Expanded(
                                 child: Text(
                                   displayError!,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 13,
@@ -183,10 +179,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 20),
                       ],
                     PrimaryAuthButton(
-                      text: authState.isLoading
+                      text: authState.isLoginLoading
                           ? AppLocalizations.of(context)!.loggingIn
                           : AppLocalizations.of(context)!.login,
-                      onPressed: authState.isLoading
+                      onPressed: authState.isLoginLoading
                           ? null
                           : () async {
                               if (_formKey.currentState!.validate()) {
@@ -195,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 TextInput.finishAutofillContext();
 
                                 final user = await ref.read(authProvider.notifier).login(
-                                      _emailController.text.trim(),
+                                      _identifierController.text.trim(),
                                       _passwordController.text,
                                     );
 
