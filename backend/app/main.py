@@ -28,7 +28,7 @@ async def fetch_prices_task():
             print(f"[Scheduler Error] Task 1 price_fetcher encountered an error: {e}. Retrying in 1 hour.")
         await asyncio.sleep(3600)
 
-
+'''
 async def generate_mapping_task():
     """Periodic task to generate mappings every 12 hours."""
     await asyncio.sleep(50)
@@ -41,7 +41,7 @@ async def generate_mapping_task():
         except Exception as e:
             print(f"[Scheduler Error] Task 2 generate_mapping encountered an error: {e}. Retrying in 12 hours.")
         await asyncio.sleep(12 * 3600)
-
+'''
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     # Cleanup tasks on shutdown
     price_task.cancel()
     #mapping_task.cancel()
-    await asyncio.gather(price_task, mapping_task, return_exceptions=True)
+    await asyncio.gather(price_task, return_exceptions=True)
 
 
 app = FastAPI(lifespan=lifespan)
