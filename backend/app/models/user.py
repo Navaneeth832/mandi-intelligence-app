@@ -40,6 +40,15 @@ class User(Base):
 
     state = relationship("State")
     district = relationship("District")
+    
+    @property
+    def state_name(self):
+        return self.state.name if self.state else None
+
+
+    @property
+    def district_name(self):
+        return self.district.name if self.district else None
 
     crop_preferences = relationship(
         "UserCropPreference",

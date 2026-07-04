@@ -41,8 +41,13 @@ class UserResponse(BaseModel):
     phone_number: str | None = None
     registration_method: str
     is_verified: bool
+
     state_id: int | None
-    district_id: int | None
+    district_id: int |None
+
+    state_name: str | None = None
+    district_name: str | None = None
+
     preferred_language: str
 
     class Config:

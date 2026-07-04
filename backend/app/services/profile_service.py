@@ -1,11 +1,19 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.user import User
 from app.schemas.user import UserProfileUpdate
 
 
-def get_profile(current_user: User) -> User:
-    return current_user
+def get_profile(db: Session, current_user: User) -> User:
+    return (
+        db.query(User)
+        .options(
+            joinedload(User.state),
+            joinedload(User.district),
+        )
+        .filter(User.id == current_user.id)
+        .first()
+    )
 
 
 def update_profile(
@@ -19,6 +27,13 @@ def update_profile(
     current_user.preferred_language = profile_data.preferred_language
 
     db.commit()
-    db.refresh(current_user)
 
-    return current_user
+    return (
+        db.query(User)
+        .options(
+            joinedload(User.state),
+            joinedload(User.district),
+        )
+        .filter(User.id == current_user.id)
+        .first()
+    )

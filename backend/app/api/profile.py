@@ -20,10 +20,10 @@ router = APIRouter(
 
 @router.get("", response_model=UserResponse)
 def read_profile(
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return get_profile(current_user)
-
+    return get_profile(db, current_user)
 
 @router.put("", response_model=UserResponse)
 def edit_profile(

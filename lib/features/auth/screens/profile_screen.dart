@@ -60,8 +60,8 @@ class ProfileScreen extends ConsumerWidget {
               languageCode ??
               'English';
 
-          final String stateIdStr = user?.stateId?.toString() ?? '-';
-          final String districtIdStr = user?.districtId?.toString() ?? '-';
+          final String stateName = user?.stateName ?? '-';
+          final String districtName = user?.districtName ?? '-';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -100,7 +100,12 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 const SizedBox(height: 32),
-                _buildPersonalInfoCard(context,stateIdStr, districtIdStr, language),
+                _buildPersonalInfoCard(
+                  context,
+                  stateName,
+                  districtName,
+                  language,
+                ),
                 const SizedBox(height: 16),
                 _buildPreferredCropsCard(context,prefsAsync, cropsAsync),
                 const SizedBox(height: 32),

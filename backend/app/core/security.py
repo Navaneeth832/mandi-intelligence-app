@@ -3,6 +3,10 @@ from typing import Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import os
+from app.core.config import settings
+
+
 
 # ==============================
 # Password Hashing
@@ -17,7 +21,8 @@ pwd_context = CryptContext(
 # JWT Configuration
 # ==============================
 
-SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
+SECRET_KEY = settings.SECRET_KEY
+
 
 ALGORITHM = "HS256"
 

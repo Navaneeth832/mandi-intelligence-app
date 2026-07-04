@@ -3,6 +3,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
+from app.services.email_service import EmailService
 
 from app.core.security import hash_password, verify_password
 from app.models.otp_verification import OTPVerification
@@ -94,13 +95,7 @@ class OTPService:
 
     @staticmethod
     def send_email_otp(email: str, otp: str) -> None:
-        """Development stub."""
-
-        print("\n" + "=" * 60)
-        print(f"DEV EMAIL OTP")
-        print(f"Recipient : {email}")
-        print(f"OTP       : {otp}")
-        print("=" * 60 + "\n")
+        EmailService.send_otp_email(email, otp)
 
     @staticmethod
     def send_sms_otp(phone_number: str, otp: str) -> None:

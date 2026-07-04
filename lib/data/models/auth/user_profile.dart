@@ -9,6 +9,8 @@ class UserProfile {
   final int? districtId;
   final String preferredLanguage;
   final bool? profileComplete;
+  final String? stateName;
+  final String? districtName;
 
   UserProfile({
     required this.id,
@@ -21,6 +23,8 @@ class UserProfile {
     this.districtId,
     required this.preferredLanguage,
     this.profileComplete,
+    this.stateName,
+    this.districtName
   });
 
   static String _normalizeLanguageCode(String? value) {
@@ -54,6 +58,8 @@ class UserProfile {
       districtId: json['district_id'],
       preferredLanguage: _normalizeLanguageCode(json['preferred_language']),
       profileComplete: json['is_profile_complete'],
+      stateName: json['state_name'],
+      districtName: json['district_name']
     );
   }
 
@@ -78,6 +84,8 @@ class UserProfile {
       'is_verified': isVerified,
       'state_id': stateId,
       'district_id': districtId,
+      'state_name': stateName,
+      'district_name': districtName,
       'preferred_language': preferredLanguage,
       'is_profile_complete': profileComplete,
     };
