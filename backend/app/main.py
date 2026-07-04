@@ -15,7 +15,7 @@ from app.api.auth import router as auth_router
 from app.api.profile import router as profile_router
 from app.api.crop_preferences import router as crop_preferences_router
 
-'''
+
 async def fetch_prices_task():
     """Periodic task to fetch live mandi prices every 1 hour."""
     while True:
@@ -52,10 +52,10 @@ async def lifespan(app: FastAPI):
     # Cleanup tasks on shutdown
     price_task.cancel()
     #mapping_task.cancel()
-    await asyncio.gather(price_task, mapping_task, return_exceptions=True)'''
+    await asyncio.gather(price_task, mapping_task, return_exceptions=True)
 
 
-app = FastAPI()#lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
