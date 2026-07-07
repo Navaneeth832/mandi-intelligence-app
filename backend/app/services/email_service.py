@@ -1,42 +1,38 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+#import time
 
 from app.core.config import settings
+import resend
+from app.core.config import settings
+
+resend.api_key = settings.RESEND_API_KEY
+
 
 
 class EmailService:
-
     @staticmethod
     def send_otp_email(email: str, otp: str):
+        #start=time.time()
+        resend.Emails.send({
+            "from": "onboarding@resend.dev",
+            "to": email,
+            "subject": "Your Mandi Intelligence OTP",
+            "html": f"""
+            <p>Hello,</p>
 
-        message = MIMEMultipart()
+            <p>Your verification code is:</p>
 
-        message["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_EMAIL}>"
-        message["To"] = email
-        message["Subject"] = "Your Mandi Intelligence OTP"
+            <h1>{otp}</h1>
 
-        body = f"""
-Hello,
+            <p>This OTP is valid for 5 minutes.</p>
 
-Your verification code is:
+            <p>If you didn't request this code, you can safely ignore this email.</p>
 
-{otp}
-
-This OTP is valid for 5 minutes.
-
-If you didn't request this code, you can safely ignore this email.
-
-Regards,
-Mandi Intelligence
-"""
-
-        message.attach(MIMEText(body, "plain"))
-
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-            server.starttls()
-            server.login(
-                settings.SMTP_EMAIL,
-                settings.SMTP_PASSWORD,
-            )
-            server.send_message(message)
+            <p>Regards,</p>
+            <p>Mandi Intelligence</p>
+            """
+        })
+        #print(f"Send API took {time.time()-start:.2f} seconds")
+    
