@@ -1,13 +1,13 @@
-class District {
+class Market {
   final int id;
   final String name;
-  final int stateId;
-  final List<DistrictTranslation>? translations;
+  final int districtId;
+  final List<MarketTranslation>? translations;
 
-  District({
+  Market({
     required this.id,
     required this.name,
-    required this.stateId,
+    required this.districtId,
     this.translations,
   });
 
@@ -30,37 +30,35 @@ class District {
     return translation ?? name;
   }
 
-  factory District.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    return District(
+  factory Market.fromJson(Map<String, dynamic> json) {
+    return Market(
       id: json['id'],
       name: json['name'],
-      stateId: json['state_id'] ?? 0,
+      districtId: json['district_id'] ?? 0,
       translations: (json['translations'] as List?)
-          ?.map((t) => DistrictTranslation.fromJson(t))
+          ?.map((t) => MarketTranslation.fromJson(t))
           .toList(),
     );
   }
 }
 
-class DistrictTranslation {
+class MarketTranslation {
   final int id;
-  final int districtId;
+  final int marketId;
   final String languageCode;
   final String translatedName;
 
-  DistrictTranslation({
+  MarketTranslation({
     required this.id,
-    required this.districtId,
+    required this.marketId,
     required this.languageCode,
     required this.translatedName,
   });
 
-  factory DistrictTranslation.fromJson(Map<String, dynamic> json) {
-    return DistrictTranslation(
+  factory MarketTranslation.fromJson(Map<String, dynamic> json) {
+    return MarketTranslation(
       id: json['id'],
-      districtId: json['district_id'],
+      marketId: json['market_id'],
       languageCode: json['language_code'],
       translatedName: json['translated_name'],
     );

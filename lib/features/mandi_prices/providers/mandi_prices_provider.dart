@@ -159,15 +159,16 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
   final int? districtId;
   final int? commodityId;
   final String? search;
+  final String _language;
 
-  MarketDirectoryNotifier(this._repository, this.stateId, this.districtId, this.commodityId, this.search) : super(const AsyncValue.loading()) {
+  MarketDirectoryNotifier(this._repository, this.stateId, this.districtId, this.commodityId, this.search, this._language) : super(const AsyncValue.loading()) {
     loadInitialPage();
   }
 
   Future<void> loadInitialPage() async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: 1);
+      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: 1, language: _language);
       state = AsyncValue.data(MarketDirectoryState(
         items: response.data,
         currentPage: response.page,
@@ -191,7 +192,7 @@ class MarketDirectoryNotifier extends StateNotifier<AsyncValue<MarketDirectorySt
 
     try {
       final nextPage = currentState.currentPage + 1;
-      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: nextPage);
+      final response = await _repository.getMarketDirectory(stateId, districtId, commodityId, search: search, page: nextPage, language: _language);
 
       state = AsyncValue.data(MarketDirectoryState(
         items: [...currentState.items, ...response.data],
@@ -212,7 +213,9 @@ final marketDirectoryProvider = StateNotifierProvider.family<
     AsyncValue<MarketDirectoryState>,
     ({int? stateId, int? districtId, int? commodityId, String? search})>((ref, filter) {
   final repository = ref.watch(mandiRepositoryProvider);
-  return MarketDirectoryNotifier(repository, filter.stateId, filter.districtId, filter.commodityId, filter.search);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
+  return MarketDirectoryNotifier(repository, filter.stateId, filter.districtId, filter.commodityId, filter.search, language);
 });
 
 // --- HELPER PROVIDERS (Updated) ---
@@ -220,8 +223,10 @@ final statesProvider =
     FutureProvider<List<StateModel>>((ref) {
   final repository =
       ref.watch(mandiRepositoryProvider);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
 
-  return repository.getStates();
+  return repository.getStates(language: language);
 });
 
 final commoditiesProvider =
@@ -245,9 +250,12 @@ final marketsProvider =
 
   final repository =
       ref.watch(mandiRepositoryProvider);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
 
   return repository.getMarkets(
     districtId,
+    language: language,
   );
 });
 
@@ -258,8 +266,11 @@ final districtsProvider =
 
   final repository =
       ref.watch(mandiRepositoryProvider);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
 
   return repository.getDistricts(
     stateId: stateId,
+    language: language,
   );
 });

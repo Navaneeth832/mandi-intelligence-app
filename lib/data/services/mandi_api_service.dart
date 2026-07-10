@@ -59,10 +59,16 @@ class MandiApiService {
 
     return PaginatedMandiResponse.fromJson(data);
   }
-  Future<List<StateModel>> getStates() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/states'),
-    );
+  Future<List<StateModel>> getStates({String? language}) async {
+    final queryParams = <String, String>{};
+    
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
+    }
+    
+    final uri = Uri.parse('$baseUrl/states').replace(queryParameters: queryParams);
+    
+    final response = await http.get(uri);
 
     if (response.statusCode != 200) {
       throw Exception('Failed to load states');
@@ -93,14 +99,20 @@ class MandiApiService {
         .toList();
   }
   
-  Future<List<String>> getMarkets(int? districtId,) async {
+  Future<List<String>> getMarkets(int? districtId, {String? language}) async {
       String endpoint = '/markets';
-     if (districtId != null) {
-        endpoint += '?district_id=$districtId';
-    }
-    final response = await http.get(
-      Uri.parse('$baseUrl$endpoint'),
-    );
+      final queryParams = <String, String>{};
+      
+      if (districtId != null) {
+        queryParams['district_id'] = districtId.toString();
+      }
+      if (language != null && language.isNotEmpty) {
+        queryParams['language'] = language;
+      }
+      
+      final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+      
+      final response = await http.get(uri);
 
     if (response.statusCode != 200) {
       throw Exception('Failed to load markets');
@@ -121,6 +133,7 @@ class MandiApiService {
     int? districtId,
     int? commodityId,
     String? search,
+    String? language,
   }) async {
     final queryParams = <String, String>{
       'page': page.toString(),
@@ -137,6 +150,9 @@ class MandiApiService {
     }
     if (search != null && search.isNotEmpty) {
       queryParams['search'] = search;
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
     }
     
     final uri = Uri.parse('$baseUrl/market-directory').replace(queryParameters: queryParams);
@@ -186,6 +202,7 @@ class MandiApiService {
   Future<List<District>> getDistricts({
     String? state,
     int? stateId,
+    String? language,
   }) async {
     String endpoint = '/districts';
     final queryParams = <String, String>{};
@@ -195,6 +212,9 @@ class MandiApiService {
     }
     if (stateId != null) {
       queryParams['state_id'] = stateId.toString();
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
     }
 
     final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);

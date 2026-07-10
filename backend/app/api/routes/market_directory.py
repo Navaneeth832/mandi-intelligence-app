@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func
 
 from app.core.database import get_db
@@ -12,6 +12,16 @@ from datetime import date
 
 router = APIRouter()
 
+
+def get_translated_name(language_code: str, entity):
+    """Helper function to get translated name from any entity with translations"""
+    if entity.translations:
+        for translation in entity.translations:
+            if translation.language_code == language_code:
+                return translation.translated_name
+    return None
+
+
 @router.get("/")
 def get_market_directory(
     page: int = 1,
@@ -20,6 +30,7 @@ def get_market_directory(
     district_id: int | None = None,
     commodity_id: int | None = None,
     search: str | None = None,
+    language: str | None = None,
     db: Session = Depends(get_db)
 ):
     today = date.today()
@@ -27,9 +38,18 @@ def get_market_directory(
     query = (
         db.query(Market)
         .options(
-            joinedload(Market.district)
+        joinedload(Market.district)
+            .joinedload(District.state),
+
+        selectinload(Market.translations),
+
+        joinedload(Market.district)
+            .selectinload(District.translations),
+
+        joinedload(Market.district)
             .joinedload(District.state)
-        )
+            .selectinload(State.translations),
+    )
         .join(District)
         .join(State)
         .join(MandiPrice, MandiPrice.market_id == Market.id)
@@ -74,9 +94,9 @@ def get_market_directory(
         "data": [
             {
                 "id": market.id,
-                "name": market.name,
-                "district": market.district.name,
-                "state": market.district.state.name,
+                "name": get_translated_name(language or 'en', market) or market.name,
+                "district": get_translated_name(language or 'en', market.district) or market.district.name,
+                "state": get_translated_name(language or 'en', market.district.state) or market.district.state.name,
             }
             for market in markets
         ],

@@ -277,16 +277,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: statesAsync.when(
                     loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),
                     error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
-                    data: (states) => FilterDropdownButton<StateModel>(
-                      hintText: AppLocalizations.of(context)!.selectState,
-                      items: states,
-                      value: _selectedState,
-                      itemToString: (state) => state.name,
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedState = val;
-                          _selectedDistrict = null;
-                        });
+                    data: (states) => Consumer(
+                      builder: (context, ref, _) {
+                        final locale = ref.watch(localeProvider);
+                        return FilterDropdownButton<StateModel>(
+                          hintText: AppLocalizations.of(context)!.selectState,
+                          items: states,
+                          value: _selectedState,
+                          itemToString: (state) => state.getDisplayName(locale.languageCode),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedState = val;
+                              _selectedDistrict = null;
+                            });
+                          },
+                        );
                       },
                     ),
                   ),
@@ -320,12 +325,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           ),
                           error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
-                          data: (districts) => FilterDropdownButton<District>(
-                            hintText: AppLocalizations.of(context)!.selectDistrict,
-                            items: districts,
-                            value: _selectedDistrict,
-                            itemToString: (district) => district.name,
-                            onChanged: (val) => setState(() => _selectedDistrict = val),
+                          data: (districts) => Consumer(
+                            builder: (context, ref, _) {
+                              final locale = ref.watch(localeProvider);
+                              return FilterDropdownButton<District>(
+                                hintText: AppLocalizations.of(context)!.selectDistrict,
+                                items: districts,
+                                value: _selectedDistrict,
+                                itemToString: (district) => district.getDisplayName(locale.languageCode),
+                                onChanged: (val) => setState(() => _selectedDistrict = val),
+                              );
+                            },
                           ),
                         ),
                 ),

@@ -11,3 +11,9 @@ class State(Base):
     name = Column(String, nullable=False)
 
     districts = relationship("District", back_populates="state")
+
+    translations = relationship(
+        "StateTranslation",
+        back_populates="state",
+        cascade="all, delete-orphan"
+    )

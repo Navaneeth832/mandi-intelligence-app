@@ -26,3 +26,9 @@ class District(Base):
         "Market",
         back_populates="district"
     )
+
+    translations = relationship(
+        "DistrictTranslation",
+        back_populates="district",
+        cascade="all, delete-orphan"
+    )

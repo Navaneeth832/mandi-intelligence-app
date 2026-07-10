@@ -51,8 +51,8 @@ class MandiRepository {
       language: language,
     );
   }
-  Future<List<StateModel>> getStates() {
-    return _apiService.getStates();
+  Future<List<StateModel>> getStates({String? language}) {
+    return _apiService.getStates(language: language);
   }
 
   Future<List<Commodity>> getCommodities() {
@@ -60,10 +60,12 @@ class MandiRepository {
   }
 
   Future<List<String>> getMarkets(
-  int? districtId,
-) {
+  int? districtId, {
+  String? language,
+}) {
   return _apiService.getMarkets(
     districtId,
+    language: language,
   );
 }
 
@@ -74,6 +76,7 @@ class MandiRepository {
     int page = 1,
     int pageSize = 50,
     String? search,
+    String? language,
   }) {
     return _apiService.getMarketDirectory(
       page: page,
@@ -82,6 +85,7 @@ class MandiRepository {
       districtId: districtId,
       commodityId: commodityId,
       search: search,
+      language: language,
     );
   }
 
@@ -100,10 +104,12 @@ class MandiRepository {
   Future<List<District>> getDistricts({
     String? state,
     int? stateId,
+    String? language,
   }) {
   return _apiService.getDistricts(
     state: state,
     stateId: stateId,
+    language: language,
   );
 }
 }

@@ -26,3 +26,9 @@ class Market(Base):
         "MandiPrice",
         back_populates="market"
     )
+
+    translations = relationship(
+        "MarketTranslation",
+        back_populates="market",
+        cascade="all, delete-orphan"
+    )

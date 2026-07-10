@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from datetime import date, timedelta
 
 from app.core.database import get_db
@@ -8,6 +8,9 @@ from app.core.database import get_db
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
 from app.models.commodity_translation import CommodityTranslation
+from app.models.state_translation import StateTranslation
+from app.models.district_translation import DistrictTranslation
+from app.models.market_translation import MarketTranslation
 from app.models.variety import Variety
 from app.models.grade import Grade
 from app.models.market import Market
@@ -17,10 +20,10 @@ from app.models.state import State
 router = APIRouter()
 
 
-def get_translated_name(language_code: str, commodity):
-    """Helper function to get translated name from commodity"""
-    if commodity.translations:
-        for translation in commodity.translations:
+def get_translated_name(language_code: str, entity):
+    """Helper function to get translated name from any entity with translations"""
+    if entity.translations:
+        for translation in entity.translations:
             if translation.language_code == language_code:
                 return translation.translated_name
     return None
@@ -46,8 +49,11 @@ def get_mandi_prices(
     query = (
         db.query(
             State.name.label("state"),
+            State.id.label("state_id"),
             District.name.label("district"),
+            District.id.label("district_id"),
             Market.name.label("market"),
+            Market.id.label("market_id"),
             Commodity.id.label("commodity_id"),
             Commodity.name.label("commodity"),
             Variety.name.label("variety"),
@@ -57,18 +63,23 @@ def get_mandi_prices(
             MandiPrice.max_price,
             MandiPrice.arrival_date,
             MandiPrice.created_at,
-            Commodity
+            Commodity,
+            State,
+            District,
+            Market
         )
         .join(Market, MandiPrice.market_id == Market.id)
         .join(District, Market.district_id == District.id)
         .join(State, District.state_id == State.id)
         .join(Commodity, MandiPrice.commodity_id == Commodity.id)
         .options(selectinload(Commodity.translations))
+        .options(selectinload(State.translations))
+        .options(selectinload(District.translations))
+        .options(selectinload(Market.translations))
         .join(Variety, MandiPrice.variety_id == Variety.id)
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
 
- 
     query = query.filter(MandiPrice.arrival_date == date.today())
     
     if state:
@@ -122,9 +133,12 @@ def get_mandi_prices(
 
         "data": [
             {
-                "state": row.state,
-                "district": row.district,
-                "market": row.market,
+                "state": get_translated_name(language or 'en', row.State) or row.state,
+                "state_id": row.state_id,
+                "district": get_translated_name(language or 'en', row.District) or row.district,
+                "district_id": row.district_id,
+                "market": get_translated_name(language or 'en', row.Market) or row.market,
+                "market_id": row.market_id,
                 "commodity": row.commodity,
                 "commodity_id": row.commodity_id,
                 "translated_name": get_translated_name(language or 'en', row.Commodity),

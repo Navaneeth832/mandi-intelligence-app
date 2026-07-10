@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mandi_intelligence_app/data/models/state_model.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import '../../../data/models/district_model.dart';
 import '../widgets/price_card.dart';
 import '../widgets/filter_dropdown.dart';
@@ -306,17 +307,22 @@ Widget _buildFilterSection() {
             const SizedBox(width: 12),
             SizedBox(
               width: 160,
-              child: FilterDropdownButton<StateModel>(
-                hintText: AppLocalizations.of(context)!.state,
-                items: states,
-                itemToString: (state) => state.name,
-                value: selectedStateObj,
-                onChanged: (value) {
-                  setState(() {
-                    _tempState = value?.name;
-                    _tempDistrict = null;
-                    _tempMarket = null;
-                  });
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final locale = ref.watch(localeProvider);
+                  return FilterDropdownButton<StateModel>(
+                    hintText: AppLocalizations.of(context)!.state,
+                    items: states,
+                    itemToString: (state) => state.getDisplayName(locale.languageCode),
+                    value: selectedStateObj,
+                    onChanged: (value) {
+                      setState(() {
+                        _tempState = value?.name;
+                        _tempDistrict = null;
+                        _tempMarket = null;
+                      });
+                    },
+                  );
                 },
               ),
             ),
@@ -324,22 +330,24 @@ Widget _buildFilterSection() {
 
             SizedBox(
               width: 160,
-              child: FilterDropdownButton<String>(
-                hintText: AppLocalizations.of(context)!.district,
-                items: districtsAsync.maybeWhen(
-                  data: (districts) =>
-                      districts
-                          .map((d) => d.name)
-                          .toList(),
-                  orElse: () => [],
-                ),
-
-                value: _tempDistrict,
-                onChanged: (value) {
-                  setState(() {
-                    _tempDistrict = value;
-                    _tempMarket = null;
-                  });
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final locale = ref.watch(localeProvider);
+                  return FilterDropdownButton<District>(
+                    hintText: AppLocalizations.of(context)!.district,
+                    items: districtsAsync.maybeWhen(
+                      data: (districts) => districts,
+                      orElse: () => [],
+                    ),
+                    itemToString: (district) => district.getDisplayName(locale.languageCode),
+                    value: selectedDistrictObj,
+                    onChanged: (value) {
+                      setState(() {
+                        _tempDistrict = value?.name;
+                        _tempMarket = null;
+                      });
+                    },
+                  );
                 },
               ),
             ),

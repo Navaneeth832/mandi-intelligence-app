@@ -4,6 +4,7 @@ import '../../../data/models/market_directory_model.dart';
 import '../../../data/models/state_model.dart';
 import '../../../data/models/district_model.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import '../providers/mandi_prices_provider.dart';
 import '../widgets/filter_dropdown.dart';
 import 'market_directory_detail_screen.dart';
@@ -89,16 +90,21 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                     children: [
                       Expanded(
                         child: statesAsync.when(
-                          data: (states) => FilterDropdownButton<StateModel>(
-                            hintText: AppLocalizations.of(context)!.selectState,
-                            items: states,
-                            value: _selectedState,
-                            itemToString: (s) => s.name,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedState = value;
-                                _selectedDistrict = null;
-                              });
+                          data: (states) => Consumer(
+                            builder: (context, ref, _) {
+                              final locale = ref.watch(localeProvider);
+                              return FilterDropdownButton<StateModel>(
+                                hintText: AppLocalizations.of(context)!.selectState,
+                                items: states,
+                                value: _selectedState,
+                                itemToString: (s) => s.getDisplayName(locale.languageCode),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedState = value;
+                                    _selectedDistrict = null;
+                                  });
+                                },
+                              );
                             },
                           ),
                           loading: () => Text(AppLocalizations.of(context)!.loadingStates),
@@ -110,15 +116,20 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                         child: _selectedState == null
                             ? Text(AppLocalizations.of(context)!.selectStateFirst)
                             : districtsAsync.when(
-                                data: (districts) => FilterDropdownButton<District>(
-                                  hintText: AppLocalizations.of(context)!.allDistricts,
-                                  items: districts,
-                                  value: _selectedDistrict,
-                                  itemToString: (d) => d.name,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedDistrict = value;
-                                    });
+                                data: (districts) => Consumer(
+                                  builder: (context, ref, _) {
+                                    final locale = ref.watch(localeProvider);
+                                    return FilterDropdownButton<District>(
+                                      hintText: AppLocalizations.of(context)!.allDistricts,
+                                      items: districts,
+                                      value: _selectedDistrict,
+                                      itemToString: (d) => d.getDisplayName(locale.languageCode),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedDistrict = value;
+                                        });
+                                      },
+                                    );
                                   },
                                 ),
                                 loading: () => Text(AppLocalizations.of(context)!.loadingDistricts),
