@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
+from sqlalchemy import or_
 from datetime import date, timedelta
 
 from app.core.database import get_db
 
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
+from app.models.commodity_translation import CommodityTranslation
 from app.models.variety import Variety
 from app.models.grade import Grade
 from app.models.market import Market
@@ -15,6 +17,15 @@ from app.models.state import State
 router = APIRouter()
 
 
+def get_translated_name(language_code: str, commodity):
+    """Helper function to get translated name from commodity"""
+    if commodity.translations:
+        for translation in commodity.translations:
+            if translation.language_code == language_code:
+                return translation.translated_name
+    return None
+
+
 @router.get("/")
 def get_mandi_prices(
     state: str | None = None,
@@ -22,6 +33,7 @@ def get_mandi_prices(
     market: str | None = None,
     commodity: str | None = None,
     variety: str | None = None,
+    language: str | None = None,
 
     page: int = 1,
     page_size: int = 50,
@@ -36,6 +48,7 @@ def get_mandi_prices(
             State.name.label("state"),
             District.name.label("district"),
             Market.name.label("market"),
+            Commodity.id.label("commodity_id"),
             Commodity.name.label("commodity"),
             Variety.name.label("variety"),
             Grade.grade_name.label("grade"),
@@ -43,12 +56,14 @@ def get_mandi_prices(
             MandiPrice.min_price,
             MandiPrice.max_price,
             MandiPrice.arrival_date,
-            MandiPrice.created_at
+            MandiPrice.created_at,
+            Commodity
         )
         .join(Market, MandiPrice.market_id == Market.id)
         .join(District, Market.district_id == District.id)
         .join(State, District.state_id == State.id)
         .join(Commodity, MandiPrice.commodity_id == Commodity.id)
+        .options(selectinload(Commodity.translations))
         .join(Variety, MandiPrice.variety_id == Variety.id)
         .join(Grade, MandiPrice.grade_id == Grade.id)
     )
@@ -72,8 +87,13 @@ def get_mandi_prices(
         )
 
     if commodity:
+        # Search in both commodity name and translations
+        query = query.outerjoin(CommodityTranslation, Commodity.id == CommodityTranslation.commodity_id)
         query = query.filter(
-            Commodity.name.ilike(f"%{commodity}%")
+            or_(
+                Commodity.name.ilike(f"%{commodity}%"),
+                CommodityTranslation.translated_name.ilike(f"%{commodity}%")
+            )
         )
 
     if variety:
@@ -81,10 +101,11 @@ def get_mandi_prices(
             Variety.name.ilike(f"%{variety}%")
         )
 
-    total_records = query.count()
+    total_records = query.distinct().count()
 
     results = (
         query
+        .distinct()
         .order_by(MandiPrice.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
@@ -105,6 +126,8 @@ def get_mandi_prices(
                 "district": row.district,
                 "market": row.market,
                 "commodity": row.commodity,
+                "commodity_id": row.commodity_id,
+                "translated_name": get_translated_name(language or 'en', row.Commodity),
                 "variety": row.variety,
                 "grade": row.grade,
                 "modal_price": float(row.modal_price),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mandi_intelligence_app/core/providers/providers.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/auth_provider.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
@@ -20,6 +21,7 @@ class ProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileNotifierProvider);
     final prefsAsync = ref.watch(preferredCropsNotifierProvider);
     final cropsAsync = ref.watch(commoditiesProvider);
+    final locale = ref.watch(localeProvider);
 
     return Scaffold(
       backgroundColor: _backgroundColor,
@@ -107,7 +109,7 @@ class ProfileScreen extends ConsumerWidget {
                   language,
                 ),
                 const SizedBox(height: 16),
-                _buildPreferredCropsCard(context,prefsAsync, cropsAsync),
+                _buildPreferredCropsCard(context, prefsAsync, cropsAsync, locale),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -254,6 +256,7 @@ Widget _buildPreferredCropsCard(
   BuildContext context,
   AsyncValue<List<Map<String, dynamic>>> prefsAsync,
   AsyncValue<List<Commodity>> cropsAsync,
+  Locale locale,
 ){
     return Card(
       elevation: 0,
@@ -294,7 +297,7 @@ Widget _buildPreferredCropsCard(
                     return Wrap(
                       spacing: 12.0,
                       runSpacing: 12.0,
-                      children: selectedCrops.map((c) => _buildCropChip(c.name)).toList(),
+                      children: selectedCrops.map((c) => _buildCropChip(c.getDisplayName(locale.languageCode))).toList(),
                     );
                   },
                 );

@@ -49,7 +49,7 @@ class PriceCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              price.commodity,
+              price.getDisplayCommodity(),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

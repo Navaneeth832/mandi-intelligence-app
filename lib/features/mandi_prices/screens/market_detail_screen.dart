@@ -87,7 +87,7 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.price.commodity,
+                                widget.price.getDisplayCommodity(),
                                 style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.bold,

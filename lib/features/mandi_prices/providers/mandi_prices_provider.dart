@@ -6,6 +6,7 @@ import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
 import '../../../data/models/district_model.dart';
 import '../../../data/models/commodity_model.dart';
+import '../../../core/providers/locale_provider.dart';
 import 'filter_model.dart';
 
 // Provider for the ApiService
@@ -59,15 +60,16 @@ class MandiPricesState {
 class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
   final MandiRepository _repository;
   final Filter _filter;
+  final String _language;
 
-  MandiPricesNotifier(this._repository, this._filter) : super(const AsyncValue.loading()) {
+  MandiPricesNotifier(this._repository, this._filter, this._language) : super(const AsyncValue.loading()) {
     loadInitialPage();
   }
 
   Future<void> loadInitialPage() async {
     state = const AsyncValue.loading();
     try {
-      final response = await _repository.getMandiPrices(_filter, page: 1);
+      final response = await _repository.getMandiPrices(_filter, page: 1, language: _language);
       state = AsyncValue.data(MandiPricesState(
         items: response.data,
         currentPage: response.page,
@@ -91,7 +93,7 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
 
     try {
       final nextPage = currentState.currentPage + 1;
-      final response = await _repository.getMandiPrices(_filter, page: nextPage);
+      final response = await _repository.getMandiPrices(_filter, page: nextPage, language: _language);
 
       state = AsyncValue.data(MandiPricesState(
         items: [...currentState.items, ...response.data],
@@ -109,7 +111,9 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
 
 final mandiPricesProvider = StateNotifierProvider.family<MandiPricesNotifier, AsyncValue<MandiPricesState>, Filter>((ref, filter) {
   final repository = ref.watch(mandiRepositoryProvider);
-  return MandiPricesNotifier(repository, filter);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
+  return MandiPricesNotifier(repository, filter, language);
 });
 
 // --- MARKET DIRECTORY PROVIDER (Updated) ---
@@ -229,8 +233,9 @@ final commoditiesProvider =
 });
 
 final commodityListProvider = FutureProvider<List<String>>((ref) async {
+  final locale = ref.watch(localeProvider);
   final commodities = await ref.watch(commoditiesProvider.future);
-  return commodities.map((c) => c.name).toList();
+  return commodities.map((c) => c.getDisplayName(locale.languageCode)).toList();
 });
 
 final marketsProvider =

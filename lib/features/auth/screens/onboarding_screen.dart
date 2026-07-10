@@ -387,7 +387,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 hintText: AppLocalizations.of(context)!.searchCrops,
                 items: crops,
                 value: null,
-                itemToString: (crop) => crop.name,
+                itemToString: (crop) {
+                  final locale = ref.watch(localeProvider);
+                  return crop.getDisplayName(locale.languageCode);
+                },
                 onChanged: (val) {
                   if (val == null) return;
                   if (_selectedCrops.contains(val)) {
@@ -407,9 +410,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: -4,
-                    children: _selectedCrops.map((crop) => Chip(
+                    children: _selectedCrops.map((crop) {
+                      final locale = ref.watch(localeProvider);
+                      return Chip(
                         label: Text(
-                          '🌾 ${crop.name}',
+                          '🌾 ${crop.getDisplayName(locale.languageCode)}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
                         ),
                         backgroundColor: _bgColor,
@@ -419,7 +424,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         deleteIcon: const Icon(Icons.close, size: 16, color: Colors.grey),
                         onDeleted: () => setState(() => _selectedCrops.remove(crop)),
-                      )).toList(),
+                      );
+                    }).toList(),
                   ),
                 ),
               const SizedBox(height: 12),

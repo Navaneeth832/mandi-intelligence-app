@@ -21,6 +21,7 @@ class MandiApiService {
     String? district,
     String? market,
     String? commodity,
+    String? language,
   }) async {
     final queryParams = <String, String>{
       'page': page.toString(),
@@ -38,6 +39,9 @@ class MandiApiService {
     }
     if (commodity != null && commodity.isNotEmpty) {
       queryParams['commodity'] = commodity;
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
     }
 
     final uri = Uri.parse('$baseUrl/mandi-prices').replace(queryParameters: queryParams);

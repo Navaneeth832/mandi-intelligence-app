@@ -1,5 +1,6 @@
 class MandiPrice {
   final String commodity;
+  final String? translatedName;
   final String variety;
   final String market;
   final String district;
@@ -20,6 +21,7 @@ class MandiPrice {
     this.commodityId,
     this.marketId,
     required this.commodity,
+    this.translatedName,
     required this.variety,
     required this.market,
     required this.district,
@@ -32,9 +34,15 @@ class MandiPrice {
     required this.createdAt,
   });
 
+  /// Get the display name based on whether translation is available
+  String getDisplayCommodity() {
+    return translatedName ?? commodity;
+  }
+
   factory MandiPrice.fromJson(Map<String, dynamic> json) {
     return MandiPrice(
       commodity: json['commodity'],
+      translatedName: json['translated_name'] as String?,
       variety: json['variety'],
       market: json['market'],
       district: json['district'],

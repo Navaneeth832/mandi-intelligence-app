@@ -43,3 +43,9 @@ class Commodity(Base):
         uselist=False,
         cascade="all, delete-orphan"
     )
+
+    translations = relationship(
+        "CommodityTranslation",
+        back_populates="commodity",
+        cascade="all, delete-orphan"
+    )

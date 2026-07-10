@@ -3,6 +3,7 @@ from .district import District
 from .market import Market
 from .commodity_group import CommodityGroup
 from .commodity import Commodity
+from .commodity_translation import CommodityTranslation
 from .variety import Variety
 from .grade import Grade
 from .mandi_price import MandiPrice

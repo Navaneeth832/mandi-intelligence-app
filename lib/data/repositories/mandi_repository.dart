@@ -21,6 +21,7 @@ class MandiRepository {
     Filter filter, {
     int page = 1,
     int pageSize = 50,
+    String? language,
   }) async {
     // Handle testing flags
     if (simulateLoading) {
@@ -47,6 +48,7 @@ class MandiRepository {
       district: filter.district,
       market: filter.market,
       commodity: filter.crop,
+      language: language,
     );
   }
   Future<List<StateModel>> getStates() {

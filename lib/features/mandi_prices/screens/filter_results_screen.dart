@@ -454,7 +454,7 @@ class _FilterResultCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
-                          price.commodity,
+                          price.getDisplayCommodity(),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
