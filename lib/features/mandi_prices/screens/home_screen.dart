@@ -363,39 +363,81 @@ Widget _buildFilterSection() {
       const SizedBox(height: 16),
       // Buttons updated
       Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 39, 163, 45),
-                // Notice: disabled background/foreground colors are handled automatically
-                // by Material when onPressed is null, but you can override them here if needed!
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              // 👇 The magic sauce goes right here 
-              onPressed: hasFilters ? _applyFilters : null,
-              child: Text(AppLocalizations.of(context)!.applyFilters, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+  children: [
+    Expanded(
+      child: SizedBox(
+        height: 64,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 39, 163, 45),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 39, 163, 45),
-                side: const BorderSide(color: Color.fromARGB(255, 39, 163, 45), width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              // Optional: You can also disable the Clear button if there are no filters!
-              onPressed: hasFilters ? _clearFilters : null, 
-              child: Text(AppLocalizations.of(context)!.clearAll, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          onPressed: hasFilters ? _applyFilters : null,
+          child: Text(
+            AppLocalizations.of(context)!.applyFilters,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: Localizations.localeOf(context).languageCode == 'ml'
+                  ? 15
+                  : 16,
+              fontWeight:
+                  Localizations.localeOf(context).languageCode == 'ml'
+                      ? FontWeight.w600
+                      : FontWeight.bold,
+              height:
+                  Localizations.localeOf(context).languageCode == 'ml'
+                      ? 1.35
+                      : 1.2,
             ),
           ),
-        ],
+        ),
       ),
+    ),
+    const SizedBox(width: 12),
+    Expanded(
+      child: SizedBox(
+        height: 64,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color.fromARGB(255, 39, 163, 45),
+            side: const BorderSide(
+              color: Color.fromARGB(255, 39, 163, 45),
+              width: 1.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onPressed: hasFilters ? _clearFilters : null,
+          child: Text(
+            AppLocalizations.of(context)!.clearAll,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: Localizations.localeOf(context).languageCode == 'ml'
+                  ? 15
+                  : 16,
+              fontWeight:
+                  Localizations.localeOf(context).languageCode == 'ml'
+                      ? FontWeight.w600
+                      : FontWeight.bold,
+              height:
+                  Localizations.localeOf(context).languageCode == 'ml'
+                      ? 1.35
+                      : 1.2,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+)
+      
     ],
   );
 }

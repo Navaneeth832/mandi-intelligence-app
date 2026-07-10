@@ -304,7 +304,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: Text(AppLocalizations.of(context)!.selectDistrict, style: const TextStyle(color: Colors.grey, fontSize: 14)),
                         )
                       : districtsAsync.when(
-                          loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),
+                          loading: () => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.selectDistrict,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                           error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
                           data: (districts) => FilterDropdownButton<District>(
                             hintText: AppLocalizations.of(context)!.selectDistrict,

@@ -1,0 +1,980 @@
+[1mdiff --git a/.github/workflows/mandi_price_fetch.yml b/.github/workflows/mandi_price_fetch.yml[m
+[1mdeleted file mode 100644[m
+[1mindex 917f433..0000000[m
+[1m--- a/.github/workflows/mandi_price_fetch.yml[m
+[1m+++ /dev/null[m
+[36m@@ -1,33 +0,0 @@[m
+[31m-name: Hourly Mandi Price Fetch[m
+[31m-[m
+[31m-on:[m
+[31m-  schedule:[m
+[31m-    - cron: "0 * * * *"[m
+[31m-[m
+[31m-  workflow_dispatch:[m
+[31m-[m
+[31m-jobs:[m
+[31m-  fetch:[m
+[31m-    runs-on: ubuntu-latest[m
+[31m-[m
+[31m-    steps:[m
+[31m-      - uses: actions/checkout@v4[m
+[31m-[m
+[31m-      - uses: actions/setup-python@v5[m
+[31m-        with:[m
+[31m-          python-version: "3.12"[m
+[31m-[m
+[31m-      - name: Install dependencies[m
+[31m-        working-directory: backend[m
+[31m-        run: |[m
+[31m-            python -m pip install --upgrade pip[m
+[31m-            pip install -r requirements.txt[m
+[31m-[m
+[31m-      - name: Run Price Fetcher[m
+[31m-        env:[m
+[31m-          DATABASE_URL: ${{ secrets.DATABASE_URL }}[m
+[31m-          SECRET_KEY: ${{ secrets.SECRET_KEY }}[m
+[31m-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}[m
+[31m-        run: |[m
+[31m-          cd backend[m
+[31m-          python price_fetcher.py[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/app/api/auth.py b/backend/app/api/auth.py[m
+[1mindex 6a0547f..e983a14 100644[m
+[1m--- a/backend/app/api/auth.py[m
+[1m+++ b/backend/app/api/auth.py[m
+[36m@@ -2,6 +2,7 @@[m [mfrom fastapi import APIRouter, Depends, HTTPException[m
+ from sqlalchemy.orm import Session[m
+ [m
+ from app.schemas.user import ([m
+[32m+[m[32m    RefreshTokenRequest,[m
+     SendOTPRequest,[m
+     UserRegister,[m
+     UserLogin,[m
+[36m@@ -84,3 +85,29 @@[m [mdef get_profile([m
+     current_user: User = Depends(get_current_user)[m
+ ):[m
+     return current_user[m
+[32m+[m
+[32m+[m[32m@router.post("/refresh")[m
+[32m+[m[32mdef refresh([m
+[32m+[m[32m    request: RefreshTokenRequest,[m
+[32m+[m[32m    db: Session = Depends(get_db),[m
+[32m+[m[32m):[m
+[32m+[m[32m    try:[m
+[32m+[m[32m        return AuthService.refresh([m
+[32m+[m[32m            db,[m
+[32m+[m[32m            request.refresh_token,[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m    except ValueError as e:[m
+[32m+[m[32m        raise HTTPException([m
+[32m+[m[32m            status_code=401,[m
+[32m+[m[32m            detail=str(e),[m
+[32m+[m[32m        )[m
+[32m+[m[32m@router.post("/logout")[m
+[32m+[m[32mdef logout([m
+[32m+[m[32m    current_user: User = Depends(get_current_user),[m
+[32m+[m[32m    db: Session = Depends(get_db),[m
+[32m+[m[32m):[m
+[32m+[m[32m    return AuthService.logout([m
+[32m+[m[32m        db,[m
+[32m+[m[32m        current_user,[m
+[32m+[m[32m    )[m
+[1mdiff --git a/backend/app/core/config.py b/backend/app/core/config.py[m
+[1mindex 3285052..62876f6 100644[m
+[1m--- a/backend/app/core/config.py[m
+[1m+++ b/backend/app/core/config.py[m
+[36m@@ -12,13 +12,10 @@[m [mclass Settings(BaseSettings):[m
+ [m
+     SMTP_FROM_NAME: str = "Mandi Intelligence"[m
+ [m
+[31m-    RESEND_API_KEY: str[m
+[31m-    [m
+     model_config = SettingsConfigDict([m
+         env_file=".env",[m
+         extra="ignore",[m
+     )[m
+[31m-   [m
+ [m
+ [m
+ settings = Settings()[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/app/core/dependencies.py b/backend/app/core/dependencies.py[m
+[1mindex 3a232d1..79cad3e 100644[m
+[1m--- a/backend/app/core/dependencies.py[m
+[1m+++ b/backend/app/core/dependencies.py[m
+[36m@@ -16,6 +16,12 @@[m [mdef get_current_user([m
+     token = credentials.credentials[m
+ [m
+     payload = decode_access_token(token)[m
+[32m+[m[41m    [m
+[32m+[m[32m    if payload.get("type") != "access":[m
+[32m+[m[32m        raise HTTPException([m
+[32m+[m[32m            status_code=401,[m
+[32m+[m[32m            detail="Invalid access token"[m
+[32m+[m[32m        )[m
+ [m
+     if payload is None:[m
+         raise HTTPException([m
+[1mdiff --git a/backend/app/core/security.py b/backend/app/core/security.py[m
+[1mindex b6dd6ae..50fa302 100644[m
+[1m--- a/backend/app/core/security.py[m
+[1m+++ b/backend/app/core/security.py[m
+[36m@@ -28,6 +28,8 @@[m [mALGORITHM = "HS256"[m
+ [m
+ ACCESS_TOKEN_EXPIRE_MINUTES = 60[m
+ [m
+[32m+[m[32mREFRESH_TOKEN_EXPIRE_DAYS = 30[m
+[32m+[m
+ # ==============================[m
+ # Password Functions[m
+ # ==============================[m
+[36m@@ -49,19 +51,14 @@[m [mdef verify_password([m
+ # JWT Functions[m
+ # ==============================[m
+ [m
+[31m-def create_access_token([m
+[32m+[m[32mdef create_token([m
+     data: dict,[m
+[31m-    expires_delta: Optional[timedelta] = None[m
+[32m+[m[32m    expires_delta: timedelta,[m
+ ):[m
+     to_encode = data.copy()[m
+ [m
+[31m-    if expires_delta:[m
+[31m-        expire = datetime.now(timezone.utc) + expires_delta[m
+[31m-    else:[m
+[31m-        expire = datetime.now(timezone.utc) + timedelta([m
+[31m-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES[m
+[31m-        )[m
+[31m-[m
+[32m+[m[32m    expire = datetime.now(timezone.utc) + expires_delta[m
+[32m+[m[41m    [m
+     to_encode.update({"exp": expire})[m
+ [m
+     encoded_jwt = jwt.encode([m
+[36m@@ -72,6 +69,26 @@[m [mdef create_access_token([m
+ [m
+     return encoded_jwt[m
+ [m
+[32m+[m[32mdef create_access_token(data: dict):[m
+[32m+[m[32m    return create_token([m
+[32m+[m[32m    {[m
+[32m+[m[32m        **data,[m
+[32m+[m[32m        "type": "access",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),[m
+[32m+[m[32m    )[m
+[32m+[m[41m    [m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef create_refresh_token(data: dict):[m
+[32m+[m[32m    return create_token([m
+[32m+[m[32m    {[m
+[32m+[m[32m        **data,[m
+[32m+[m[32m        "type": "refresh",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),[m
+[32m+[m[32m    )[m
+[32m+[m
+ [m
+ def decode_access_token(token: str):[m
+ [m
+[1mdiff --git a/backend/app/main.py b/backend/app/main.py[m
+[1mindex 64c61ee..dcf41b1 100644[m
+[1m--- a/backend/app/main.py[m
+[1m+++ b/backend/app/main.py[m
+[36m@@ -46,7 +46,7 @@[m [masync def generate_mapping_task():[m
+ @asynccontextmanager[m
+ async def lifespan(app: FastAPI):[m
+     # Start tasks in background[m
+[31m-    price_task = asyncio.create_task(fetch_prices_task())[m
+[32m+[m[32m    #price_task = asyncio.create_task(fetch_prices_task())[m
+     #mapping_task = asyncio.create_task(generate_mapping_task())[m
+     yield[m
+     # Cleanup tasks on shutdown[m
+[1mdiff --git a/backend/app/models/refresh_token.py b/backend/app/models/refresh_token.py[m
+[1mindex 7d07e0a..e010799 100644[m
+[1m--- a/backend/app/models/refresh_token.py[m
+[1m+++ b/backend/app/models/refresh_token.py[m
+[36m@@ -21,7 +21,7 @@[m [mclass RefreshToken(Base):[m
+         nullable=False[m
+     )[m
+ [m
+[31m-    token = Column(Text, nullable=False)[m
+[32m+[m[32m    token = Column(Text, unique=True, nullable=False)[m
+ [m
+     expires_at = Column(DateTime, nullable=False)[m
+ [m
+[1mdiff --git a/backend/app/schemas/user.py b/backend/app/schemas/user.py[m
+[1mindex 7dac05f..43b5ca7 100644[m
+[1m--- a/backend/app/schemas/user.py[m
+[1m+++ b/backend/app/schemas/user.py[m
+[36m@@ -64,3 +64,6 @@[m [mclass CropPreferenceResponse(BaseModel):[m
+ [m
+ class CropPreferenceListResponse(BaseModel):[m
+     preferences: List[CropPreferenceResponse][m
+[32m+[m[41m    [m
+[32m+[m[32mclass RefreshTokenRequest(BaseModel):[m
+[32m+[m[32m    refresh_token: str[m
+[1mdiff --git a/backend/app/services/auth_service.py b/backend/app/services/auth_service.py[m
+[1mindex 769be13..722a377 100644[m
+[1m--- a/backend/app/services/auth_service.py[m
+[1m+++ b/backend/app/services/auth_service.py[m
+[36m@@ -1,3 +1,4 @@[m
+[32m+[m[32mfrom datetime import datetime, timedelta, timezone[m
+ from uuid import uuid4[m
+ [m
+ from sqlalchemy import or_[m
+[36m@@ -12,13 +13,17 @@[m [mfrom app.schemas.user import ([m
+     VerifyOTPRequest,[m
+ )[m
+ from app.core.security import ([m
+[32m+[m[32m    REFRESH_TOKEN_EXPIRE_DAYS,[m
+     hash_password,[m
+     verify_password,[m
+     create_access_token,[m
+[32m+[m[32m    create_refresh_token,[m
+[32m+[m[32m    decode_access_token[m
+ )[m
+ from app.services.otp_service import OTPService[m
+ from app.services.verification_token_service import VerificationTokenService[m
+ from app.utils.auth_identifiers import IdentifierType, normalize_identifier[m
+[32m+[m[32mfrom app.models.refresh_token import RefreshToken[m
+ [m
+ REGISTRATION_PURPOSE = "registration"[m
+ [m
+[36m@@ -138,14 +143,29 @@[m [mclass AuthService:[m
+         ):[m
+             raise ValueError("Invalid identifier or password")[m
+ [m
+[31m-        token = create_access_token([m
+[31m-            {[m
+[31m-                "sub": str(user.id)[m
+[31m-            }[m
+[32m+[m[32m        access_token = create_access_token([m
+[32m+[m[32m            {"sub": str(user.id)}[m
+         )[m
+ [m
+[32m+[m[32m        refresh_token = create_refresh_token([m
+[32m+[m[32m            {"sub": str(user.id)}[m
+[32m+[m[32m        )[m
+[32m+[m[32m        # Remove any existing refresh tokens for this user[m
+[32m+[m[32m        ([m
+[32m+[m[32m            db.query(RefreshToken)[m
+[32m+[m[32m            .filter(RefreshToken.user_id == user.id)[m
+[32m+[m[32m            .delete(synchronize_session=False)[m
+[32m+[m[32m        )[m
+[32m+[m[32m        refresh = RefreshToken([m
+[32m+[m[32m            user_id=user.id,[m
+[32m+[m[32m            token=refresh_token,[m
+[32m+[m[32m            expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)[m
+[32m+[m[32m        )[m
+[32m+[m[32m        db.add(refresh)[m
+[32m+[m[32m        db.commit()[m
+         return {[m
+[31m-            "access_token": token,[m
+[32m+[m[32m            "access_token": access_token,[m
+[32m+[m[32m            "refresh_token": refresh_token,[m
+             "token_type": "bearer",[m
+             "user": user,[m
+         }[m
+[36m@@ -165,3 +185,57 @@[m [mclass AuthService:[m
+             )[m
+             .first()[m
+         )[m
+[32m+[m[32m    @staticmethod[m
+[32m+[m[32m    def refresh(db: Session, refresh_token: str) -> dict[str, str]:[m
+[32m+[m[32m        payload = decode_access_token(refresh_token)[m
+[32m+[m[41m        [m
+[32m+[m[32m        if payload.get("type") != "refresh":[m
+[32m+[m[32m            raise ValueError("Invalid refresh token")[m
+[32m+[m
+[32m+[m[32m        if payload is None:[m
+[32m+[m[32m            raise ValueError("Invalid or expired refresh token")[m
+[32m+[m
+[32m+[m[32m        user_id = payload.get("sub")[m
+[32m+[m
+[32m+[m[32m        if not user_id:[m
+[32m+[m[32m            raise ValueError("Invalid refresh token")[m
+[32m+[m
+[32m+[m[32m        db_token = ([m
+[32m+[m[32m            db.query(RefreshToken)[m
+[32m+[m[32m            .filter(RefreshToken.token == refresh_token)[m
+[32m+[m[32m            .first()[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        if not db_token:[m
+[32m+[m[32m            raise ValueError("Refresh token not found")[m
+[32m+[m
+[32m+[m[32m        if db_token.expires_at < datetime.utcnow():[m
+[32m+[m[32m            db.delete(db_token)[m
+[32m+[m[32m            db.commit()[m
+[32m+[m[32m            raise ValueError("Refresh token expired")[m
+[32m+[m
+[32m+[m[32m        access_token = create_access_token([m
+[32m+[m[32m            {"sub": user_id}[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        return {[m
+[32m+[m[32m            "access_token": access_token,[m
+[32m+[m[32m            "token_type": "bearer",[m
+[32m+[m[32m        }[m
+[32m+[m[32m    @staticmethod[m
+[32m+[m[32m    def logout([m
+[32m+[m[32m        db: Session,[m
+[32m+[m[32m        user: User,[m
+[32m+[m[32m    ) -> dict[str, str]:[m
+[32m+[m
+[32m+[m[32m        ([m
+[32m+[m[32m            db.query(RefreshToken)[m
+[32m+[m[32m            .filter(RefreshToken.user_id == user.id)[m
+[32m+[m[32m            .delete(synchronize_session=False)[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        db.commit()[m
+[32m+[m
+[32m+[m[32m        return {[m
+[32m+[m[32m            "message": "Logged out successfully"[m
+[32m+[m[32m        }[m
+[1mdiff --git a/backend/app/services/email_service.py b/backend/app/services/email_service.py[m
+[1mindex 59e0d6c..14e7536 100644[m
+[1m--- a/backend/app/services/email_service.py[m
+[1m+++ b/backend/app/services/email_service.py[m
+[36m@@ -1,38 +1,42 @@[m
+ import smtplib[m
+ from email.mime.multipart import MIMEMultipart[m
+ from email.mime.text import MIMEText[m
+[31m-#import time[m
+ [m
+ from app.core.config import settings[m
+[31m-import resend[m
+[31m-from app.core.config import settings[m
+[31m-[m
+[31m-resend.api_key = settings.RESEND_API_KEY[m
+[31m-[m
+ [m
+ [m
+ class EmailService:[m
+[32m+[m
+     @staticmethod[m
+     def send_otp_email(email: str, otp: str):[m
+[31m-        #start=time.time()[m
+[31m-        resend.Emails.send({[m
+[31m-            "from": "onboarding@resend.dev",[m
+[31m-            "to": email,[m
+[31m-            "subject": "Your Mandi Intelligence OTP",[m
+[31m-            "html": f"""[m
+[31m-            <p>Hello,</p>[m
+ [m
+[31m-            <p>Your verification code is:</p>[m
+[32m+[m[32m        message = MIMEMultipart()[m
+[32m+[m
+[32m+[m[32m        message["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_EMAIL}>"[m
+[32m+[m[32m        message["To"] = email[m
+[32m+[m[32m        message["Subject"] = "Your Mandi Intelligence OTP"[m
+[32m+[m
+[32m+[m[32m        body = f"""[m
+[32m+[m[32mHello,[m
+[32m+[m
+[32m+[m[32mYour verification code is:[m
+[32m+[m
+[32m+[m[32m{otp}[m
+[32m+[m
+[32m+[m[32mThis OTP is valid for 5 minutes.[m
+ [m
+[31m-            <h1>{otp}</h1>[m
+[32m+[m[32mIf you didn't request this code, you can safely ignore this email.[m
+ [m
+[31m-            <p>This OTP is valid for 5 minutes.</p>[m
+[32m+[m[32mRegards,[m
+[32m+[m[32mMandi Intelligence[m
+[32m+[m[32m"""[m
+ [m
+[31m-            <p>If you didn't request this code, you can safely ignore this email.</p>[m
+[32m+[m[32m        message.attach(MIMEText(body, "plain"))[m
+ [m
+[31m-            <p>Regards,</p>[m
+[31m-            <p>Mandi Intelligence</p>[m
+[31m-            """[m
+[31m-        })[m
+[31m-        #print(f"Send API took {time.time()-start:.2f} seconds")[m
+[31m-    [m
+\ No newline at end of file[m
+[32m+[m[32m        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:[m
+[32m+[m[32m            server.starttls()[m
+[32m+[m[32m            server.login([m
+[32m+[m[32m                settings.SMTP_EMAIL,[m
+[32m+[m[32m                settings.SMTP_PASSWORD,[m
+[32m+[m[32m            )[m
+[32m+[m[32m            server.send_message(message)[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/requirements.txt b/backend/requirements.txt[m
+[1mindex aaa6853..25ccf77 100644[m
+[1m--- a/backend/requirements.txt[m
+[1m+++ b/backend/requirements.txt[m
+[36m@@ -12,5 +12,4 @@[m [mpython-jose[cryptography][m
+ passlib[bcrypt][m
+ bcrypt==4.0.1[m
+ pydantic[email][m
+[31m-pydantic-settings [m
+[31m-resend[m
+\ No newline at end of file[m
+[32m+[m[32mpydantic-settings[m[41m [m
+\ No newline at end of file[m
+[1mdiff --git a/lib/core/constants/api_constants.dart b/lib/core/constants/api_constants.dart[m
+[1mindex 65a91f5..8eba807 100644[m
+[1m--- a/lib/core/constants/api_constants.dart[m
+[1m+++ b/lib/core/constants/api_constants.dart[m
+[36m@@ -1,7 +1,7 @@[m
+ /// API Constants for the Mandi Intelligence App.[m
+ class ApiConstants {[m
+[31m-  static const String baseUrl = 'https://mandi-intelligence-app-production.up.railway.app';[m
+[31m-  //static const String baseUrl = 'http://192.168.1.2:8000';[m
+[32m+[m[32m  //static const String baseUrl = 'https://mandi-intelligence-app-production.up.railway.app';[m
+[32m+[m[32m  static const String baseUrl = 'http://192.168.1.15:8000';[m
+   static const String mandiPricesEndpoint = '/v1/mandi-prices';[m
+   static const int timeoutSeconds = 30;[m
+ }[m
+[1mdiff --git a/lib/core/providers/providers.dart b/lib/core/providers/providers.dart[m
+[1mindex 2d1c2b6..690ab12 100644[m
+[1m--- a/lib/core/providers/providers.dart[m
+[1m+++ b/lib/core/providers/providers.dart[m
+[36m@@ -3,10 +3,10 @@[m [mimport 'package:flutter_secure_storage/flutter_secure_storage.dart';[m
+ import '../../data/services/auth_api_service.dart';[m
+ import '../../data/repositories/auth_repository.dart';[m
+ [m
+[31m-final authApiServiceProvider = Provider((ref) => AuthApiService());[m
+[31m-[m
+ final secureStorageProvider = Provider((ref) => const FlutterSecureStorage());[m
+ [m
+[32m+[m[32mfinal authApiServiceProvider = Provider((ref) => AuthApiService(ref.read(secureStorageProvider)));[m
+[32m+[m
+ final authRepositoryProvider = Provider((ref) {[m
+   final apiService = ref.read(authApiServiceProvider);[m
+   final storage = ref.read(secureStorageProvider);[m
+[1mdiff --git a/lib/data/models/auth/auth_response.dart b/lib/data/models/auth/auth_response.dart[m
+[1mindex 7aad876..9d34017 100644[m
+[1m--- a/lib/data/models/auth/auth_response.dart[m
+[1m+++ b/lib/data/models/auth/auth_response.dart[m
+[36m@@ -2,11 +2,13 @@[m [mimport 'user_profile.dart';[m
+ [m
+ class AuthResponse {[m
+   final String? accessToken;[m
+[32m+[m[32m  final String? refreshToken;[m
+   final String? tokenType;[m
+   final UserProfile user;[m
+ [m
+   AuthResponse({[m
+     this.accessToken,[m
+[32m+[m[32m    this.refreshToken,[m
+     this.tokenType,[m
+     required this.user,[m
+   });[m
+[36m@@ -14,6 +16,7 @@[m [mclass AuthResponse {[m
+   factory AuthResponse.fromJson(Map<String, dynamic> json) {[m
+     return AuthResponse([m
+       accessToken: json['access_token'],[m
+[32m+[m[32m      refreshToken: json['refresh_token'],[m
+       tokenType: json['token_type'],[m
+       user: UserProfile.fromJson(json['user'] ?? json),[m
+     );[m
+[1mdiff --git a/lib/data/repositories/auth_repository.dart b/lib/data/repositories/auth_repository.dart[m
+[1mindex 2615aef..87a0e35 100644[m
+[1m--- a/lib/data/repositories/auth_repository.dart[m
+[1m+++ b/lib/data/repositories/auth_repository.dart[m
+[36m@@ -12,6 +12,7 @@[m [mclass AuthRepository {[m
+   AuthRepository(this._apiService, this._storage);[m
+ [m
+   static const _tokenKey = 'access_token';[m
+[32m+[m[32m  static const _refreshTokenKey = 'refresh_token';[m
+ [m
+   Future<SendOtpResponse> sendOTP(String identifier) async {[m
+     return _apiService.sendOTP(identifier);[m
+[36m@@ -26,7 +27,9 @@[m [mclass AuthRepository {[m
+   }[m
+ [m
+   Future<AuthResponse> login(LoginRequest request) async {[m
+[31m-    await _storage.deleteAll();[m
+[32m+[m[32m    // Clear existing tokens[m
+[32m+[m[32m    await _storage.delete(key: _tokenKey);[m
+[32m+[m[32m    await _storage.delete(key: _refreshTokenKey);[m
+ [m
+     final response = await _apiService.login(request);[m
+ [m
+[36m@@ -37,11 +40,28 @@[m [mclass AuthRepository {[m
+       );[m
+     }[m
+ [m
+[32m+[m[32m    if (response.refreshToken != null) {[m
+[32m+[m[32m      await _storage.write([m
+[32m+[m[32m        key: _refreshTokenKey,[m
+[32m+[m[32m        value: response.refreshToken!,[m
+[32m+[m[32m      );[m
+[32m+[m[32m    }[m
+[32m+[m
+     return response;[m
+   }[m
+ [m
+   Future<void> logout() async {[m
+[31m-    await _storage.deleteAll();[m
+[32m+[m[32m    final token = await getToken();[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      if (token != null) {[m
+[32m+[m[32m        await _apiService.logout(token);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } catch (_) {[m
+[32m+[m[32m      // ignore logout errors[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    await _storage.delete(key: _tokenKey);[m
+[32m+[m[32m    await _storage.delete(key: _refreshTokenKey);[m
+   }[m
+ [m
+   Future<String?> getToken() async {[m
+[36m@@ -51,26 +71,46 @@[m [mclass AuthRepository {[m
+   Future<UserProfile?> getProfile() async {[m
+     final token = await getToken();[m
+     if (token == null) throw Exception('No token found');[m
+[31m-    final response = await _apiService.getProfile(token);[m
+[31m-    return response.user;[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      final response = await _apiService.getProfile(token);[m
+[32m+[m[32m      return response.user;[m
+[32m+[m[32m    }  on UnauthorizedException {[m
+[32m+[m[32m        await logout();[m
+[32m+[m[32m        rethrow;[m
+[32m+[m[32m    }[m
+   }[m
+ [m
+   Future<List<dynamic>> getPreferredCrops() async {[m
+     final token = await getToken();[m
+     if (token == null) throw Exception('No token found');[m
+[31m-    return await _apiService.getPreferredCrops(token);[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      return await _apiService.getPreferredCrops(token);[m
+[32m+[m[32m    } catch (e) {[m
+[32m+[m[32m      await logout();[m
+[32m+[m[32m      rethrow;[m
+[32m+[m[32m    }[m
+   }[m
+ [m
+   Future<void> updateProfile(Map<String, dynamic> body) async {[m
+     final token = await getToken();[m
+     if (token == null) throw Exception('No token found');[m
+[31m-    await _apiService.updateProfile(token, body);[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      await _apiService.updateProfile(token, body);[m
+[32m+[m[32m    } catch (e) {[m
+[32m+[m[32m      await logout();[m
+[32m+[m[32m      rethrow;[m
+[32m+[m[32m    }[m
+   }[m
+ [m
+   Future<void> savePreferredCrops(List<int> cropIds) async {[m
+     final token = await getToken();[m
+     if (token == null) throw Exception('No token found');[m
+[31m-    await _apiService.savePreferredCrops(token, cropIds);[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      await _apiService.savePreferredCrops(token, cropIds);[m
+[32m+[m[32m    } catch (e) {[m
+[32m+[m[32m      await logout();[m
+[32m+[m[32m      rethrow;[m
+[32m+[m[32m    }[m
+   }[m
+ [m
+   Future<UserProfile?> getCurrentUser() async {[m
+[36m@@ -80,7 +120,7 @@[m [mclass AuthRepository {[m
+       final response = await _apiService.getCurrentUser(token);[m
+       return response.user;[m
+     } catch (e) {[m
+[31m-      // If token is invalid, remove it[m
+[32m+[m[32m      // If token is invalid or refresh failed, remove it and return null[m
+       await logout();[m
+       return null;[m
+     }[m
+[1mdiff --git a/lib/data/services/auth_api_service.dart b/lib/data/services/auth_api_service.dart[m
+[1mindex c71a8a6..7b83c9c 100644[m
+[1m--- a/lib/data/services/auth_api_service.dart[m
+[1m+++ b/lib/data/services/auth_api_service.dart[m
+[36m@@ -5,10 +5,27 @@[m [mimport '../models/auth/auth_response.dart';[m
+ import '../models/auth/login_request.dart';[m
+ import '../models/auth/signup_request.dart';[m
+ import '../models/auth/user_profile.dart';[m
+[32m+[m[32mimport 'package:flutter_secure_storage/flutter_secure_storage.dart';[m
+[32m+[m
+[32m+[m[32mclass UnauthorizedException implements Exception {[m
+[32m+[m[32m  final String message;[m
+[32m+[m
+[32m+[m[32m  UnauthorizedException([this.message = 'Unauthorized']);[m
+[32m+[m
+[32m+[m[32m  @override[m
+[32m+[m[32m  String toString() => 'UnauthorizedException: $message';[m
+[32m+[m[32m}[m
+ [m
+ class AuthApiService {[m
+   final String baseUrl = ApiConstants.baseUrl;[m
+ [m
+[32m+[m[32m  final FlutterSecureStorage _storage;[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  static Future<void>? _refreshingFuture;[m
+[32m+[m
+[32m+[m[32m  AuthApiService(this._storage);[m
+[32m+[m
+   String _extractErrorMessage(http.Response response, String fallback) {[m
+     final body = response.body.trim();[m
+     if (body.isEmpty) {[m
+[36m@@ -34,6 +51,36 @@[m [mclass AuthApiService {[m
+ [m
+     return body;[m
+   }[m
+[32m+[m[32m  Future<void> _clearTokens() async {[m
+[32m+[m[32m    await _storage.delete(key: 'access_token');[m
+[32m+[m[32m    await _storage.delete(key: 'refresh_token');[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  Future<void> _doRefresh(String refreshToken) async {[m
+[32m+[m[32m    final response = await http.post([m
+[32m+[m[32m      Uri.parse('$baseUrl/auth/refresh'),[m
+[32m+[m[32m      headers: {[m
+[32m+[m[32m        'Content-Type': 'application/json',[m
+[32m+[m[32m      },[m
+[32m+[m[32m      body: jsonEncode({[m
+[32m+[m[32m        'refresh_token': refreshToken,[m
+[32m+[m[32m      }),[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    if (response.statusCode != 200) {[m
+[32m+[m[32m      await _clearTokens();[m
+[32m+[m[32m      throw UnauthorizedException([m
+[32m+[m[32m        _extractErrorMessage(response, 'Failed to refresh'),[m
+[32m+[m[32m      );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    final body = jsonDecode(response.body);[m
+[32m+[m
+[32m+[m[32m    await _storage.write([m
+[32m+[m[32m      key: 'access_token',[m
+[32m+[m[32m      value: body['access_token'],[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+ [m
+   Future<SendOtpResponse> sendOTP(String identifier) async {[m
+     final response = await http.post([m
+[36m@@ -51,6 +98,61 @@[m [mclass AuthApiService {[m
+     return SendOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);[m
+   }[m
+ [m
+[32m+[m[32m  Future<http.Response> _sendWithRefresh([m
+[32m+[m[32m    Future<http.Response> Function(String token) request,[m
+[32m+[m[32m  ) async {[m
+[32m+[m
+[32m+[m[32m    String? token = await _storage.read(key: 'access_token');[m
+[32m+[m
+[32m+[m[32m    if (token == null) {[m
+[32m+[m[32m      throw UnauthorizedException();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    var response = await request(token);[m
+[32m+[m
+[32m+[m[32m    if (response.statusCode != 401) {[m
+[32m+[m[32m      return response;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    final refreshToken = await _storage.read([m
+[32m+[m[32m      key: 'refresh_token',[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    if (refreshToken == null) {[m
+[32m+[m[32m      await _clearTokens();[m
+[32m+[m[32m      throw UnauthorizedException();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (_refreshingFuture == null) {[m
+[32m+[m[32m      _refreshingFuture = _doRefresh(refreshToken);[m
+[32m+[m
+[32m+[m[32m      try {[m
+[32m+[m[32m        await _refreshingFuture;[m
+[32m+[m[32m      } finally {[m
+[32m+[m[32m        _refreshingFuture = null;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      await _refreshingFuture;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    token = await _storage.read([m
+[32m+[m[32m      key: 'access_token',[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    if (token == null) {[m
+[32m+[m[32m      throw UnauthorizedException();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    response = await request(token);[m
+[32m+[m
+[32m+[m[32m    if (response.statusCode == 401) {[m
+[32m+[m[32m      await _clearTokens();[m
+[32m+[m[32m      throw UnauthorizedException();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return response;[m
+[32m+[m[32m  }[m
+[32m+[m
+   Future<VerifyOtpResponse> verifyOTP(String identifier, String otp) async {[m
+     final response = await http.post([m
+       Uri.parse('$baseUrl/auth/verify-otp'),[m
+[36m@@ -103,13 +205,14 @@[m [mclass AuthApiService {[m
+   }[m
+ [m
+   Future<AuthResponse> getProfile(String token) async {[m
+[31m-    final response = await http.get([m
+[32m+[m[32m    final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m    return http.get([m
+       Uri.parse('$baseUrl/profile'),[m
+       headers: {[m
+         'Content-Type': 'application/json',[m
+         'Authorization': 'Bearer $token',[m
+       },[m
+[31m-    );[m
+[32m+[m[32m    );});[m
+ [m
+     if (response.statusCode != 200) {[m
+       throw Exception('Failed to get profile: ${response.body}');[m
+[36m@@ -119,13 +222,14 @@[m [mclass AuthApiService {[m
+   }[m
+ [m
+   Future<List<dynamic>> getPreferredCrops(String token) async {[m
+[31m-    final response = await http.get([m
+[32m+[m[32m    final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m    return http.get([m
+       Uri.parse('$baseUrl/profile/preferences'),[m
+       headers: {[m
+         'Content-Type': 'application/json',[m
+         'Authorization': 'Bearer $token',[m
+       },[m
+[31m-    );[m
+[32m+[m[32m    );});[m
+ [m
+     if (response.statusCode != 200) {[m
+       throw Exception('Failed to get preferred crops: ${response.body}');[m
+[36m@@ -138,7 +242,8 @@[m [mFuture<void> savePreferredCrops([m
+   String token,[m
+   List<int> commodityIds,[m
+ ) async {[m
+[31m-  final response = await http.put([m
+[32m+[m[32m  final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m    return http.put([m
+     Uri.parse('$baseUrl/profile/preferences'),[m
+     headers: {[m
+       'Content-Type': 'application/json',[m
+[36m@@ -147,7 +252,7 @@[m [mFuture<void> savePreferredCrops([m
+     body: jsonEncode({[m
+       'commodity_ids': commodityIds,[m
+     }),[m
+[31m-  );[m
+[32m+[m[32m  );});[m
+ [m
+   if (response.statusCode != 200) {[m
+     throw Exception([m
+[36m@@ -157,13 +262,14 @@[m [mFuture<void> savePreferredCrops([m
+ }[m
+ [m
+   Future<AuthResponse> getCurrentUser(String token) async {[m
+[31m-    final response = await http.get([m
+[32m+[m[32m    final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m      return http.get([m
+       Uri.parse('$baseUrl/auth/me'),[m
+       headers: {[m
+         'Content-Type': 'application/json',[m
+         'Authorization': 'Bearer $token',[m
+       },[m
+[31m-    ).timeout(const Duration(seconds: 10)); // Added timeout[m
+[32m+[m[32m    ).timeout(const Duration(seconds: 10));}); // Added timeout[m
+ [m
+     if (response.statusCode != 200) {[m
+       throw Exception('Failed to get current user: ${response.body}');[m
+[36m@@ -171,19 +277,40 @@[m [mFuture<void> savePreferredCrops([m
+ [m
+     return AuthResponse.fromJson(jsonDecode(response.body));[m
+   }[m
+[32m+[m[32m  Future<void> logout(String token) async {[m
+[32m+[m[32m  final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m    return http.post([m
+[32m+[m[32m      Uri.parse('$baseUrl/auth/logout'),[m
+[32m+[m[32m      headers: {[m
+[32m+[m[32m        'Content-Type': 'application/json',[m
+[32m+[m[32m        'Authorization': 'Bearer $token',[m
+[32m+[m[32m      },[m
+[32m+[m[32m    );[m
+[32m+[m[32m  });[m
+ [m
+[32m+[m[32m  if (response.statusCode != 200 &&[m
+[32m+[m[32m      response.statusCode != 204) {[m
+[32m+[m[32m    throw Exception([m
+[32m+[m[32m      _extractErrorMessage([m
+[32m+[m[32m        response,[m
+[32m+[m[32m        'Failed to logout',[m
+[32m+[m[32m      ),[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+   Future<void> updateProfile([m
+   String token,[m
+   Map<String, dynamic> body,[m
+ ) async {[m
+[31m-  final response = await http.put([m
+[32m+[m[32m  final response = await _sendWithRefresh((token) {[m
+[32m+[m[32m  return http.put([m
+     Uri.parse('$baseUrl/profile'),[m
+     headers: {[m
+       'Content-Type': 'application/json',[m
+       'Authorization': 'Bearer $token',[m
+     },[m
+     body: jsonEncode(body),[m
+[31m-  );[m
+[32m+[m[32m  );});[m
+ [m
+   if (response.statusCode != 200) {[m
+     throw Exception([m
+[1mdiff --git a/lib/features/auth/screens/onboarding_screen.dart b/lib/features/auth/screens/onboarding_screen.dart[m
+[1mindex 41b2579..8f69f97 100644[m
+[1m--- a/lib/features/auth/screens/onboarding_screen.dart[m
+[1m+++ b/lib/features/auth/screens/onboarding_screen.dart[m
+[36m@@ -304,7 +304,21 @@[m [mclass _OnboardingScreenState extends ConsumerState<OnboardingScreen> {[m
+                           child: Text(AppLocalizations.of(context)!.selectDistrict, style: const TextStyle(color: Colors.grey, fontSize: 14)),[m
+                         )[m
+                       : districtsAsync.when([m
+[31m-                          loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryGreen)),[m
+[32m+[m[32m                          loading: () => Container([m
+[32m+[m[32m                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),[m
+[32m+[m[32m                            decoration: BoxDecoration([m
+[32m+[m[32m                              color: Colors.grey.shade100,[m
+[32m+[m[32m                              borderRadius: BorderRadius.circular(12.0),[m
+[32m+[m[32m                              border: Border.all(color: Colors.grey.shade300),[m
+[32m+[m[32m                            ),[m
+[32m+[m[32m                            child: Text([m
+[32m+[m[32m                              AppLocalizations.of(context)!.selectDistrict,[m
+[32m+[m[32m                              style: const TextStyle([m
+[32m+[m[32m                                color: Colors.grey,[m
+[32m+[m[32m                                fontSize: 14,[m
+[32m+[m[32m                              ),[m
+[32m+[m[32m                            ),[m
+[32m+[m[32m                          ),[m
+                           error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),[m
+                           data: (districts) => FilterDropdownButton<District>([m
+                             hintText: AppLocalizations.of(context)!.selectDistrict,[m
+[1mdiff --git a/lib/features/mandi_prices/screens/home_screen.dart b/lib/features/mandi_prices/screens/home_screen.dart[m
+[1mindex 7fc33ac..21a9029 100644[m
+[1m--- a/lib/features/mandi_prices/screens/home_screen.dart[m
+[1m+++ b/lib/features/mandi_prices/screens/home_screen.dart[m
+[36m@@ -363,39 +363,81 @@[m [mWidget _buildFilterSection() {[m
+       const SizedBox(height: 16),[m
+       // Buttons updated[m
+       Row([m
+[31m-        children: [[m
+[31m-          Expanded([m
+[31m-            child: ElevatedButton([m
+[31m-              style: ElevatedButton.styleFrom([m
+[31m-                backgroundColor: const Color.fromARGB(255, 39, 163, 45),[m
+[31m-                // Notice: disabled background/foreground colors are handled automatically[m
+[31m-                // by Material when onPressed is null, but you can override them here if needed![m
+[31m-                foregroundColor: Colors.white,[m
+[31m-                elevation: 0,[m
+[31m-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),[m
+[31m-                padding: const EdgeInsets.symmetric(vertical: 14),[m
+[31m-              ),[m
+[31m-              // 👇 The magic sauce goes right here [m
+[31m-              onPressed: hasFilters ? _applyFilters : null,[m
+[31m-              child: Text(AppLocalizations.of(context)!.applyFilters, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),[m
+[32m+[m[32m  children: [[m
+[32m+[m[32m    Expanded([m
+[32m+[m[32m      child: SizedBox([m
+[32m+[m[32m        height: 64,[m
+[32m+[m[32m        child: ElevatedButton([m
+[32m+[m[32m          style: ElevatedButton.styleFrom([m
+[32m+[m[32m            backgroundColor: const Color.fromARGB(255, 39, 163, 45),[m
+[32m+[m[32m            foregroundColor: Colors.white,[m
+[32m+[m[32m            elevation: 0,[m
+[32m+[m[32m            shape: RoundedRectangleBorder([m
+[32m+[m[32m              borderRadius: BorderRadius.circular(12),[m
+             ),[m
+           ),[m
+[31m-          const SizedBox(width: 12),[m
+[31m-          Expanded([m
+[31m-            child: OutlinedButton([m
+[31m-              style: OutlinedButton.styleFrom([m
+[31m-                foregroundColor: const Color.fromARGB(255, 39, 163, 45),[m
+[31m-                side: const BorderSide(color: Color.fromARGB(255, 39, 163, 45), width: 1.5),[m
+[31m-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),[m
+[31m-                padding: const EdgeInsets.symmetric(vertical: 14),[m
+[31m-              ),[m
+[31m-              // Optional: You can also disable the Clear button if there are no filters![m
+[31m-              onPressed: hasFilters ? _clearFilters : null, [m
+[31m-              child: Text(AppLocalizations.of(context)!.clearAll, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),[m
+[32m+[m[32m          onPressed: hasFilters ? _applyFilters : null,[m
+[32m+[m[32m          child: Text([m
+[32m+[m[32m            AppLocalizations.of(context)!.applyFilters,[m
+[32m+[m[32m            textAlign: TextAlign.center,[m
+[32m+[m[32m            maxLines: 2,[m
+[32m+[m[32m            style: TextStyle([m
+[32m+[m[32m              fontSize: Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                  ? 15[m
+[32m+[m[32m                  : 16,[m
+[32m+[m[32m              fontWeight:[m
+[32m+[m[32m                  Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                      ? FontWeight.w600[m
+[32m+[m[32m                      : FontWeight.bold,[m
+[32m+[m[32m              height:[m
+[32m+[m[32m                  Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                      ? 1.35[m
+[32m+[m[32m                      : 1.2,[m
+             ),[m
+           ),[m
+[31m-        ],[m
+[32m+[m[32m        ),[m
+[32m+[m[32m      ),[m
+[32m+[m[32m    ),[m
+[32m+[m[32m    const SizedBox(width: 12),[m
+[32m+[m[32m    Expanded([m
+[32m+[m[32m      child: SizedBox([m
+[32m+[m[32m        height: 64,[m
+[32m+[m[32m        child: OutlinedButton([m
+[32m+[m[32m          style: OutlinedButton.styleFrom([m
+[32m+[m[32m            foregroundColor: const Color.fromARGB(255, 39, 163, 45),[m
+[32m+[m[32m            side: const BorderSide([m
+[32m+[m[32m              color: Color.fromARGB(255, 39, 163, 45),[m
+[32m+[m[32m              width: 1.5,[m
+[32m+[m[32m            ),[m
+[32m+[m[32m            shape: RoundedRectangleBorder([m
+[32m+[m[32m              borderRadius: BorderRadius.circular(12),[m
+[32m+[m[32m            ),[m
+[32m+[m[32m          ),[m
+[32m+[m[32m          onPressed: hasFilters ? _clearFilters : null,[m
+[32m+[m[32m          child: Text([m
+[32m+[m[32m            AppLocalizations.of(context)!.clearAll,[m
+[32m+[m[32m            textAlign: TextAlign.center,[m
+[32m+[m[32m            maxLines: 2,[m
+[32m+[m[32m            style: TextStyle([m
+[32m+[m[32m              fontSize: Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                  ? 15[m
+[32m+[m[32m                  : 16,[m
+[32m+[m[32m              fontWeight:[m
+[32m+[m[32m                  Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                      ? FontWeight.w600[m
+[32m+[m[32m                      : FontWeight.bold,[m
+[32m+[m[32m              height:[m
+[32m+[m[32m                  Localizations.localeOf(context).languageCode == 'ml'[m
+[32m+[m[32m                      ? 1.35[m
+[32m+[m[32m                      : 1.2,[m
+[32m+[m[32m            ),[m
+[32m+[m[32m          ),[m
+[32m+[m[32m        ),[m
+       ),[m
+[32m+[m[32m    ),[m
+[32m+[m[32m  ],[m
+[32m+[m[32m)[m
+[32m+[m[41m      [m
+     ],[m
+   );[m
+ }[m
