@@ -66,6 +66,27 @@ def upsert_records_to_db(valid_records):
         from sqlalchemy.dialects.postgresql import insert
         from app.models.mandi_price import MandiPrice
         
+        # Pre-load reference tables into memory to eliminate N+1 query pattern
+        from app.models.commodity import Commodity
+        from app.models.variety import Variety
+        from app.models.grade import Grade
+        from app.models.market import Market
+
+        print("[Scheduler] Pre-loading reference tables to memory for O(1) cache lookups...")
+        commodity_cache = {c.name.strip().lower(): c.id for c in db.query(Commodity.id, Commodity.name).all() if c.name}
+        variety_cache = {
+            (v.name.strip().lower(), v.commodity_id): v.id 
+            for v in db.query(Variety.id, Variety.name, Variety.commodity_id).all() 
+            if v.name and v.commodity_id
+        }
+        grade_cache = {
+            (g.grade_name.strip().lower(), g.commodity_id): g.id 
+            for g in db.query(Grade.id, Grade.grade_name, Grade.commodity_id).all() 
+            if g.grade_name and g.commodity_id
+        }
+        market_cache = {m.name.strip().lower(): m.id for m in db.query(Market.id, Market.name).all() if m.name}
+        print(f"[Scheduler] Preloaded: {len(commodity_cache)} commodities, {len(variety_cache)} varieties, {len(grade_cache)} grades, {len(market_cache)} markets.")
+
         upsert_count = 0
         for rec in valid_records:
             try:
@@ -91,7 +112,11 @@ def upsert_records_to_db(valid_records):
                         rec["commodity"] = normalized_commodity
 
                 # 1. Resolve names to IDs
-                cmdt_id = int(str(getId.get_commodity_id(rec["commodity"], db)).strip("[]"))
+                comm_name_lower = rec["commodity"].strip().lower()
+                if comm_name_lower in commodity_cache:
+                    cmdt_id = commodity_cache[comm_name_lower]
+                else:
+                    cmdt_id = int(str(getId.get_commodity_id(rec["commodity"], db)).strip("[]"))
                 
                 # Normalize variety name using commodity_id as context
                 original_variety = rec.get("variety")
@@ -104,9 +129,23 @@ def upsert_records_to_db(valid_records):
                     print(f"[INFO] Fuzzy matched variety '{original_variety}' -> '{normalized_variety}' (Commodity ID: {cmdt_id})")
                     rec["variety"] = normalized_variety
 
-                var_id = int(str(getId.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
-                grd_id = int(str(getId.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
-                mkt_id = int(str(getId.get_market_id(rec["market"], db)).strip("[]"))
+                var_name_lower = rec["variety"].strip().lower()
+                if (var_name_lower, cmdt_id) in variety_cache:
+                    var_id = variety_cache[(var_name_lower, cmdt_id)]
+                else:
+                    var_id = int(str(getId.get_variety_id(rec["variety"], cmdt_id, db)).strip("[]"))
+
+                grd_name_lower = rec["grade"].strip().lower()
+                if (grd_name_lower, cmdt_id) in grade_cache:
+                    grd_id = grade_cache[(grd_name_lower, cmdt_id)]
+                else:
+                    grd_id = int(str(getId.get_grade_id(rec["grade"], cmdt_id, db)).strip("[]"))
+
+                mkt_name_lower = rec["market"].strip().lower()
+                if mkt_name_lower in market_cache:
+                    mkt_id = market_cache[mkt_name_lower]
+                else:
+                    mkt_id = int(str(getId.get_market_id(rec["market"], db)).strip("[]"))
                 
                 # 2. Parse date
                 arr_date = parse_date(rec["arrival_date"])
