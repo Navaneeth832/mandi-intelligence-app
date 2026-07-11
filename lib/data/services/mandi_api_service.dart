@@ -98,7 +98,22 @@ class MandiApiService {
         .map((e) => Commodity.fromJson(e))
         .toList();
   }
-  
+  Future<List<Commodity>> getActiveCommodities() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/commodities/active'),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load commodities');
+    }
+
+    final List<dynamic> data =
+        jsonDecode(response.body);
+
+    return data
+        .map((e) => Commodity.fromJson(e))
+        .toList();
+  }
   Future<List<String>> getMarkets(int? districtId, {String? language}) async {
       String endpoint = '/markets';
       final queryParams = <String, String>{};

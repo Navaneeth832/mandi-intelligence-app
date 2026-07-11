@@ -27,7 +27,7 @@ final editProfileDataProvider = FutureProvider.autoDispose<EditProfileData>((ref
   final authRepo = ref.read(authRepositoryProvider);
   final user = await ref.watch(profileNotifierProvider.future);
   final prefs = await ref.watch(preferredCropsNotifierProvider.future);
-  final allCrops = await ref.watch(commoditiesProvider.future);
+  final allCrops = await ref.watch(activeCommoditiesProvider.future);
   final states = await ref.watch(statesProvider.future);
   
   List<District>? districts;
