@@ -147,7 +147,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildForm() {
     final statesAsync = ref.watch(statesProvider);
     final districtsAsync = ref.watch(districtsProvider(_selectedState?.id));
-    final cropsAsync = ref.watch(commoditiesProvider);
+    final cropsAsync = ref.watch(activeCommoditiesProvider);
     
     return Scaffold(
       backgroundColor: _bgColor,

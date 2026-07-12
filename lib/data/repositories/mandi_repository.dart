@@ -104,6 +104,10 @@ class MandiRepository {
   Future<List<Commodity>> getActiveCommodities() {
     return _apiService.getActiveCommodities();
   }
+
+  Future<List<Commodity>> getAllCommodities() {
+    return _apiService.getAllCommodities();
+  }
   Future<List<District>> getDistricts({
     String? state,
     int? stateId,

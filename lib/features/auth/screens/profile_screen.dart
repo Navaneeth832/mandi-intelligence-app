@@ -20,7 +20,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(profileNotifierProvider);
     final prefsAsync = ref.watch(preferredCropsNotifierProvider);
-    final cropsAsync = ref.watch(commoditiesProvider);
+    final cropsAsync = ref.watch(allCommoditiesProvider);
     final locale = ref.watch(localeProvider);
 
     return Scaffold(

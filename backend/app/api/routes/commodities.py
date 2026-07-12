@@ -36,7 +36,7 @@ def get_active_commodities(db: Session = Depends(get_db)):
     )
     
 @router.get("/all", response_model=list[CommoditySchema])
-def get_active_commodities(db: Session = Depends(get_db)):
+def get_all_commodities(db: Session = Depends(get_db)):
     return (
         db.query(Commodity)
         .options(selectinload(Commodity.translations))

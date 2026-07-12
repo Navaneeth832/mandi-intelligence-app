@@ -242,6 +242,11 @@ final activeCommoditiesProvider =
   return ref.read(mandiRepositoryProvider).getActiveCommodities();
 });
 
+final allCommoditiesProvider =
+    FutureProvider<List<Commodity>>((ref) {
+  return ref.read(mandiRepositoryProvider).getAllCommodities();
+});
+
 final commodityListProvider = FutureProvider<List<String>>((ref) async {
   final locale = ref.watch(localeProvider);
   final commodities = await ref.watch(commoditiesProvider.future);
