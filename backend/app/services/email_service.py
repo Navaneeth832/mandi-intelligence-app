@@ -16,7 +16,7 @@ class EmailService:
     def send_otp_email(email: str, otp: str):
         #start=time.time()
         resend.Emails.send({
-            "from": "onboarding@resend.dev",
+            "from": "noreply@mandiintelligence.tech",
             "to": email,
             "subject": "Your Mandi Intelligence OTP",
             "html": f"""
