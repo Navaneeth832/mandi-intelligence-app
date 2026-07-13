@@ -57,6 +57,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get alerts => 'അലർട്ടുകൾ';
 
   @override
+  String get forecasts => 'പ്രവചനങ്ങൾ';
+
+  @override
   String get profile => 'പ്രൊഫൈൽ';
 
   @override

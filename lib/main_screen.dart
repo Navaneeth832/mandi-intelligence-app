@@ -4,8 +4,8 @@ import 'features/mandi_prices/screens/home_screen.dart';
 import 'features/mandi_prices/screens/markets_screen.dart';
 import 'features/mandi_prices/widgets/bottom_nav_bar.dart';
 import 'features/mandi_prices/providers/filter_selection_provider.dart';
+import 'features/forecasts/screens/forecasts_screen.dart';
 import 'features/auth/screens/profile_screen.dart';
-import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -26,9 +26,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         return const MarketsScreen();
 
       case 2:
-        return Scaffold(
-          body: Center(child: Text(AppLocalizations.of(context)!.alertsScreen)),
-        );
+        return const ForecastsScreen();
 
       case 3:
         return const ProfileScreen();

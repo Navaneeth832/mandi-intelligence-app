@@ -16,6 +16,7 @@
   "home": "Home",
   "markets": "Markets",
   "alerts": "Alerts",
+  "forecasts": "Forecasts",
   "profile": "Profile",
   "justNow": "Just now",
   "minutesAgo": "{count} mins ago",

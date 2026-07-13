@@ -193,6 +193,12 @@ abstract class AppLocalizations {
   /// **'Alerts'**
   String get alerts;
 
+  /// No description provided for @forecasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecasts'**
+  String get forecasts;
+
   /// No description provided for @profile.
   ///
   /// In en, this message translates to:

@@ -57,6 +57,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get alerts => 'अलर्ट';
 
   @override
+  String get forecasts => 'पूर्वानुमान';
+
+  @override
   String get profile => 'प्रोफ़ाइल';
 
   @override

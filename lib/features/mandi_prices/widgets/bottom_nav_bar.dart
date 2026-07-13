@@ -54,9 +54,9 @@ class BottomNavBar extends StatelessWidget {
             label: AppLocalizations.of(context)!.markets,
           ),
           NavigationDestination(
-            icon: Icon(Icons.notifications_none_outlined),
-            selectedIcon: Icon(Icons.notifications),
-            label: AppLocalizations.of(context)!.alerts,
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics),
+            label: AppLocalizations.of(context)!.forecasts,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
