@@ -700,3 +700,43 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
   - [forecast_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/widgets/forecast_card.dart)
   - [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart)
   - [forecast_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecast_detail_screen.dart)
+
+---
+
+# 24. Backend Predictions & Localization Endpoint (Implemented July 2026)
+
+### Feature Overview
+- **Predictions Endpoint**: Created the `GET /predictions` API endpoint in the FastAPI backend which accepts the `language` query parameter (e.g. `?language=en`, `?language=hi`, `?language=ml`).
+- **Authorization & Context**: Authenticates requests using `get_current_user` to read the user's crop preferences. It dynamically resolves the latest prediction details for the preferred crop ids.
+- **Database Architecture Integration**:
+  - `prediction_batches` (Table): Stores metadata about each model run batch (`prediction_date`, `prediction_time`, `model_version`, `created_at`).
+  - `commodity_predictions` (Table): Stores 7 predicted daily prices for each commodity in a batch (`batch_id`, `commodity_id`, `prediction_day`, `predicted_price`).
+
+### Core Architecture Components
+
+#### SQLAlchemy Models (`app/models/`)
+- **`PredictionBatch`** (`prediction_batch.py`): Maps `prediction_batches` table, with a relationship to `CommodityPrediction`.
+- **`CommodityPrediction`** (`commodity_prediction.py`): Maps `commodity_predictions` table, with foreign keys to batches and commodities.
+
+#### Pydantic Schemas (`app/schemas/prediction.py`)
+- **`ForecastDay`**: Minimal object holding `date` and `price`.
+- **`ForecastResponse`**: Main response payload schema (id, name, dates, time, prices, trend, recommendation, peak, best selling date).
+
+#### Repository Layer (`app/repositories/prediction_repository.py`)
+- **`get_latest_batch()`**: Queries today's latest batch (`prediction_date = CURRENT_DATE` ordered by time descending).
+- **`get_predictions_with_details()`**: Eagerly loads all chronological prediction records for preferred crops in the batch.
+- **`get_average_modal_prices()`**: Obtains today's average modal price for each crop from `mandi_prices`. Falls back to the average price on the latest available day if today has no entries.
+
+#### Service Layer (`app/services/prediction_service.py`)
+- Groups the 7 chronological database rows of each crop.
+- Computes trend: `Rising` if last price > first, `Falling` if last < first, else `Stable`.
+- Computes expected peak price and best selling day (date of max price).
+- Computes recommendation: `Sell Today` if best selling day is today, or if trend is `Falling`; `Wait` if trend is `Rising`; else `Hold`.
+- Localizes commodity name via database translation query, and localizes Trend/Recommendation using the `prediction_localization.py` helper.
+
+### Files Created/Modified
+- **Models Init**: Registered models in [__init__.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/models/__init__.py).
+- **Routes Registration**: Registered predictions router in [main.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/main.py).
+- **Endpoint Route**: Created predictions router inside [predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py).
+- **Schemas**: Defined prediction schema inside [prediction.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/schemas/prediction.py).
+- **Localization Helper**: Created translation dictionary utilities inside [prediction_localization.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/utils/prediction_localization.py).

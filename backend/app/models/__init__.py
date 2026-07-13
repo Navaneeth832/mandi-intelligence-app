@@ -16,3 +16,5 @@ from app.models.user_crop_preference import UserCropPreference
 from app.models.refresh_token import RefreshToken
 from app.models.otp_verification import OTPVerification
 from app.models.verification_token import VerificationToken
+from .prediction_batch import PredictionBatch
+from .commodity_prediction import CommodityPrediction

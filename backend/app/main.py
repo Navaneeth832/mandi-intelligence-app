@@ -11,6 +11,7 @@ from app.api.routes import mandi_prices
 from app.api.routes import price_history
 from app.api.routes import districts
 from app.api.routes import market_directory
+from app.api.routes import predictions
 from app.api.auth import router as auth_router
 from app.api.profile import router as profile_router
 from app.api.crop_preferences import router as crop_preferences_router
@@ -116,6 +117,12 @@ app.include_router(
     market_directory.router,
     prefix="/market-directory",
     tags=["Market Directory"]
+)
+
+app.include_router(
+    predictions.router,
+    prefix="/predictions",
+    tags=["Predictions"]
 )
 
 app.include_router(auth_router)
