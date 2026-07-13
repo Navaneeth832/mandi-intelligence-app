@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import '../providers/forecast_provider.dart';
 import '../widgets/forecast_card.dart';
+import 'forecast_detail_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class ForecastsScreen extends ConsumerWidget {
@@ -81,7 +82,19 @@ class ForecastsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(16.0),
                       itemCount: forecasts.length,
                       itemBuilder: (context, index) {
-                        return ForecastCard(forecast: forecasts[index]);
+                        return ForecastCard(
+                          forecast: forecasts[index],
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForecastDetailScreen(
+                                  forecast: forecasts[index],
+                                ),
+                              ),
+                            );
+                          },
+                        );
                       },
                     ),
                   );

@@ -4,10 +4,12 @@ import '../../../data/models/forecast_model.dart';
 
 class ForecastCard extends StatelessWidget {
   final CommodityForecast forecast;
+  final VoidCallback? onTap;
 
   const ForecastCard({
     super.key,
     required this.forecast,
+    this.onTap,
   });
 
   @override
@@ -73,10 +75,13 @@ class ForecastCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.0),
         border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.0),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Row: Recommendation Badge & Trend Indicator
             Row(
@@ -262,6 +267,7 @@ class ForecastCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

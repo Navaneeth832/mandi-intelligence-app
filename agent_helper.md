@@ -651,3 +651,21 @@ The pipeline runs daily to update market prices:
 The frontend matches the proposed JSON response contract:
 `GET /profile/forecasts` (or `/forecasts`) -> `List[CommodityForecast]`
 The repository method `getForecastsForPreferredCrops` can be replaced with an HTTP call to the real API endpoint without requiring changes to screens, providers, widgets, models, or state management.
+
+---
+
+# 22. Forecast Detail Screen (Implemented July 2026)
+
+### Feature Overview
+- **Forecast Detail Screen**: Allows the user to tap on any forecast card to view a comprehensive hero summary, a 7-day predicted price trajectory line chart, and a daily detailed list highlighting the best day to sell.
+- **Navigation Flow**: Pushes `ForecastDetailScreen` onto the navigation stack when tapping the `ForecastCard` from the `ForecastsScreen`. The navigation passes the existing `CommodityForecast` object so no additional fetches are made.
+
+### New Widgets & Screens (`lib/features/forecasts/`)
+- **`ForecastDetailScreen`** (`screens/forecast_detail_screen.dart`):
+  - **Hero Summary Card**: Features a modern, elevated card detailing the commodity name, current price, recommendation badge, trend with inline icons, best selling day, and expected peak price.
+  - **7-Day Forecast Chart**: Embeds a clean, curvy `LineChart` using `fl_chart` with horizontal grid lines, touch tooltips showing price/date, custom green/white point markers, and dates rotated 30 degrees on the X axis to prevent overlapping.
+  - **Daily Forecast List**: Displays a vertical card list of all predicted prices. Evaluates each row and applies a distinct green border, green light background, a star icon, and a `"BEST DAY"` badge if it matches the `bestSellDate`.
+  - **Future-Proof Structure**: The screen is structurally designed to handle loading and error states via local flags which can easily be bound to an async API call in the future.
+- **Tappable `ForecastCard`** (`widgets/forecast_card.dart`):
+  - Updated to accept a `VoidCallback? onTap` parameter.
+  - Wrapped the container interior in an `InkWell` to enable smooth ripple click interaction across the entire card.
