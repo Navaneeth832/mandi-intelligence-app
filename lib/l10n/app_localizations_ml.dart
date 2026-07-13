@@ -60,6 +60,78 @@ class AppLocalizationsMl extends AppLocalizations {
   String get forecasts => 'പ്രവചനങ്ങൾ';
 
   @override
+  String get yourPreferredCrops => 'നിങ്ങൾ തിരഞ്ഞെടുത്ത വിളകൾ';
+
+  @override
+  String get mockData => 'മോക്ക് ഡാറ്റ';
+
+  @override
+  String get forecastsAreSimulated => 'പ്രവചനങ്ങൾ സിമുലേറ്റ് ചെയ്തവയാണ്.';
+
+  @override
+  String get currentPriceLabel => 'നിലവിലെ വില';
+
+  @override
+  String get trendLabel => 'പ്രവണത';
+
+  @override
+  String get recommendationLabel => 'ശുപാർശ';
+
+  @override
+  String get bestSellingDayLabel => 'വിൽക്കാൻ പറ്റിയ ദിവസം';
+
+  @override
+  String get expectedPeakPriceLabel => 'പ്രതീക്ഷിക്കുന്ന കൂടിയ വില';
+
+  @override
+  String get viewForecastLabel => 'പ്രവചനം കാണുക';
+
+  @override
+  String get dailyForecastLabel => 'ദിന പ്രവചനം';
+
+  @override
+  String get noPreferredCropsSelectedForecasts => 'തിരഞ്ഞെടുത്ത വിളകളൊന്നുമില്ല. പ്രവചനങ്ങൾ ലഭിക്കുന്നതിന് നിങ്ങളുടെ പ്രൊഫൈലിൽ നിന്ന് നിങ്ങളുടെ വിളകൾ തിരഞ്ഞെടുക്കുക.';
+
+  @override
+  String get retryLabel => 'വീണ്ടും ശ്രമിക്കുക';
+
+  @override
+  String get loadingLabel => 'ലോഡ് ചെയ്യുന്നു...';
+
+  @override
+  String get sellTodayLabel => 'ഇന്ന് വിൽക്കുക';
+
+  @override
+  String get waitLabel => 'കാത്തിരിക്കുക';
+
+  @override
+  String get holdLabel => 'കൈവശം വെക്കുക';
+
+  @override
+  String get risingLabel => 'വർദ്ധിക്കുന്നു';
+
+  @override
+  String get fallingLabel => 'കുറയുന്നു';
+
+  @override
+  String get stableLabel => 'സ്ഥിരമാണ്';
+
+  @override
+  String get predictionDateLabel => 'പ്രവചന തീയതി';
+
+  @override
+  String get predictionTimeLabel => 'പ്രവചന സമയം';
+
+  @override
+  String get latestPredictionLabel => 'അവസാന പ്രവചനം';
+
+  @override
+  String get noForecastsAvailable => 'പ്രവചനങ്ങൾ ലഭ്യമല്ല';
+
+  @override
+  String get forecastUpdated => 'പ്രവചനം പുതുക്കി';
+
+  @override
   String get profile => 'പ്രൊഫൈൽ';
 
   @override

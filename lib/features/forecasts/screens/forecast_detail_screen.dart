@@ -18,7 +18,7 @@ class ForecastDetailScreen extends StatefulWidget {
 }
 
 class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
-  // These boolean flags simulate future api integration states
+  // These variables simulate future API integration states
   final bool _isLoading = false;
   final String? _errorMessage = null;
 
@@ -39,7 +39,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          widget.forecast.commodity,
+          widget.forecast.commodityName,
           style: const TextStyle(
             color: Color(0xFF111111),
             fontWeight: FontWeight.bold,
@@ -57,11 +57,22 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
   }
 
   Widget _buildBody(BuildContext context) {
-    // Structural layout that easily allows adding loading/error states in the future
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color.fromARGB(255, 26, 152, 9),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              color: Color.fromARGB(255, 26, 152, 9),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.loadingLabel,
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
         ),
       );
     }
@@ -76,14 +87,18 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
               const Icon(Icons.error_outline, color: Colors.red, size: 60),
               const SizedBox(height: 16),
               Text(
-                _errorMessage,
+                _errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 26, 152, 9),
+                  foregroundColor: Colors.white,
+                ),
                 onPressed: () {},
-                child: const Text('Retry'),
+                child: Text(l10n.retryLabel),
               ),
             ],
           ),
@@ -113,34 +128,40 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
   }
 
   Widget _buildHeroSummaryCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     final currencyFormatter = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
       decimalDigits: 0,
     );
 
-    // Color and text styles for recommendations
+    // Recommendation translation and styling
     final recommendation = widget.forecast.recommendation.toUpperCase();
     Color recBgColor;
     Color recTextColor;
     IconData recIcon;
+    String recommendationText;
 
     if (recommendation == 'SELL TODAY') {
       recBgColor = const Color(0xFFE8F5E9);
       recTextColor = const Color(0xFF2E7D32);
       recIcon = Icons.check_circle_outline;
+      recommendationText = l10n.sellTodayLabel;
     } else if (recommendation == 'HOLD') {
       recBgColor = const Color(0xFFFFF3E0);
       recTextColor = const Color(0xFFE65100);
       recIcon = Icons.pause_circle_outline;
+      recommendationText = l10n.holdLabel;
     } else {
       // WAIT
       recBgColor = const Color(0xFFEBF3FC);
       recTextColor = const Color(0xFF1976D2);
       recIcon = Icons.watch_later_outlined;
+      recommendationText = l10n.waitLabel;
     }
 
-    // Trend styling
+    // Trend translation and styling
     final trend = widget.forecast.trend.toUpperCase();
     Color trendColor;
     IconData trendIcon;
@@ -149,21 +170,27 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
     if (trend == 'RISING') {
       trendColor = const Color(0xFF2E7D32);
       trendIcon = Icons.trending_up;
-      trendText = 'Rising';
+      trendText = l10n.risingLabel;
     } else if (trend == 'FALLING') {
       trendColor = const Color(0xFFC62828);
       trendIcon = Icons.trending_down;
-      trendText = 'Falling';
+      trendText = l10n.fallingLabel;
     } else {
       trendColor = const Color(0xFF757575);
       trendIcon = Icons.trending_flat;
-      trendText = 'Stable';
+      trendText = l10n.stableLabel;
     }
 
-    String displayDate = widget.forecast.bestSellDate;
+    String displayBestSellDate = widget.forecast.bestSellDate;
     try {
       final parsedDate = DateTime.parse(widget.forecast.bestSellDate);
-      displayDate = DateFormat('dd MMM, yyyy').format(parsedDate);
+      displayBestSellDate = DateFormat('dd MMM, yyyy').format(parsedDate);
+    } catch (_) {}
+
+    String displayPredDate = widget.forecast.predictionDate;
+    try {
+      final parsedDate = DateTime.parse(widget.forecast.predictionDate);
+      displayPredDate = DateFormat('dd MMM, yyyy').format(parsedDate);
     } catch (_) {}
 
     return Container(
@@ -192,7 +219,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.forecast.commodity,
+                      widget.forecast.commodityName,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -200,9 +227,9 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Market Forecast Summary',
-                      style: TextStyle(
+                    Text(
+                      l10n.latestPredictionLabel,
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Colors.grey,
                         fontWeight: FontWeight.w500,
@@ -221,7 +248,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                       Icon(recIcon, size: 16, color: recTextColor),
                       const SizedBox(width: 4),
                       Text(
-                        recommendation,
+                        recommendationText,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -240,14 +267,14 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
               children: [
                 Expanded(
                   child: _buildMetricTile(
-                    'Current Price',
+                    l10n.currentPriceLabel,
                     currencyFormatter.format(widget.forecast.currentPrice),
                     Colors.black87,
                   ),
                 ),
                 Expanded(
                   child: _buildMetricTile(
-                    'Expected Peak',
+                    l10n.expectedPeakPriceLabel,
                     currencyFormatter.format(widget.forecast.expectedPeakPrice),
                     trendColor,
                   ),
@@ -259,7 +286,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
               children: [
                 Expanded(
                   child: _buildMetricTile(
-                    'Trend',
+                    l10n.trendLabel,
                     trendText,
                     trendColor,
                     icon: Icon(trendIcon, size: 18, color: trendColor),
@@ -267,11 +294,65 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                 ),
                 Expanded(
                   child: _buildMetricTile(
-                    'Best Day to Sell',
-                    displayDate,
+                    l10n.bestSellingDayLabel,
+                    displayBestSellDate,
                     const Color(0xFF2E7D32),
                     icon: const Icon(Icons.star, size: 18, color: Colors.orange),
                   ),
+                ),
+              ],
+            ),
+            const Divider(height: 32, color: Color(0xFFEEEEEE)),
+
+            // Prediction Date & Prediction Time Display
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${l10n.predictionDateLabel}:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      displayPredDate,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${l10n.predictionTimeLabel}:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      widget.forecast.predictionTime,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -321,6 +402,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
 
   Widget _buildChartSection(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final forecast = widget.forecast.forecast;
 
     if (forecast.isEmpty) {
@@ -531,6 +613,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
 
   Widget _buildDailyForecastSection(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final forecast = widget.forecast.forecast;
     final bestSellDate = widget.forecast.bestSellDate;
 
@@ -552,18 +635,18 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Daily Predictions',
+            l10n.dailyForecastLabel,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color(0xFF111111),
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Detailed price forecasts for each of the upcoming 7 days',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade500,
+              color: Colors.grey,
             ),
           ),
           const SizedBox(height: 20),

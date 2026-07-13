@@ -1,5 +1,8 @@
 class CommodityForecast {
-  final String commodity;
+  final int commodityId;
+  final String commodityName; // Display name
+  final String predictionDate;
+  final String predictionTime;
   final double currentPrice;
   final List<ForecastDay> forecast;
   final String trend; // e.g., "RISING", "FALLING", "STABLE"
@@ -8,7 +11,10 @@ class CommodityForecast {
   final String recommendation; // e.g., "WAIT", "SELL TODAY", "HOLD"
 
   CommodityForecast({
-    required this.commodity,
+    required this.commodityId,
+    required this.commodityName,
+    required this.predictionDate,
+    required this.predictionTime,
     required this.currentPrice,
     required this.forecast,
     required this.trend,
@@ -17,9 +23,38 @@ class CommodityForecast {
     required this.recommendation,
   });
 
+  CommodityForecast copyWith({
+    int? commodityId,
+    String? commodityName,
+    String? predictionDate,
+    String? predictionTime,
+    double? currentPrice,
+    List<ForecastDay>? forecast,
+    String? trend,
+    String? bestSellDate,
+    double? expectedPeakPrice,
+    String? recommendation,
+  }) {
+    return CommodityForecast(
+      commodityId: commodityId ?? this.commodityId,
+      commodityName: commodityName ?? this.commodityName,
+      predictionDate: predictionDate ?? this.predictionDate,
+      predictionTime: predictionTime ?? this.predictionTime,
+      currentPrice: currentPrice ?? this.currentPrice,
+      forecast: forecast ?? this.forecast,
+      trend: trend ?? this.trend,
+      bestSellDate: bestSellDate ?? this.bestSellDate,
+      expectedPeakPrice: expectedPeakPrice ?? this.expectedPeakPrice,
+      recommendation: recommendation ?? this.recommendation,
+    );
+  }
+
   factory CommodityForecast.fromJson(Map<String, dynamic> json) {
     return CommodityForecast(
-      commodity: json['commodity'] as String,
+      commodityId: json['commodity_id'] as int,
+      commodityName: (json['commodity_name'] as String?) ?? '',
+      predictionDate: json['prediction_date'] as String,
+      predictionTime: json['prediction_time'] as String,
       currentPrice: (json['current_price'] as num).toDouble(),
       forecast: (json['forecast'] as List<dynamic>)
           .map((item) => ForecastDay.fromJson(item as Map<String, dynamic>))
@@ -33,7 +68,10 @@ class CommodityForecast {
 
   Map<String, dynamic> toJson() {
     return {
-      'commodity': commodity,
+      'commodity_id': commodityId,
+      'commodity_name': commodityName,
+      'prediction_date': predictionDate,
+      'prediction_time': predictionTime,
       'current_price': currentPrice,
       'forecast': forecast.map((f) => f.toJson()).toList(),
       'trend': trend,

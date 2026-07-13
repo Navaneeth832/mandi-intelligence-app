@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
 import '../providers/forecast_provider.dart';
 import '../widgets/forecast_card.dart';
 import 'forecast_detail_screen.dart';
@@ -12,6 +13,7 @@ class ForecastsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final forecastsAsync = ref.watch(forecastsNotifierProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -23,16 +25,16 @@ class ForecastsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.forecasts,
+              l10n.forecasts,
               style: const TextStyle(
                 color: Color.fromARGB(255, 26, 152, 9),
                 fontWeight: FontWeight.bold,
                 fontSize: 22,
               ),
             ),
-            const Text(
-              'Your preferred crops',
-              style: TextStyle(
+            Text(
+              l10n.yourPreferredCrops,
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -45,19 +47,19 @@ class ForecastsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // MOCK DATA BANNER (Easy to remove later)
+            // Localized Mock Warning Banner
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: const Color(0xFFFFF3E0), // Amber-orange background
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Color(0xFFEF6C00), size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.info_outline, color: Color(0xFFEF6C00), size: 20),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'MOCK DATA - Forecasts are simulated.',
-                      style: TextStyle(
+                      '${l10n.mockData} - ${l10n.forecastsAreSimulated}',
+                      style: const TextStyle(
                         color: Color(0xFFEF6C00),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -68,35 +70,71 @@ class ForecastsScreen extends ConsumerWidget {
               ),
             ),
             
-            // Forecast List or other states
+            // Forecast states switcher
             Expanded(
               child: forecastsAsync.when(
                 data: (forecasts) {
                   if (forecasts.isEmpty) {
                     return _buildEmptyState(context);
                   }
-                  return RefreshIndicator(
-                    onRefresh: () => ref.read(forecastsNotifierProvider.notifier).refresh(),
-                    color: const Color.fromARGB(255, 26, 152, 9),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: forecasts.length,
-                      itemBuilder: (context, index) {
-                        return ForecastCard(
-                          forecast: forecasts[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ForecastDetailScreen(
-                                  forecast: forecasts[index],
-                                ),
+
+                  // Retrieve prediction date/time from the first forecast in the batch
+                  final latestPrediction = forecasts.first;
+                  final dateVal = latestPrediction.predictionDate;
+                  final timeVal = latestPrediction.predictionTime;
+
+                  String formattedDate = dateVal;
+                  try {
+                    final parsed = DateTime.parse(dateVal);
+                    formattedDate = DateFormat('dd MMM, yyyy').format(parsed);
+                  } catch (_) {}
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.history_toggle_off, size: 18, color: Colors.grey.shade600),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${l10n.latestPredictionLabel}: $formattedDate, $timeVal',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
                               ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () => ref.read(forecastsNotifierProvider.notifier).refresh(),
+                          color: const Color.fromARGB(255, 26, 152, 9),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(16.0),
+                            itemCount: forecasts.length,
+                            itemBuilder: (context, index) {
+                              return ForecastCard(
+                                forecast: forecasts[index],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ForecastDetailScreen(
+                                        forecast: forecasts[index],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => _buildLoadingState(),
@@ -135,6 +173,7 @@ class ForecastsScreen extends ConsumerWidget {
 
   Widget _buildErrorState(BuildContext context, String error, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -148,7 +187,7 @@ class ForecastsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              AppLocalizations.of(context)!.somethingWentWrong,
+              l10n.somethingWentWrong,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -166,7 +205,7 @@ class ForecastsScreen extends ConsumerWidget {
               ),
               onPressed: () => ref.read(forecastsNotifierProvider.notifier).refresh(),
               icon: const Icon(Icons.refresh),
-              label: Text(AppLocalizations.of(context)!.tryAgain),
+              label: Text(l10n.retryLabel),
             ),
           ],
         ),
@@ -176,6 +215,7 @@ class ForecastsScreen extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -189,7 +229,7 @@ class ForecastsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              "No preferred crops selected.",
+              l10n.noPreferredCropsSelected,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -197,7 +237,7 @@ class ForecastsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              "Select your preferred crops from your profile to receive forecasts.",
+              l10n.noPreferredCropsSelectedForecasts,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: Colors.grey.shade600,
               ),

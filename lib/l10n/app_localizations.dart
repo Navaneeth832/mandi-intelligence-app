@@ -199,6 +199,150 @@ abstract class AppLocalizations {
   /// **'Forecasts'**
   String get forecasts;
 
+  /// No description provided for @yourPreferredCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Your preferred crops'**
+  String get yourPreferredCrops;
+
+  /// No description provided for @mockData.
+  ///
+  /// In en, this message translates to:
+  /// **'MOCK DATA'**
+  String get mockData;
+
+  /// No description provided for @forecastsAreSimulated.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecasts are simulated.'**
+  String get forecastsAreSimulated;
+
+  /// No description provided for @currentPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Price'**
+  String get currentPriceLabel;
+
+  /// No description provided for @trendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get trendLabel;
+
+  /// No description provided for @recommendationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation'**
+  String get recommendationLabel;
+
+  /// No description provided for @bestSellingDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Selling Day'**
+  String get bestSellingDayLabel;
+
+  /// No description provided for @expectedPeakPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Peak Price'**
+  String get expectedPeakPriceLabel;
+
+  /// No description provided for @viewForecastLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'View Forecast'**
+  String get viewForecastLabel;
+
+  /// No description provided for @dailyForecastLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Forecast'**
+  String get dailyForecastLabel;
+
+  /// No description provided for @noPreferredCropsSelectedForecasts.
+  ///
+  /// In en, this message translates to:
+  /// **'No preferred crops selected. Select your preferred crops from your profile to receive forecasts.'**
+  String get noPreferredCropsSelectedForecasts;
+
+  /// No description provided for @retryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryLabel;
+
+  /// No description provided for @loadingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loadingLabel;
+
+  /// No description provided for @sellTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SELL TODAY'**
+  String get sellTodayLabel;
+
+  /// No description provided for @waitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WAIT'**
+  String get waitLabel;
+
+  /// No description provided for @holdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HOLD'**
+  String get holdLabel;
+
+  /// No description provided for @risingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rising'**
+  String get risingLabel;
+
+  /// No description provided for @fallingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Falling'**
+  String get fallingLabel;
+
+  /// No description provided for @stableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get stableLabel;
+
+  /// No description provided for @predictionDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Prediction Date'**
+  String get predictionDateLabel;
+
+  /// No description provided for @predictionTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Prediction Time'**
+  String get predictionTimeLabel;
+
+  /// No description provided for @latestPredictionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Prediction'**
+  String get latestPredictionLabel;
+
+  /// No description provided for @noForecastsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No forecasts available'**
+  String get noForecastsAvailable;
+
+  /// No description provided for @forecastUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast updated'**
+  String get forecastUpdated;
+
   /// No description provided for @profile.
   ///
   /// In en, this message translates to:

@@ -60,6 +60,78 @@ class AppLocalizationsHi extends AppLocalizations {
   String get forecasts => 'पूर्वानुमान';
 
   @override
+  String get yourPreferredCrops => 'आपकी पसंदीदा फसलें';
+
+  @override
+  String get mockData => 'नकली डेटा';
+
+  @override
+  String get forecastsAreSimulated => 'पूर्वानुमान सिम्युलेटेड हैं।';
+
+  @override
+  String get currentPriceLabel => 'वर्तमान मूल्य';
+
+  @override
+  String get trendLabel => 'रुझान';
+
+  @override
+  String get recommendationLabel => 'अनुशंसा';
+
+  @override
+  String get bestSellingDayLabel => 'बेचने का सबसे अच्छा दिन';
+
+  @override
+  String get expectedPeakPriceLabel => 'अनुमानित उच्चतम मूल्य';
+
+  @override
+  String get viewForecastLabel => 'पूर्वानुमान देखें';
+
+  @override
+  String get dailyForecastLabel => 'दैनिक पूर्वानुमान';
+
+  @override
+  String get noPreferredCropsSelectedForecasts => 'कोई पसंदीदा फसलें नहीं चुनी गईं। पूर्वानुमान प्राप्त करने के लिए अपनी प्रोफ़ाइल से अपनी पसंदीदा फसलें चुनें।';
+
+  @override
+  String get retryLabel => 'पुनः प्रयास करें';
+
+  @override
+  String get loadingLabel => 'लोड हो रहा है...';
+
+  @override
+  String get sellTodayLabel => 'आज ही बेचें';
+
+  @override
+  String get waitLabel => 'प्रतीक्षा करें';
+
+  @override
+  String get holdLabel => 'होल्ड करें';
+
+  @override
+  String get risingLabel => 'बढ़ रहा है';
+
+  @override
+  String get fallingLabel => 'गिर रहा है';
+
+  @override
+  String get stableLabel => 'स्थिर';
+
+  @override
+  String get predictionDateLabel => 'पूर्वानुमान तिथि';
+
+  @override
+  String get predictionTimeLabel => 'पूर्वानुमान समय';
+
+  @override
+  String get latestPredictionLabel => 'नवीनतम पूर्वानुमान';
+
+  @override
+  String get noForecastsAvailable => 'कोई पूर्वानुमान उपलब्ध नहीं है';
+
+  @override
+  String get forecastUpdated => 'पूर्वानुमान अपडेट किया गया';
+
+  @override
   String get profile => 'प्रोफ़ाइल';
 
   @override

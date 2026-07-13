@@ -60,6 +60,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forecasts => 'Forecasts';
 
   @override
+  String get yourPreferredCrops => 'Your preferred crops';
+
+  @override
+  String get mockData => 'MOCK DATA';
+
+  @override
+  String get forecastsAreSimulated => 'Forecasts are simulated.';
+
+  @override
+  String get currentPriceLabel => 'Current Price';
+
+  @override
+  String get trendLabel => 'Trend';
+
+  @override
+  String get recommendationLabel => 'Recommendation';
+
+  @override
+  String get bestSellingDayLabel => 'Best Selling Day';
+
+  @override
+  String get expectedPeakPriceLabel => 'Expected Peak Price';
+
+  @override
+  String get viewForecastLabel => 'View Forecast';
+
+  @override
+  String get dailyForecastLabel => 'Daily Forecast';
+
+  @override
+  String get noPreferredCropsSelectedForecasts => 'No preferred crops selected. Select your preferred crops from your profile to receive forecasts.';
+
+  @override
+  String get retryLabel => 'Retry';
+
+  @override
+  String get loadingLabel => 'Loading...';
+
+  @override
+  String get sellTodayLabel => 'SELL TODAY';
+
+  @override
+  String get waitLabel => 'WAIT';
+
+  @override
+  String get holdLabel => 'HOLD';
+
+  @override
+  String get risingLabel => 'Rising';
+
+  @override
+  String get fallingLabel => 'Falling';
+
+  @override
+  String get stableLabel => 'Stable';
+
+  @override
+  String get predictionDateLabel => 'Prediction Date';
+
+  @override
+  String get predictionTimeLabel => 'Prediction Time';
+
+  @override
+  String get latestPredictionLabel => 'Latest Prediction';
+
+  @override
+  String get noForecastsAvailable => 'No forecasts available';
+
+  @override
+  String get forecastUpdated => 'Forecast updated';
+
+  @override
   String get profile => 'Profile';
 
   @override

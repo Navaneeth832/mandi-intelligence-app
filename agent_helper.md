@@ -669,3 +669,34 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **Tappable `ForecastCard`** (`widgets/forecast_card.dart`):
   - Updated to accept a `VoidCallback? onTap` parameter.
   - Wrapped the container interior in an `InkWell` to enable smooth ripple click interaction across the entire card.
+
+---
+
+# 23. Forecasts Refactoring & Database Alignment (Refactored July 2026)
+
+### Architectural Changes
+- **Commodity ID Based Identification**:
+  - `CommodityForecast` data model updated to rely on `commodity_id` internally as the primary identifier.
+  - The model holds both `commodity_id` and `commodity_name` fields.
+- **Dynamic Translation Lookups**:
+  - Instead of hardcoding crop names, the repository `getForecastsForPreferredCrops` takes a `language` parameter. It maps original English names to translated crop names based on the active language code (`en`, `hi`, `ml`).
+  - The UI consumes `commodity_name` directly, allowing the backend endpoint to return `commodity_id` only, while the repository handles details resolution.
+- **Prediction Date and Time**:
+  - Added separate `prediction_date` (String, e.g., `"2026-07-13"`) and `prediction_time` (String, e.g., `"11:00 AM"`) to record when predictions are generated.
+- **Latest Prediction Batch Filtering**:
+  - Multiple prediction batches may exist for the same day.
+  - The repository dynamically filters the simulated dataset to only return predictions from today (`prediction_date == today`) belonging to the latest batch (`latest prediction_time` of today, i.e., `"11:00 AM"`).
+  - The UI stays clean of filtering logic, satisfying the future backend expectations.
+
+### Localization & Multi-language Support
+- Replaced all hardcoded text strings in `ForecastsScreen` and `ForecastDetailScreen` with keys from `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
+- Localized keys include recommendation badges (`sellTodayLabel`, `waitLabel`, `holdLabel`), trends (`risingLabel`, `fallingLabel`, `stableLabel`), metadata headers, buttons, and empty/error state messages.
+
+### Affected Files
+- **Models**: [forecast_model.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/models/forecast_model.dart)
+- **Repository**: [forecast_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/forecast_repository.dart)
+- **Provider**: [forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart)
+- **Widgets & Screens**:
+  - [forecast_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/widgets/forecast_card.dart)
+  - [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart)
+  - [forecast_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecast_detail_screen.dart)
