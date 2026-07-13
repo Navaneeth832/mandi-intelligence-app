@@ -87,7 +87,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
               const Icon(Icons.error_outline, color: Colors.red, size: 60),
               const SizedBox(height: 16),
               Text(
-                _errorMessage!,
+                _errorMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
@@ -402,7 +402,6 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
 
   Widget _buildChartSection(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
     final forecast = widget.forecast.forecast;
 
     if (forecast.isEmpty) {
