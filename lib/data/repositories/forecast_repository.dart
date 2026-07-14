@@ -43,7 +43,7 @@ class ForecastRepository {
       queryParams['language'] = language;
     }
 
-    final uri = Uri.parse('$baseUrl/predictions').replace(queryParameters: queryParams);
+    final uri = Uri.parse('$baseUrl/predictions/').replace(queryParameters: queryParams);
 
     // 6. Execute GET request with Bearer Auth header
     final response = await http.get(
