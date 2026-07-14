@@ -28,6 +28,7 @@ def get_translated_name(language_code: str, entity):
 @router.get("/{market_id}/commodities")
 def get_market_commodities(
     market_id: int,
+    language: str | None = None,
     db: Session = Depends(get_db)
 ):
     # Get the latest arrival date to ensure we are only looking at today's commodities
@@ -35,7 +36,8 @@ def get_market_commodities(
     
     # Query distinct commodities for the market on the latest date
     commodities = (
-        db.query(Commodity.name)
+        db.query(Commodity)
+        .options(selectinload(Commodity.translations))
         .join(MandiPrice)
         .filter(MandiPrice.market_id == market_id)
         .filter(MandiPrice.arrival_date == latest_date)
@@ -43,7 +45,10 @@ def get_market_commodities(
         .all()
     )
     
-    commodity_names = [c[0] for c in commodities]
+    commodity_names = [
+        get_translated_name(language or 'en', c) or c.name
+        for c in commodities
+    ]
     
     return {
         "market_id": market_id,

@@ -83,18 +83,30 @@ def get_mandi_prices(
     query = query.filter(MandiPrice.arrival_date == date.today())
     
     if state:
+        query = query.outerjoin(StateTranslation, State.id == StateTranslation.state_id)
         query = query.filter(
-            State.name.ilike(f"%{state}%")
+            or_(
+                State.name.ilike(f"%{state}%"),
+                StateTranslation.translated_name.ilike(f"%{state}%")
+            )
         )
 
     if district:
+        query = query.outerjoin(DistrictTranslation, District.id == DistrictTranslation.district_id)
         query = query.filter(
-            District.name.ilike(f"%{district}%")
+            or_(
+                District.name.ilike(f"%{district}%"),
+                DistrictTranslation.translated_name.ilike(f"%{district}%")
+            )
         )
 
     if market:
+        query = query.outerjoin(MarketTranslation, Market.id == MarketTranslation.market_id)
         query = query.filter(
-            Market.name.ilike(f"%{market}%")
+            or_(
+                Market.name.ilike(f"%{market}%"),
+                MarketTranslation.translated_name.ilike(f"%{market}%")
+            )
         )
 
     if commodity:

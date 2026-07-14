@@ -47,29 +47,6 @@ class ForecastsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Localized Mock Warning Banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: const Color(0xFFFFF3E0), // Amber-orange background
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, color: Color(0xFFEF6C00), size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${l10n.mockData} - ${l10n.forecastsAreSimulated}',
-                      style: const TextStyle(
-                        color: Color(0xFFEF6C00),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
             // Forecast states switcher
             Expanded(
               child: forecastsAsync.when(

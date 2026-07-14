@@ -178,5 +178,7 @@
   "setupProfile": "Setup Profile",
   "skip": "Skip",
   "updateProfile": "Update Your Profile",
-  "finishProfile": "Finish Setting Up Your Profile"
+  "finishProfile": "Finish Setting Up Your Profile",
+  "expectedPriceTrajectory": "Expected price trajectory for next 7 days",
+  "detailedPriceForecasts": "Detailed price forecasts for each of the upcoming 7 days"
 }

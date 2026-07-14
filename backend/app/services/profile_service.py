@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.user import User
+from app.models.state import State
+from app.models.district import District
 from app.schemas.user import UserProfileUpdate
 
 
@@ -8,8 +10,8 @@ def get_profile(db: Session, current_user: User) -> User:
     return (
         db.query(User)
         .options(
-            joinedload(User.state),
-            joinedload(User.district),
+            joinedload(User.state).selectinload(State.translations),
+            joinedload(User.district).selectinload(District.translations),
         )
         .filter(User.id == current_user.id)
         .first()
@@ -31,8 +33,8 @@ def update_profile(
     return (
         db.query(User)
         .options(
-            joinedload(User.state),
-            joinedload(User.district),
+            joinedload(User.state).selectinload(State.translations),
+            joinedload(User.district).selectinload(District.translations),
         )
         .filter(User.id == current_user.id)
         .first()

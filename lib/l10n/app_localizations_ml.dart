@@ -388,4 +388,10 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get finishProfile => 'പ്രൊഫൈൽ സെറ്റപ്പ് പൂർത്തിയാക്കുക';
+
+  @override
+  String get expectedPriceTrajectory => 'അടുത്ത 7 ദിവസത്തേക്ക് പ്രതീക്ഷിക്കുന്ന വിലയുടെ ഗതി';
+
+  @override
+  String get detailedPriceForecasts => 'അടുത്ത 7 ദിവസങ്ങളിലെ ഓരോ ദിവസത്തെയും വിശദമായ വില പ്രവചനം';
 }

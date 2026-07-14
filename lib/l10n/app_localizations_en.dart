@@ -388,4 +388,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get finishProfile => 'Finish Setting Up Your Profile';
+
+  @override
+  String get expectedPriceTrajectory => 'Expected price trajectory for next 7 days';
+
+  @override
+  String get detailedPriceForecasts => 'Detailed price forecasts for each of the upcoming 7 days';
 }

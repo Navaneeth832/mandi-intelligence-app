@@ -305,8 +305,8 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
             const Divider(height: 32, color: Color(0xFFEEEEEE)),
 
             // Prediction Date & Prediction Time Display
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
@@ -331,6 +331,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     const Icon(Icons.access_time, size: 16, color: Colors.grey),
@@ -402,6 +403,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
 
   Widget _buildChartSection(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final forecast = widget.forecast.forecast;
 
     if (forecast.isEmpty) {
@@ -443,7 +445,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Expected price trajectory for next 7 days',
+            l10n.expectedPriceTrajectory,
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade500,
@@ -641,9 +643,9 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Detailed price forecasts for each of the upcoming 7 days',
-            style: TextStyle(
+          Text(
+            l10n.detailedPriceForecasts,
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.grey,
             ),

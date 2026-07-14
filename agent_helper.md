@@ -627,7 +627,7 @@ The pipeline runs daily to update market prices:
 ### Feature Overview
 - **Forecasts Section**: Replaces the pre-existing Alerts screen stub in the bottom navigation. It displays predicted price movements and sales recommendations for the user's preferred crops.
 - **Preferred Crops Scope**: Filters predictions using preferred crops loaded from `preferredCropsNotifierProvider` based on the user's region profile. Capped at a maximum of 5 cards.
-- **Mock Data Mode**: Employs a simulated frontend-level database that mimics the future backend. Includes a prominent yellow warning banner `"MOCK DATA - Forecasts are simulated."` that is easily removable when integrating the real API.
+- **Production Data Mode**: Connected directly to the live backend predictions API. The mock warning banner has been removed.
 
 ### New Models (`lib/data/models/forecast_model.dart`)
 - **`CommodityForecast`**: Maps forecast properties: `commodity` (String), `currentPrice` (double), `forecast` (List<ForecastDay>), `trend` (String: RISING/FALLING/STABLE), `bestSellDate` (String), `expectedPeakPrice` (double), `recommendation` (String: WAIT/SELL TODAY/HOLD).

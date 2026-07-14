@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mandi_intelligence_app/core/providers/providers.dart';
 import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/auth_provider.dart';
@@ -54,13 +53,14 @@ class ProfileScreen extends ConsumerWidget {
           final String initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : 'U';
 
           final languageCode = user?.preferredLanguage;
-          final String language = {
-                'en': 'English',
-                'ml': 'Malayalam',
-                'hi': 'Hindi',
-              }[languageCode] ??
-              languageCode ??
-              'English';
+          String language = 'English';
+          if (languageCode == 'en') {
+            language = AppLocalizations.of(context)!.english;
+          } else if (languageCode == 'ml') {
+            language = AppLocalizations.of(context)!.malayalam;
+          } else if (languageCode == 'hi') {
+            language = AppLocalizations.of(context)!.hindi;
+          }
 
           final String stateName = user?.stateName ?? '-';
           final String districtName = user?.districtName ?? '-';

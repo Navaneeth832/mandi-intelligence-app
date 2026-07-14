@@ -43,12 +43,24 @@ class User(Base):
     
     @property
     def state_name(self):
-        return self.state.name if self.state else None
+        if not self.state:
+            return None
+        if hasattr(self.state, "translations") and self.state.translations:
+            for translation in self.state.translations:
+                if translation.language_code == self.preferred_language:
+                    return translation.translated_name
+        return self.state.name
 
 
     @property
     def district_name(self):
-        return self.district.name if self.district else None
+        if not self.district:
+            return None
+        if hasattr(self.district, "translations") and self.district.translations:
+            for translation in self.district.translations:
+                if translation.language_code == self.preferred_language:
+                    return translation.translated_name
+        return self.district.name
 
     crop_preferences = relationship(
         "UserCropPreference",

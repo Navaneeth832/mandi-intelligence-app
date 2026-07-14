@@ -238,6 +238,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 Widget _buildFilterSection() {
+  final locale = ref.watch(localeProvider);
   final cropsAsync = ref.watch(commodityListProvider);
   final statesAsync = ref.watch(statesProvider);
 
@@ -247,7 +248,9 @@ Widget _buildFilterSection() {
   StateModel? selectedStateObj;
   if (_tempState != null) {
     try {
-      selectedStateObj = states.firstWhere((s) => s.name == _tempState);
+      selectedStateObj = states.firstWhere(
+        (s) => s.name == _tempState || s.getDisplayName(locale.languageCode) == _tempState,
+      );
     } catch (_) {
       selectedStateObj = null;
     }
@@ -264,7 +267,7 @@ Widget _buildFilterSection() {
     districtsAsync.whenData((districts) {
       try {
         selectedDistrictObj = districts.firstWhere(
-          (d) => d.name == _tempDistrict,
+          (d) => d.name == _tempDistrict || d.getDisplayName(locale.languageCode) == _tempDistrict,
         );
       } catch (_) {
         selectedDistrictObj = null;
@@ -317,7 +320,7 @@ Widget _buildFilterSection() {
                     value: selectedStateObj,
                     onChanged: (value) {
                       setState(() {
-                        _tempState = value?.name;
+                        _tempState = value?.getDisplayName(locale.languageCode);
                         _tempDistrict = null;
                         _tempMarket = null;
                       });
@@ -343,7 +346,7 @@ Widget _buildFilterSection() {
                     value: selectedDistrictObj,
                     onChanged: (value) {
                       setState(() {
-                        _tempDistrict = value?.name;
+                        _tempDistrict = value?.getDisplayName(locale.languageCode);
                         _tempMarket = null;
                       });
                     },

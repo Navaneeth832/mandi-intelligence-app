@@ -810,6 +810,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finish Setting Up Your Profile'**
   String get finishProfile;
+
+  /// No description provided for @expectedPriceTrajectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected price trajectory for next 7 days'**
+  String get expectedPriceTrajectory;
+
+  /// No description provided for @detailedPriceForecasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed price forecasts for each of the upcoming 7 days'**
+  String get detailedPriceForecasts;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

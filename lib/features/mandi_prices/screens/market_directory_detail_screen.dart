@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/models/market_directory_model.dart';
 import '../../../data/services/mandi_api_service.dart';
@@ -26,8 +27,9 @@ class _MarketDirectoryDetailScreenState extends ConsumerState<MarketDirectoryDet
   }
 
   Future<Map<String, dynamic>> _fetchCommodities() async {
+    final language = ref.read(localeProvider).languageCode;
     final response = await http.get(Uri.parse(
-        '${MandiApiService.baseUrl}/markets/${widget.market.id}/commodities'));
+        '${MandiApiService.baseUrl}/markets/${widget.market.id}/commodities?language=$language'));
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
