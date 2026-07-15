@@ -4,9 +4,17 @@ from app.models.user import User
 from app.repositories.prediction_repository import (
     get_latest_batch,
     get_predictions_with_details,
-    get_average_modal_prices,
+    get_latest_mandi_prices_for_combinations,
 )
 from app.utils.prediction_localization import translate_trend, translate_recommendation
+
+def get_translated_name(language_code: str, entity) -> str | None:
+    """Helper function to get translated name from any entity with translations"""
+    if entity.translations:
+        for translation in entity.translations:
+            if translation.language_code == language_code:
+                return translation.translated_name
+    return None
 
 def compute_trend(first_price: float, last_price: float) -> str:
     """Determine trend: last > first -> RISING, last < first -> FALLING, else STABLE"""
@@ -32,14 +40,28 @@ def compute_recommendation(best_sell_date: date, trend: str, today: date) -> str
         return "SELL TODAY"
     return "HOLD"
 
-def get_predictions_for_user(db: Session, current_user: User, language: str) -> list[dict]:
+def get_predictions_for_user(
+    db: Session,
+    current_user: User,
+    language: str,
+    page: int = 1,
+    page_size: int = 15,
+    commodity_id: int | None = None,
+    market_id: int | None = None
+) -> dict:
     """
-    Retrieve and process predictions for the user's preferred crops.
+    Retrieve and process predictions for the user's preferred crops, paginated and sorted.
     """
     # 1. Load user's preferred crop IDs
     commodity_ids = [pref.commodity_id for pref in current_user.crop_preferences]
     if not commodity_ids:
-        return []
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total": 0,
+            "has_next": False,
+            "predictions": []
+        }
     
     # Limit to maximum 5 preferred crops
     commodity_ids = commodity_ids[:5]
@@ -47,26 +69,46 @@ def get_predictions_for_user(db: Session, current_user: User, language: str) -> 
     # 2. Find today's latest prediction batch
     batch = get_latest_batch(db)
     if not batch:
-        return []
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total": 0,
+            "has_next": False,
+            "predictions": []
+        }
 
-    # 3. Load every prediction row belonging to that batch for specified crop IDs
-    prediction_rows = get_predictions_with_details(db, batch.id, commodity_ids)
+    # 3. Load paginated prediction details from repository
+    from app.repositories.prediction_repository import get_predictions_with_details_paginated
+    prediction_rows, paginated_combos, total = get_predictions_with_details_paginated(
+        db,
+        batch.id,
+        commodity_ids,
+        page=page,
+        page_size=page_size,
+        commodity_id=commodity_id,
+        market_id=market_id
+    )
     if not prediction_rows:
-        return []
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+            "has_next": False,
+            "predictions": []
+        }
 
-    # 4. Obtain today's current average modal prices
-    avg_price_map = get_average_modal_prices(db, commodity_ids)
-
-    # 5. Group predictions by commodity_id (rows are chronologically sorted)
+    # 4. Group predictions by (commodity_id, market_id, variety_id, grade_id)
     grouped_predictions = {}
     for row in prediction_rows:
-        cid = row.commodity_id
-        if cid not in grouped_predictions:
-            grouped_predictions[cid] = []
-        grouped_predictions[cid].append(row)
+        key = (row.commodity_id, row.market_id, row.variety_id, row.grade_id)
+        if key not in grouped_predictions:
+            grouped_predictions[key] = []
+        grouped_predictions[key].append(row)
+
+    # 5. Obtain today's current prices matching the exact combinations
+    price_map = get_latest_mandi_prices_for_combinations(db, list(grouped_predictions.keys()))
 
     today_val = date.today()
-    today_str = today_val.strftime('%Y-%m-%d')
     
     batch_date_str = batch.prediction_date.strftime('%Y-%m-%d')
     try:
@@ -74,22 +116,25 @@ def get_predictions_for_user(db: Session, current_user: User, language: str) -> 
     except Exception:
         batch_time_str = str(batch.prediction_time)
 
-    forecasts = []
+    predictions_list = []
 
-    for cid, pred_list in grouped_predictions.items():
+    # 6. Process combinations in the exact order returned by the paginated distinct query
+    for key in paginated_combos:
+        pred_list = grouped_predictions.get(key)
         if not pred_list:
             continue
 
         first_row = pred_list[0]
-        commodity = first_row.commodity
         
         # Localize crop name via commodity translations table
-        commodity_name = commodity.name
-        if commodity.translations:
-            for translation in commodity.translations:
-                if translation.language_code == language:
-                    commodity_name = translation.translated_name
-                    break
+        commodity_name = get_translated_name(language, first_row.commodity) or first_row.commodity.name
+        market_name = get_translated_name(language, first_row.market) or first_row.market.name
+        district_name = get_translated_name(language, first_row.market.district) or first_row.market.district.name
+        state_name = get_translated_name(language, first_row.market.district.state) or first_row.market.district.state.name
+        
+        # Variety and Grade names do not have translation tables, use raw names
+        variety_name = first_row.variety.name
+        grade_name = first_row.grade.grade_name
 
         # Compute prices
         prices = [float(p.predicted_price) for p in pred_list]
@@ -119,12 +164,22 @@ def get_predictions_for_user(db: Session, current_user: User, language: str) -> 
             for p in pred_list
         ]
 
-        forecasts.append({
-            "commodity_id": cid,
+        predictions_list.append({
+            "commodity_id": first_row.commodity_id,
             "commodity_name": commodity_name,
+            "market_id": first_row.market_id,
+            "market_name": market_name,
+            "district_id": first_row.market.district_id,
+            "district_name": district_name,
+            "state_id": first_row.market.district.state_id,
+            "state_name": state_name,
+            "variety_id": first_row.variety_id,
+            "variety_name": variety_name,
+            "grade_id": first_row.grade_id,
+            "grade_name": grade_name,
             "prediction_date": batch_date_str,
             "prediction_time": batch_time_str,
-            "current_price": avg_price_map.get(cid, 0.0),
+            "current_price": price_map.get(key, 0.0),
             "forecast": forecast_list,
             "trend": localized_trend,
             "recommendation": localized_recommendation,
@@ -132,4 +187,12 @@ def get_predictions_for_user(db: Session, current_user: User, language: str) -> 
             "expected_peak_price": expected_peak
         })
 
-    return forecasts
+    has_next = (page * page_size) < total
+
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "has_next": has_next,
+        "predictions": predictions_list
+    }

@@ -7,10 +7,16 @@ class CommodityPrediction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     batch_id = Column(Integer, ForeignKey("prediction_batches.id"), nullable=False)
+    market_id = Column(Integer, ForeignKey("markets.id"), nullable=False)
     commodity_id = Column(Integer, ForeignKey("commodities.id"), nullable=False)
+    variety_id = Column(Integer, ForeignKey("varieties.id"), nullable=False)
+    grade_id = Column(Integer, ForeignKey("grade.id"), nullable=False)
     prediction_day = Column(Date, nullable=False)
     predicted_price = Column(Numeric(10, 2), nullable=False)
     created_at = Column(DateTime)
 
     batch = relationship("PredictionBatch", back_populates="predictions")
     commodity = relationship("Commodity")
+    market = relationship("Market")
+    variety = relationship("Variety")
+    grade = relationship("Grade")

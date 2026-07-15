@@ -1,9 +1,14 @@
 from datetime import date
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 from sqlalchemy import func
 from app.models.prediction_batch import PredictionBatch
 from app.models.commodity_prediction import CommodityPrediction
 from app.models.commodity import Commodity
+from app.models.market import Market
+from app.models.district import District
+from app.models.state import State
+from app.models.variety import Variety
+from app.models.grade import Grade
 from app.models.mandi_price import MandiPrice
 
 def get_latest_batch(db: Session) -> PredictionBatch | None:
@@ -18,21 +23,174 @@ def get_latest_batch(db: Session) -> PredictionBatch | None:
 def get_predictions_with_details(db: Session, batch_id: int, commodity_ids: list[int]) -> list[CommodityPrediction]:
     """
     Load every prediction row belonging to that batch for specified commodity_ids.
-    Eagerly loads commodities and their translations.
+    Eagerly loads commodities, markets, districts, states, varieties, grades, and translations.
     """
     return (
         db.query(CommodityPrediction)
         .options(
-            selectinload(CommodityPrediction.commodity)
-            .selectinload(Commodity.translations)
+            joinedload(CommodityPrediction.commodity).selectinload(Commodity.translations),
+            joinedload(CommodityPrediction.market).options(
+                selectinload(Market.translations),
+                joinedload(Market.district).options(
+                    selectinload(District.translations),
+                    joinedload(District.state).selectinload(State.translations)
+                )
+            ),
+            joinedload(CommodityPrediction.variety),
+            joinedload(CommodityPrediction.grade)
         )
         .filter(
             CommodityPrediction.batch_id == batch_id,
             CommodityPrediction.commodity_id.in_(commodity_ids)
         )
-        .order_by(CommodityPrediction.commodity_id, CommodityPrediction.prediction_day.asc())
+        .order_by(
+            CommodityPrediction.commodity_id,
+            CommodityPrediction.market_id,
+            CommodityPrediction.variety_id,
+            CommodityPrediction.grade_id,
+            CommodityPrediction.prediction_day.asc()
+        )
         .all()
     )
+
+def get_latest_mandi_prices_for_combinations(db: Session, combinations: list[tuple[int, int, int, int]]) -> dict[tuple[int, int, int, int], float]:
+    """
+    For a list of (commodity_id, market_id, variety_id, grade_id) tuples,
+    find the latest modal_price for each from mandi_prices.
+    """
+    if not combinations:
+        return {}
+        
+    price_map = {}
+    for key in combinations:
+        comm_id, mkt_id, var_id, grd_id = key
+        latest_price = (
+            db.query(MandiPrice.modal_price)
+            .filter(
+                MandiPrice.commodity_id == comm_id,
+                MandiPrice.market_id == mkt_id,
+                MandiPrice.variety_id == var_id,
+                MandiPrice.grade_id == grd_id
+            )
+            .order_by(MandiPrice.arrival_date.desc())
+            .first()
+        )
+        price_map[key] = float(latest_price.modal_price) if latest_price else 0.0
+    return price_map
+
+def get_predictions_with_details_paginated(
+    db: Session,
+    batch_id: int,
+    commodity_ids: list[int],
+    page: int = 1,
+    page_size: int = 15,
+    commodity_id: int | None = None,
+    market_id: int | None = None
+) -> tuple[list[CommodityPrediction], list[tuple[int, int, int, int]], int]:
+    """
+    Paginate and sort distinct prediction combinations, and eagerly load detail rows.
+    """
+    from sqlalchemy import and_, or_
+    
+    # 1. Base query for combinations matching user preferences and parameters
+    base_query = (
+        db.query(
+            CommodityPrediction.commodity_id,
+            CommodityPrediction.market_id,
+            CommodityPrediction.variety_id,
+            CommodityPrediction.grade_id,
+            Commodity.name,
+            State.name,
+            District.name,
+            Market.name,
+            Variety.name,
+            Grade.grade_name
+        )
+        .join(Commodity, CommodityPrediction.commodity_id == Commodity.id)
+        .join(Market, CommodityPrediction.market_id == Market.id)
+        .join(District, Market.district_id == District.id)
+        .join(State, District.state_id == State.id)
+        .join(Variety, CommodityPrediction.variety_id == Variety.id)
+        .join(Grade, CommodityPrediction.grade_id == Grade.id)
+        .filter(
+            CommodityPrediction.batch_id == batch_id,
+            CommodityPrediction.commodity_id.in_(commodity_ids)
+        )
+    )
+    
+    # Apply future filters if provided
+    if commodity_id is not None:
+        base_query = base_query.filter(CommodityPrediction.commodity_id == commodity_id)
+    if market_id is not None:
+        base_query = base_query.filter(CommodityPrediction.market_id == market_id)
+        
+    # Get distinct count of combinations
+    total = base_query.distinct().count()
+    
+    if total == 0:
+        return [], [], 0
+        
+    # 2. Query distinct combinations with pagination and sorting applied
+    order_query = base_query.distinct().order_by(
+        Commodity.name.asc(),
+        State.name.asc(),
+        District.name.asc(),
+        Market.name.asc(),
+        Variety.name.asc(),
+        Grade.grade_name.asc()
+    )
+    
+    offset = (page - 1) * page_size
+    paginated_rows = order_query.offset(offset).limit(page_size).all()
+    
+    if not paginated_rows:
+        return [], [], total
+        
+    paginated_combos = [
+        (row.commodity_id, row.market_id, row.variety_id, row.grade_id)
+        for row in paginated_rows
+    ]
+        
+    # 3. Load detail rows for the combinations on this page
+    combo_filters = [
+        and_(
+            CommodityPrediction.commodity_id == c_id,
+            CommodityPrediction.market_id == m_id,
+            CommodityPrediction.variety_id == v_id,
+            CommodityPrediction.grade_id == g_id
+        )
+        for c_id, m_id, v_id, g_id in paginated_combos
+    ]
+    
+    detail_rows = (
+        db.query(CommodityPrediction)
+        .options(
+            joinedload(CommodityPrediction.commodity).selectinload(Commodity.translations),
+            joinedload(CommodityPrediction.market).options(
+                selectinload(Market.translations),
+                joinedload(Market.district).options(
+                    selectinload(District.translations),
+                    joinedload(District.state).selectinload(State.translations)
+                )
+            ),
+            joinedload(CommodityPrediction.variety),
+            joinedload(CommodityPrediction.grade)
+        )
+        .filter(
+            CommodityPrediction.batch_id == batch_id,
+            or_(*combo_filters)
+        )
+        .order_by(
+            CommodityPrediction.commodity_id,
+            CommodityPrediction.market_id,
+            CommodityPrediction.variety_id,
+            CommodityPrediction.grade_id,
+            CommodityPrediction.prediction_day.asc()
+        )
+        .all()
+    )
+    
+    return detail_rows, paginated_combos, total
 
 def get_average_modal_prices(db: Session, commodity_ids: list[int]) -> dict[int, float]:
     """

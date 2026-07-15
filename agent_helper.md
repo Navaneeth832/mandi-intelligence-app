@@ -703,43 +703,91 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 
 ---
 
-# 24. Backend Predictions & Localization Endpoint (Implemented July 2026)
+# 24. Backend Predictions & Localization Endpoint (Updated July 2026)
 
 ### Feature Overview
-- **Predictions Endpoint**: Created the `GET /predictions` API endpoint in the FastAPI backend which accepts the `language` query parameter (e.g. `?language=en`, `?language=hi`, `?language=ml`).
+- **Predictions Endpoint**: The `GET /predictions` API endpoint in the FastAPI backend accepts the `language` query parameter (e.g. `?language=en`, `?language=hi`, `?language=ml`).
+- **Pagination Support**: Supports server-side pagination with query parameters `page` (default = 1) and `page_size` (default = 15). The pagination is enforced deterministically at the database level using `LIMIT` and `OFFSET` on the distinct combinations of `(commodity_id, market_id, variety_id, grade_id)`.
+- **Sorting Order**: Predictions are sorted in ascending order before pagination using the following priority order:
+  1. Commodity Name (Ascending)
+  2. State Name (Ascending)
+  3. District Name (Ascending)
+  4. Market Name (Ascending)
+  5. Variety Name (Ascending)
+  6. Grade Name (Ascending)
 - **Authorization & Context**: Authenticates requests using `get_current_user` to read the user's crop preferences. It dynamically resolves the latest prediction details for the preferred crop ids.
 - **Database Architecture Integration**:
   - `prediction_batches` (Table): Stores metadata about each model run batch (`prediction_date`, `prediction_time`, `model_version`, `created_at`).
-  - `commodity_predictions` (Table): Stores 7 predicted daily prices for each commodity in a batch (`batch_id`, `commodity_id`, `prediction_day`, `predicted_price`).
+  - `commodity_predictions` (Table): Stores predicted prices for specific Market-Commodity-Variety-Grade combinations (`id`, `batch_id`, `market_id`, `commodity_id`, `variety_id`, `grade_id`, `prediction_day`, `predicted_price`, `created_at`).
 
 ### Core Architecture Components
 
 #### SQLAlchemy Models (`app/models/`)
 - **`PredictionBatch`** (`prediction_batch.py`): Maps `prediction_batches` table, with a relationship to `CommodityPrediction`.
-- **`CommodityPrediction`** (`commodity_prediction.py`): Maps `commodity_predictions` table, with foreign keys to batches and commodities.
+- **`CommodityPrediction`** (`commodity_prediction.py`): Maps `commodity_predictions` table, with foreign keys and relationships to `PredictionBatch`, `Commodity`, `Market`, `Variety`, and `Grade`.
 
 #### Pydantic Schemas (`app/schemas/prediction.py`)
 - **`ForecastDay`**: Minimal object holding `date` and `price`.
-- **`ForecastResponse`**: Main response payload schema (id, name, dates, time, prices, trend, recommendation, peak, best selling date).
+- **`ForecastResponse`**: Main response payload schema containing BOTH ids and localized display names.
+- **`PaginatedForecastResponse`**: Wraps the paginated response with the following structure:
+  ```json
+  {
+      "page": 1,
+      "page_size": 15,
+      "total": 48,
+      "has_next": true,
+      "predictions": [
+          {
+              "commodity_id": 19,
+              "commodity_name": "Banana",
+              "market_id": 85,
+              "market_name": "Ladwa APMC",
+              "district_id": 175,
+              "district_name": "Kurukshetra",
+              "state_id": 12,
+              "state_name": "Haryana",
+              "variety_id": 1537,
+              "variety_name": "Medium",
+              "grade_id": 3448,
+              "grade_name": "Medium",
+              "prediction_date": "2026-07-15",
+              "prediction_time": "03:00 PM",
+              "current_price": 3500.0,
+              "forecast": [
+                  { "date": "2026-07-15", "price": 2000.0 }
+              ],
+              "trend": "Rising",
+              "recommendation": "Wait",
+              "best_sell_date": "2026-07-19",
+              "expected_peak_price": 2400.0
+          }
+      ]
+  }
+  ```
 
 #### Repository Layer (`app/repositories/prediction_repository.py`)
 - **`get_latest_batch()`**: Queries today's latest batch (`prediction_date = CURRENT_DATE` ordered by time descending).
-- **`get_predictions_with_details()`**: Eagerly loads all chronological prediction records for preferred crops in the batch.
-- **`get_average_modal_prices()`**: Obtains today's average modal price for each crop from `mandi_prices`. Falls back to the average price on the latest available day if today has no entries.
+- **`get_predictions_with_details_paginated()`**: Eagerly loads all chronological prediction records for preferred crops in the batch. Joins with `Commodity`, `Market` (and nested `District`, `State`), `Variety`, and `Grade` tables (with respective translation tables), applies ascending ordering priorities, and fetches paginated results with database-level distinct combos pagination.
+- **`get_latest_mandi_prices_for_combinations()`**: Fetches today's latest mandi price matching the exact `(commodity_id, market_id, variety_id, grade_id)` combination. Falls back to the price on the latest available `arrival_date` for that combination if today has no entries.
 
 #### Service Layer (`app/services/prediction_service.py`)
-- Groups the 7 chronological database rows of each crop.
-- Computes trend: `Rising` if last price > first, `Falling` if last < first, else `Stable`.
+- Groups the chronological database rows by the combination key: `(commodity_id, market_id, variety_id, grade_id)`.
+- If multiple predictions exist for the same preferred commodity across different markets/varieties/grades, returns each prediction as a separate object.
+- Computes trend: `RISING` if last price > first, `FALLING` if last < first, else `STABLE`.
 - Computes expected peak price and best selling day (date of max price).
-- Computes recommendation: `Sell Today` if best selling day is today, or if trend is `Falling`; `Wait` if trend is `Rising`; else `Hold`.
-- Localizes commodity name via database translation query, and localizes Trend/Recommendation using the `prediction_localization.py` helper.
+- Computes recommendation: `SELL TODAY` if best selling day is today, or if trend is `FALLING`; `WAIT` if trend is `RISING`; else `HOLD`.
+- Localizes display names:
+  - Commodity, Market, District, State: Looked up via their respective database translation tables.
+  - Variety, Grade: Return standard/original names from the database (since they do not have translation tables).
+  - Trend & Recommendation: Localized using the `prediction_localization.py` helper.
+- Wraps output using `PaginatedForecastResponse`.
 
-### Files Created/Modified
-- **Models Init**: Registered models in [__init__.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/models/__init__.py).
-- **Routes Registration**: Registered predictions router in [main.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/main.py).
-- **Endpoint Route**: Created predictions router inside [predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py).
-- **Schemas**: Defined prediction schema inside [prediction.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/schemas/prediction.py).
-- **Localization Helper**: Created translation dictionary utilities inside [prediction_localization.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/utils/prediction_localization.py).
+### Files Modified
+- **SQLAlchemy model**: [commodity_prediction.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/models/commodity_prediction.py)
+- **Repository**: [prediction_repository.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/repositories/prediction_repository.py)
+- **Service**: [prediction_service.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/services/prediction_service.py)
+- **Schema**: [prediction.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/schemas/prediction.py)
+- **Router**: [predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py)
 
 ---
 
