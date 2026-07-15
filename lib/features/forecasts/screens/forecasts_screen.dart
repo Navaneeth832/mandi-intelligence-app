@@ -50,7 +50,8 @@ class ForecastsScreen extends ConsumerWidget {
             // Forecast states switcher
             Expanded(
               child: forecastsAsync.when(
-                data: (forecasts) {
+                data: (paginatedResponse) {
+                  final forecasts = paginatedResponse.predictions;
                   if (forecasts.isEmpty) {
                     return _buildEmptyState(context);
                   }

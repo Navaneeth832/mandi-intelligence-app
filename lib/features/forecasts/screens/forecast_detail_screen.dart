@@ -87,7 +87,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
               const Icon(Icons.error_outline, color: Colors.red, size: 60),
               const SizedBox(height: 16),
               Text(
-                _errorMessage,
+                _errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
@@ -112,29 +112,120 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Hero Summary Card
-          _buildHeroSummaryCard(context),
+          // 1. Redesigned Premium Header Hierarchy
+          _buildHeaderHierarchy(context),
           const SizedBox(height: 24),
 
-          // 2. 7-Day Forecast Chart Section
+          // 2. Recommendation & Trend Group Card
+          _buildRecommendationTrendCard(context),
+          const SizedBox(height: 16),
+
+          // 3. Price metrics Overview Card
+          _buildPriceOverviewCard(context),
+          const SizedBox(height: 24),
+
+          // 4. 7-Day Forecast Chart Section (Primary visual element)
           _buildChartSection(context),
           const SizedBox(height: 24),
 
-          // 3. Daily Forecast Table/List Section
+          // 5. Daily Forecast Table/List Section
           _buildDailyForecastSection(context),
         ],
       ),
     );
   }
 
-  Widget _buildHeroSummaryCard(BuildContext context) {
+  Widget _buildHeaderHierarchy(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
-    final currencyFormatter = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
+    final String varietyGrade = widget.forecast.gradeName.isNotEmpty
+        ? '${widget.forecast.varietyName} • ${widget.forecast.gradeName}'
+        : widget.forecast.varietyName;
+
+    String displayPredDate = widget.forecast.predictionDate;
+    try {
+      final parsedDate = DateTime.parse(widget.forecast.predictionDate);
+      displayPredDate = DateFormat('dd MMM, yyyy').format(parsedDate);
+    } catch (_) {}
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Commodity Name
+        Text(
+          widget.forecast.commodityName,
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111111),
+            height: 1.2,
+          ),
+        ),
+        if (varietyGrade.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          // Variety • Grade
+          Text(
+            varietyGrade,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        // Location (Market, District, State)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.location_on_outlined, size: 18, color: Colors.grey.shade600),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.forecast.marketName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                  Text(
+                    '${widget.forecast.districtName}, ${widget.forecast.stateName}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Prediction Date & Time
+        Row(
+          children: [
+            Icon(Icons.history_toggle_off, size: 16, color: Colors.grey.shade500),
+            const SizedBox(width: 6),
+            Text(
+              '${l10n.latestPredictionLabel}: $displayPredDate, ${widget.forecast.predictionTime}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  Widget _buildRecommendationTrendCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
 
     // Recommendation translation and styling
     final recommendation = widget.forecast.recommendation.toUpperCase();
@@ -181,181 +272,85 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       trendText = l10n.stableLabel;
     }
 
-    String displayBestSellDate = widget.forecast.bestSellDate;
-    try {
-      final parsedDate = DateTime.parse(widget.forecast.bestSellDate);
-      displayBestSellDate = DateFormat('dd MMM, yyyy').format(parsedDate);
-    } catch (_) {}
-
-    String displayPredDate = widget.forecast.predictionDate;
-    try {
-      final parsedDate = DateTime.parse(widget.forecast.predictionDate);
-      displayPredDate = DateFormat('dd MMM, yyyy').format(parsedDate);
-    } catch (_) {}
-
     return Container(
-      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFFEFEFEF), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.forecast.commodityName,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF111111),
-                      ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.recommendationLabel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.latestPredictionLabel,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: recBgColor,
-                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Row(
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: recBgColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(recIcon, size: 16, color: recTextColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          recommendationText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: recTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(width: 1.5, height: 44, color: const Color(0xFFE2E8F0)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.trendLabel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Icon(recIcon, size: 16, color: recTextColor),
+                      Icon(trendIcon, size: 20, color: trendColor),
                       const SizedBox(width: 4),
                       Text(
-                        recommendationText,
+                        trendText,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: recTextColor,
+                          color: trendColor,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            const Divider(height: 32, color: Color(0xFFEEEEEE)),
-            
-            // Detail metrics grid
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricTile(
-                    l10n.currentPriceLabel,
-                    currencyFormatter.format(widget.forecast.currentPrice),
-                    Colors.black87,
-                  ),
-                ),
-                Expanded(
-                  child: _buildMetricTile(
-                    l10n.expectedPeakPriceLabel,
-                    currencyFormatter.format(widget.forecast.expectedPeakPrice),
-                    trendColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricTile(
-                    l10n.trendLabel,
-                    trendText,
-                    trendColor,
-                    icon: Icon(trendIcon, size: 18, color: trendColor),
-                  ),
-                ),
-                Expanded(
-                  child: _buildMetricTile(
-                    l10n.bestSellingDayLabel,
-                    displayBestSellDate,
-                    const Color(0xFF2E7D32),
-                    icon: const Icon(Icons.star, size: 18, color: Colors.orange),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 32, color: Color(0xFFEEEEEE)),
-
-            // Prediction Date & Prediction Time Display
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${l10n.predictionDateLabel}:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      displayPredDate,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.access_time, size: 16, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${l10n.predictionTimeLabel}:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      widget.forecast.predictionTime,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -363,41 +358,127 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
     );
   }
 
-  Widget _buildMetricTile(String label, String value, Color valueColor, {Widget? icon}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildPriceOverviewCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
+    // Trend color for expected peak styling
+    final trend = widget.forecast.trend.toUpperCase();
+    final Color trendColor = trend == 'RISING'
+        ? const Color(0xFF2E7D32)
+        : (trend == 'FALLING' ? const Color(0xFFC62828) : const Color(0xFF757575));
+
+    String displayBestSellDate = widget.forecast.bestSellDate;
+    try {
+      final parsedDate = DateTime.parse(widget.forecast.bestSellDate);
+      displayBestSellDate = DateFormat('dd MMM, yyyy').format(parsedDate);
+    } catch (_) {}
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (icon != null) ...[
-              icon,
-              const SizedBox(width: 4),
-            ],
-            Flexible(
-              child: Text(
-                value,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: valueColor,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            Text(
+              l10n.priceSummary,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111111),
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.currentPriceLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        currencyFormatter.format(widget.forecast.currentPrice),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF111111),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(width: 1.5, height: 40, color: const Color(0xFFE2E8F0)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.expectedPeakPriceLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        currencyFormatter.format(widget.forecast.expectedPeakPrice),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: trendColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24, color: Color(0xFFE2E8F0)),
+            Row(
+              children: [
+                const Icon(Icons.star, color: Colors.orange, size: 20),
+                const SizedBox(width: 6),
+                Text(
+                  '${l10n.bestSellingDayLabel}:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  displayBestSellDate,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E7D32),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 

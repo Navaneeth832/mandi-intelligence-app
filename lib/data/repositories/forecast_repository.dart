@@ -15,7 +15,11 @@ class ForecastRepository {
 
   ForecastRepository(this._authRepository);
 
-  Future<List<CommodityForecast>> getForecastsForPreferredCrops({String language = 'en'}) async {
+  Future<PaginatedForecastResponse> getForecastsForPreferredCrops({
+    String language = 'en',
+    int page = 1,
+    int pageSize = 15,
+  }) async {
     // 1. Simulate loading state
     if (simulateForecastLoading) {
       await Future.delayed(const Duration(seconds: 3));
@@ -28,7 +32,13 @@ class ForecastRepository {
 
     // 3. Simulate empty state
     if (simulateForecastEmpty) {
-      return [];
+      return PaginatedForecastResponse(
+        page: page,
+        pageSize: pageSize,
+        total: 0,
+        hasNext: false,
+        predictions: [],
+      );
     }
 
     // 4. Retrieve access token from secure storage
@@ -38,7 +48,10 @@ class ForecastRepository {
     }
 
     // 5. Construct Predictions API endpoint URI
-    final queryParams = <String, String>{};
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'page_size': pageSize.toString(),
+    };
     if (language.isNotEmpty) {
       queryParams['language'] = language;
     }
@@ -54,15 +67,13 @@ class ForecastRepository {
       },
     );
 
-    // 7. Parse response body and return lists of forecasts
+    // 7. Parse response body and return paginated forecasts
     if (response.statusCode != 200) {
       throw Exception('Failed to load predictions from server.');
     }
 
-    final List<dynamic> data = jsonDecode(response.body);
+    final Map<String, dynamic> data = jsonDecode(response.body);
 
-    return data
-        .map((e) => CommodityForecast.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return PaginatedForecastResponse.fromJson(data);
   }
 }

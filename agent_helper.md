@@ -814,3 +814,40 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
     - Hindi: `"श्रेणी"`
     - Malayalam: `"ഗ്രേഡ്"`
   - Recompiled localization assets using `flutter gen-l10n` to update `AppLocalizations`.
+
+---
+
+# 26. Flutter Predictions & UI Redesign (Implemented July 2026)
+
+### Feature Overview
+- **Response Integration**: Fully consumed the new `/predictions` API response structure, which wraps predictions inside a `PaginatedForecastResponse` object with total counts, current page indices, and page sizing parameters.
+- **Home & Filter Results Card Redesign**:
+  - Moved Variety and Grade fields to the top-right corner of the global `PriceCard` widget.
+  - Stacked them vertically as compact, elegant Material 3 chips (`_buildVarietyGradeChips`).
+  - Removed the redundant indicators legend (representing Commodity/Variety) from the top of the Filter Results Screen.
+- **Market Detail Screen Redesign**:
+  - Restructured the top layout to present a clean hierarchy: Commodity, Variety • Grade, Market, and District, State.
+  - Removed the list of labeled rows that repeated "Market", "District", "State" keys, producing a modern and premium design.
+- **Advisory Screen Card Redesign**:
+  - Expanded `ForecastCard` to display Variety, Grade, Market, District, and State.
+  - Added a localized location row (`Market • District, State`) with the Location pin icon.
+  - Styled and enabled the "View Forecast" action button at the bottom of the card, routing to the detail screen on tap.
+- **Prediction Detail Screen Redesign**:
+  - Redesigned `ForecastDetailScreen` to feel like a production-grade analytics page.
+  - Implemented the recommended visual hierarchy: Commodity Name, Variety • Grade, Market, District, State, and Prediction Generated timestamp.
+  - Grouped metrics into dedicated cards: Recommendation & Trend card (side-by-side) and Price Overview card (Current vs Peak, and Best Selling Day).
+  - Maintained generous spacing and a modern, professional, uncluttered layout.
+
+### Technical Implementation Details
+- **Data & Network Layer**:
+  - Created `PaginatedForecastResponse` model inside [forecast_model.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/models/forecast_model.dart) to parse pagination parameters and predictions list.
+  - Updated `ForecastRepository` ([forecast_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/forecast_repository.dart)) and `ForecastsNotifier` ([forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart)) to process and fetch the `PaginatedForecastResponse`.
+  - Added variety, grade, market, district, and state string parameters to the `CommodityForecast` model.
+- **UI Components**:
+  - Modified [price_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/widgets/price_card.dart) (variety and grade top-right chips).
+  - Modified [filter_results_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/screens/filter_results_screen.dart) (removed legend row).
+  - Modified [market_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/screens/market_detail_screen.dart) (restructured header block).
+  - Modified [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart) (unpacked predictions list).
+  - Modified [forecast_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/widgets/forecast_card.dart) (added labels, location rows, and enabled action button).
+  - Modified [forecast_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecast_detail_screen.dart) (complete analytics redesign with structured cards).
+

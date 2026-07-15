@@ -193,58 +193,6 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          // NEAT INDICATOR LEGEND ADDED HERE 👇
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEAEAEA), // Commodity Color
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    AppLocalizations.of(context)!.commodity,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF666666),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 12),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 47, 229, 95), // Variety Color
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    AppLocalizations.of(context)!.variety,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF666666),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(

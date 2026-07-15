@@ -10,19 +10,19 @@ final forecastRepositoryProvider = Provider<ForecastRepository>((ref) {
   return ForecastRepository(authRepository);
 });
 
-final forecastsNotifierProvider = AutoDisposeAsyncNotifierProvider<ForecastsNotifier, List<CommodityForecast>>(() {
+final forecastsNotifierProvider = AutoDisposeAsyncNotifierProvider<ForecastsNotifier, PaginatedForecastResponse>(() {
   return ForecastsNotifier();
 });
 
-class ForecastsNotifier extends AutoDisposeAsyncNotifier<List<CommodityForecast>> {
+class ForecastsNotifier extends AutoDisposeAsyncNotifier<PaginatedForecastResponse> {
   @override
-  Future<List<CommodityForecast>> build() async {
+  Future<PaginatedForecastResponse> build() async {
     // Watch preferred crops and selected locale so that forecasts reload dynamically on preference or language changes.
     ref.watch(preferredCropsNotifierProvider);
     final locale = ref.watch(localeProvider);
     
     final repository = ref.read(forecastRepositoryProvider);
-    return repository.getForecastsForPreferredCrops(language: locale.languageCode);
+    return repository.getForecastsForPreferredCrops(language: locale.languageCode, page: 1, pageSize: 15);
   }
 
   Future<void> refresh() async {
@@ -32,7 +32,7 @@ class ForecastsNotifier extends AutoDisposeAsyncNotifier<List<CommodityForecast>
       await ref.read(preferredCropsNotifierProvider.notifier).refresh();
       final locale = ref.read(localeProvider);
       final repository = ref.read(forecastRepositoryProvider);
-      return repository.getForecastsForPreferredCrops(language: locale.languageCode);
+      return repository.getForecastsForPreferredCrops(language: locale.languageCode, page: 1, pageSize: 15);
     });
   }
 }

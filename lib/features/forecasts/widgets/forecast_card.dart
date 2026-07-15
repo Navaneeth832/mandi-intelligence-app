@@ -145,6 +145,72 @@ class ForecastCard extends StatelessWidget {
                   color: Color(0xFF111111),
                 ),
               ),
+              const SizedBox(height: 6),
+
+              // Variety & Grade Labels Row
+              if (forecast.varietyName.isNotEmpty || forecast.gradeName.isNotEmpty) ...[
+                Row(
+                  children: [
+                    if (forecast.varietyName.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0F4F8),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFD2E0EE)),
+                        ),
+                        child: Text(
+                          forecast.varietyName,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF2C5282),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    if (forecast.varietyName.isNotEmpty && forecast.gradeName.isNotEmpty)
+                      const SizedBox(width: 8),
+                    if (forecast.gradeName.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0F4F8),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFD2E0EE)),
+                        ),
+                        child: Text(
+                          forecast.gradeName,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF2C5282),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+
+              // Location Row: Market • District, State
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '${forecast.marketName} • ${forecast.districtName}, ${forecast.stateName}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
 
               // Price Details Block
@@ -243,9 +309,13 @@ class ForecastCard extends StatelessWidget {
                 width: double.infinity,
                 height: 40,
                 child: OutlinedButton(
-                  onPressed: null, // Disabled as requested
+                  onPressed: onTap,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    side: BorderSide(
+                      color: onTap != null
+                          ? const Color.fromARGB(255, 26, 152, 9)
+                          : const Color(0xFFE2E8F0),
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -255,17 +325,21 @@ class ForecastCard extends StatelessWidget {
                     children: [
                       Text(
                         l10n.viewForecastLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                          color: onTap != null
+                              ? const Color.fromARGB(255, 26, 152, 9)
+                              : Colors.grey,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios,
                         size: 12,
-                        color: Colors.grey,
+                        color: onTap != null
+                            ? const Color.fromARGB(255, 26, 152, 9)
+                            : Colors.grey,
                       ),
                     ],
                   ),

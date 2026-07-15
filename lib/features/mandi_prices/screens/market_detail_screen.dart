@@ -86,38 +86,43 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                         height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildDetailRow(context, AppLocalizations.of(context)!.variety, widget.price.variety),
-                          if (widget.price.grade.isNotEmpty) ...[
-                            const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                            _buildDetailRow(context, AppLocalizations.of(context)!.grade, widget.price.grade),
-                          ],
-                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                          _buildDetailRow(context, AppLocalizations.of(context)!.market, widget.price.market),
-                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                          _buildDetailRow(context, AppLocalizations.of(context)!.district, widget.price.district),
-                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                          _buildDetailRow(context, AppLocalizations.of(context)!.state, widget.price.state),
-                        ],
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.price.grade.isNotEmpty
+                          ? '${widget.price.variety} • ${widget.price.grade}'
+                          : widget.price.variety,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
+                      widget.price.market,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${widget.price.district}, ${widget.price.state}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(color: Color(0xFFE2E8F0), height: 1),
+                    const SizedBox(height: 12),
+                    Text(
                       AppLocalizations.of(context)!.lastUpdated(DateFormat.yMMMd().add_jm().format(widget.price.createdAt)),
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

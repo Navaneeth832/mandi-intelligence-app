@@ -43,41 +43,29 @@ class PriceCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          price.getDisplayCommodity(),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF111111),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          price.variety,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        if (price.grade.isNotEmpty) ...[
-          const SizedBox(height: 2),
-          Text(
-            price.grade,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Commodity Name
+            Expanded(
+              child: Text(
+                price.getDisplayCommodity(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111111),
+                ),
+              ),
             ),
-          ),
-        ],
-        const SizedBox(height: 8),
+            const SizedBox(width: 8),
+            // Stacked Variety & Grade Chips on the Top Right
+            _buildVarietyGradeChips(context),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Market Name
         Text(
           price.market,
           maxLines: 1,
@@ -89,6 +77,7 @@ class PriceCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
+        // Location Info
         Text(
           '${price.district}, ${price.state}',
           maxLines: 1,
@@ -100,6 +89,47 @@ class PriceCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVarietyGradeChips(BuildContext context) {
+    final chips = <Widget>[
+      if (price.variety.isNotEmpty)
+        _buildCompactChip(price.variety),
+      if (price.grade.isNotEmpty) ...[
+        const SizedBox(height: 4),
+        _buildCompactChip(price.grade),
+      ],
+    ];
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: chips,
+    );
+  }
+
+  Widget _buildCompactChip(String text) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 100),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDF2F7), // Very light grey/blue M3 chip color
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFCBD5E0), width: 1),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF4A5568),
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
