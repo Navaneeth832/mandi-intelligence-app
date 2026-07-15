@@ -77,76 +77,49 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.price.getDisplayCommodity(),
-                                style: const TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF111111),
-                                  height: 1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '${widget.price.market}, ${widget.price.district}, ${widget.price.state}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF555555),
-                                  height: 1.25,
-                                ),
-                                maxLines: 4,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                AppLocalizations.of(context)!.lastUpdated(DateFormat.yMMMd().add_jm().format(widget.price.createdAt)),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          flex: 1,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFECEFF1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              widget.price.variety,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF4A5568),
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      widget.price.getDisplayCommodity(),
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111111),
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailRow(context, AppLocalizations.of(context)!.variety, widget.price.variety),
+                          if (widget.price.grade.isNotEmpty) ...[
+                            const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                            _buildDetailRow(context, AppLocalizations.of(context)!.grade, widget.price.grade),
+                          ],
+                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                          _buildDetailRow(context, AppLocalizations.of(context)!.market, widget.price.market),
+                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                          _buildDetailRow(context, AppLocalizations.of(context)!.district, widget.price.district),
+                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                          _buildDetailRow(context, AppLocalizations.of(context)!.state, widget.price.state),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      AppLocalizations.of(context)!.lastUpdated(DateFormat.yMMMd().add_jm().format(widget.price.createdAt)),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     _buildPriceSummaryCard(context),
@@ -160,6 +133,37 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111111),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

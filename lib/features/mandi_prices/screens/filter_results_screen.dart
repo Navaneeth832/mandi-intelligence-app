@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../providers/filter_model.dart';
 import '../providers/mandi_prices_provider.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import 'market_detail_screen.dart';
+import '../widgets/price_card.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class FilterResultsScreen extends ConsumerStatefulWidget {
@@ -345,7 +345,7 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
       itemBuilder: (context, index) {
         if (index < state.items.length) {
           final price = state.items[index];
-          return _FilterResultCard(
+          return PriceCard(
             price: price,
             onTap: () {
               Navigator.push(
@@ -367,231 +367,6 @@ class _FilterResultsScreenState extends ConsumerState<FilterResultsScreen> {
           );
         }
       },
-    );
-  }
-}
-
-class _FilterResultCard extends StatelessWidget {
-  final dynamic price;
-  final VoidCallback onTap;
-
-  const _FilterResultCard({
-    required this.price,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Color trendBgColor;
-    Color trendTextColor;
-    IconData trendIcon;
-    String trendPrefix;
-
-    if (price.priceChange > 0) {
-      trendBgColor = const Color(0xFFE8F5E9);
-      trendTextColor = const Color(0xFF2E7D32);
-      trendIcon = Icons.arrow_upward;
-      trendPrefix = '';
-    } else if (price.priceChange < 0) {
-      trendBgColor = const Color(0xFFFFEBEE);
-      trendTextColor = const Color(0xFFD32F2F);
-      trendIcon = Icons.arrow_downward;
-      trendPrefix = '';
-    } else {
-      trendBgColor = const Color(0xFFEEEEEE);
-      trendTextColor = const Color(0xFF616161);
-      trendIcon = Icons.remove;
-      trendPrefix = '';
-    }
-
-    final formattedPrice = NumberFormat.currency(
-            locale: 'en_IN', symbol: '₹', decimalDigits: 0)
-        .format(price.modalPrice);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(color: const Color(0xFFE2E5E8), width: 1.0),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    price.market,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF111111),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // UPDATED COMMODITY & VARIETY TAGS 👇
-                Flexible(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAEAEA),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          price.getDisplayCommodity(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF333333),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(height: 6), // Spacer between tags
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 47, 229, 95), 
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          price.variety ?? 'N/A', // Assuming `variety` is a property on price
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF333333), 
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.location_on_outlined,
-                    size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    '${price.market}, ${price.district ?? price.state}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Divider(color: Colors.grey.shade200, height: 1),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.currentPricePerQuintal,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8.0,
-                        runSpacing: 6.0,
-                        children: [
-                          Text(
-                            formattedPrice,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: Color.fromARGB(255, 39, 163, 45),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Flexible(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        alignment: WrapAlignment.end,
-                        children:  [
-                          Text(
-                            AppLocalizations.of(context)!.viewDetails,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF111111),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Icon(Icons.chevron_right,
-                              size: 18, color: Color(0xFF111111)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

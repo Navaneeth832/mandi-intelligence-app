@@ -118,6 +118,7 @@
     }
   },
   "variety": "ഇനം",
+  "grade": "ഗ്രേഡ്",
   "currentPricePerQuintal": "നിലവിലെ വില / ക്വിന്റൽ",
   "viewDetails": "കൂടുതൽ വിവരങ്ങൾ",
   "noPreviewAvailable": "പ്രിവ്യൂ ലഭ്യമല്ല",

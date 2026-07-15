@@ -246,6 +246,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get variety => 'किस्म';
 
   @override
+  String get grade => 'श्रेणी';
+
+  @override
   String get currentPricePerQuintal => 'वर्तमान भाव / क्विंटल';
 
   @override

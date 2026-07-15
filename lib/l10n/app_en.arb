@@ -118,6 +118,7 @@
     }
   },
   "variety": "Variety",
+  "grade": "Grade",
   "currentPricePerQuintal": "Current Price / Quintal",
   "viewDetails": "View Details",
   "noPreviewAvailable": "No preview available",

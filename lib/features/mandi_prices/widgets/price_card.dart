@@ -40,68 +40,68 @@ class PriceCard extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(
-        flex: 4,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              price.getDisplayCommodity(),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111111),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              price.variety,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          price.getDisplayCommodity(),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111111),
+          ),
         ),
-      ),
-
-      const SizedBox(width: 8),
-
-      Expanded(
-        flex: 6,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 6,
+        const SizedBox(height: 4),
+        Text(
+          price.variety,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
           ),
-          decoration: BoxDecoration(
-            color: const Color(0xFFECEFF1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            '${price.market}, ${price.state}',
-            maxLines: 2,
+        ),
+        if (price.grade.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            price.grade,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4A5568),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
             ),
           ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          price.market,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF4A5568),
+          ),
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 2),
+        Text(
+          '${price.district}, ${price.state}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildPriceSection(BuildContext context) {
     return Container(

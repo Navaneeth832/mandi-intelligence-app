@@ -246,6 +246,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get variety => 'Variety';
 
   @override
+  String get grade => 'Grade';
+
+  @override
   String get currentPricePerQuintal => 'Current Price / Quintal';
 
   @override

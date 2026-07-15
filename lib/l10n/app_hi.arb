@@ -118,6 +118,7 @@
     }
   },
   "variety": "किस्म",
+  "grade": "श्रेणी",
   "currentPricePerQuintal": "वर्तमान भाव / क्विंटल",
   "viewDetails": "विवरण देखें",
   "noPreviewAvailable": "कोई पूर्वावलोकन उपलब्ध नहीं है",

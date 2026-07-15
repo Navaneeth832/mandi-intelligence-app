@@ -246,6 +246,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get variety => 'ഇനം';
 
   @override
+  String get grade => 'ഗ്രേഡ്';
+
+  @override
   String get currentPricePerQuintal => 'നിലവിലെ വില / ക്വിന്റൽ';
 
   @override

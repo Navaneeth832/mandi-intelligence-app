@@ -535,6 +535,12 @@ abstract class AppLocalizations {
   /// **'Variety'**
   String get variety;
 
+  /// No description provided for @grade.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get grade;
+
   /// No description provided for @currentPricePerQuintal.
   ///
   /// In en, this message translates to:

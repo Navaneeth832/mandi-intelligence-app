@@ -740,3 +740,29 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **Endpoint Route**: Created predictions router inside [predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py).
 - **Schemas**: Defined prediction schema inside [prediction.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/schemas/prediction.py).
 - **Localization Helper**: Created translation dictionary utilities inside [prediction_localization.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/utils/prediction_localization.py).
+
+---
+
+# 25. Grade Display UI Enhancement (Implemented July 2026)
+
+### Feature Overview
+- **Grade Support in UI**: Added the display of commodity Grade (e.g., Grade A, FAQ) across the key daily mandi price interfaces.
+- **Unified Card Layout**: Integrated the `PriceCard` widget consistently across both the Home Screen and the Filter Results Screen, completely removing redundant private card widgets.
+- **Material 3 Visual Hierarchy**: Standardized the display hierarchy using a clean top-to-bottom layout, separating the trade parameters (Commodity name, Variety, Grade) from physical locations and prices.
+
+### Technical Implementation Details
+- **Data Model Integration**:
+  - Updated `MandiPrice` ([mandi_price.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/models/mandi_price.dart)) to define a `final String grade;` property.
+  - Mapped this property to the backend-returned JSON field `'grade'` inside `MandiPrice.fromJson` with a fallback default empty string value.
+- **Price Card UI Update**:
+  - Redesigned `PriceCard` ([price_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/widgets/price_card.dart)) to display commodity parameters vertically in this exact order: Commodity Name, Variety, Grade, Market, and District, State.
+  - Refactored `FilterResultsScreen` ([filter_results_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/screens/filter_results_screen.dart)) to import and use the global `PriceCard` widget, eliminating the customized private `_FilterResultCard` to maintain visual consistency.
+- **Market Detail Screen Header Update**:
+  - Refactored `MarketDetailScreen` ([market_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/screens/market_detail_screen.dart)) to display all six fields (Commodity, Variety, Grade, Market, District, State) as a structured metadata block.
+  - Ensured labels are fully localized without duplicating any geographical information.
+- **Localization Integration**:
+  - Added `"grade"` key to ARB localizations (`app_en.arb`, `app_hi.arb`, `app_ml.arb`) mapping to:
+    - English: `"Grade"`
+    - Hindi: `"श्रेणी"`
+    - Malayalam: `"ഗ്രേഡ്"`
+  - Recompiled localization assets using `flutter gen-l10n` to update `AppLocalizations`.

@@ -2,6 +2,7 @@ class MandiPrice {
   final String commodity;
   final String? translatedName;
   final String variety;
+  final String grade;
   final String market;
   final String district;
   final String state;
@@ -23,6 +24,7 @@ class MandiPrice {
     required this.commodity,
     this.translatedName,
     required this.variety,
+    required this.grade,
     required this.market,
     required this.district,
     required this.state,
@@ -44,6 +46,7 @@ class MandiPrice {
       commodity: json['commodity'],
       translatedName: json['translated_name'] as String?,
       variety: json['variety'],
+      grade: json['grade'] ?? '',
       market: json['market'],
       district: json['district'],
       state: json['state'],
