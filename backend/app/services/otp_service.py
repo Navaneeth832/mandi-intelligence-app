@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 from app.services.email_service import EmailService
+from app.services.sms_service import SMSService
 
 from app.core.security import hash_password, verify_password
 from app.models.otp_verification import OTPVerification
@@ -106,6 +107,7 @@ class OTPService:
         print(f"Recipient : {phone_number}")
         print(f"OTP       : {otp}")
         print("=" * 60 + "\n")
+        #SMSService.send_otp_sms(phone_number,otp)
 
 
 def _is_expired(expires_at: datetime) -> bool:
