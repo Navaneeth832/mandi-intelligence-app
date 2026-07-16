@@ -6,6 +6,7 @@ import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
 import '../../../data/models/district_model.dart';
 import '../../../data/models/commodity_model.dart';
+import '../../../data/models/market_model.dart';
 import '../../../core/providers/locale_provider.dart';
 import 'filter_model.dart';
 
@@ -264,6 +265,22 @@ final marketsProvider =
   final language = locale.languageCode;
 
   return repository.getMarkets(
+    districtId,
+    language: language,
+  );
+});
+
+final marketsListProvider =
+    FutureProvider.family<
+        List<Market>,
+        int?>((ref, districtId) {
+
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
+
+  return repository.getMarketsList(
     districtId,
     language: language,
   );

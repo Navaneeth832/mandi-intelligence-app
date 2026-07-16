@@ -9,6 +9,7 @@ import '../models/paginated_mandi_response.dart';
 import '../models/paginated_market_response.dart';
 import '../models/commodity_model.dart';
 import '../models/state_model.dart';
+import '../models/market_model.dart';
 
 class MandiApiService {
 
@@ -155,6 +156,33 @@ class MandiApiService {
 
     return data
         .map((e) => e['name'].toString())
+        .toList();
+  }
+
+  Future<List<Market>> getMarketsList(int? districtId, {String? language}) async {
+      String endpoint = '/markets';
+      final queryParams = <String, String>{};
+      
+      if (districtId != null) {
+        queryParams['district_id'] = districtId.toString();
+      }
+      if (language != null && language.isNotEmpty) {
+        queryParams['language'] = language;
+      }
+      
+      final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+      
+      final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load markets');
+    }
+
+    final List<dynamic> data =
+        jsonDecode(response.body);
+
+    return data
+        .map((e) => Market.fromJson(e))
         .toList();
   }
   

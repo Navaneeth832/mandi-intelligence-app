@@ -6,6 +6,7 @@ import '../models/paginated_market_response.dart';
 import '../models/district_model.dart';
 import '../models/commodity_model.dart';
 import '../models/state_model.dart';
+import '../models/market_model.dart';
 
 // TASK 5: TESTING CONTROLS
 const bool simulateLoading = false;
@@ -64,6 +65,16 @@ class MandiRepository {
   String? language,
 }) {
   return _apiService.getMarkets(
+    districtId,
+    language: language,
+  );
+}
+
+  Future<List<Market>> getMarketsList(
+  int? districtId, {
+  String? language,
+}) {
+  return _apiService.getMarketsList(
     districtId,
     language: language,
   );

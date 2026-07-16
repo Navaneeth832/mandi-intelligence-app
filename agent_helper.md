@@ -851,3 +851,27 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
   - Modified [forecast_card.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/widgets/forecast_card.dart) (added labels, location rows, and enabled action button).
   - Modified [forecast_detail_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecast_detail_screen.dart) (complete analytics redesign with structured cards).
 
+---
+
+# 27. Advisory Section Filter Dropdowns (Implemented July 2026)
+
+### Feature Overview
+- **Advisory (Forecasts) Dropdowns**: Added two dropdowns at the top of the Advisory Section matching the layout on the home screen.
+  - **Market Dropdown**: Restricts market options to only those within the user's selected district (from their profile details).
+  - **Commodity Dropdown**: Restricts options to the preferred commodities specified in the user's profile.
+- **Filters Execution**: Integrates "Apply Filters" and "Clear All" buttons directly below the dropdowns. When clicked, they reload and filter the forecasts list in-place.
+- **Backend Query Support**: The `/predictions/` route in the FastAPI backend has been updated to accept optional `commodity_id` and `market_id` query parameters, propagating them to the database querying logic.
+
+### Technical Implementation Details
+- **Backend API**:
+  - Exposes optional query parameters `commodity_id: int | None = None` and `market_id: int | None = None` on GET `/predictions/` in [predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py).
+- **Frontend Data Layers**:
+  - Added `getMarketsList` in `MandiApiService` ([mandi_api_service.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/services/mandi_api_service.dart)) and `MandiRepository` ([mandi_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/mandi_repository.dart)) to load full `Market` model objects (with IDs and names) rather than strings.
+- **Riverpod State Management**:
+  - Added `marketsListProvider` in [mandi_prices_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/mandi_prices/providers/mandi_prices_provider.dart) to load `Market` objects by `districtId`.
+  - Added `ForecastsFilterState` and `forecastsFilterProvider` in [forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart) to manage current commodity/market filter selection.
+  - Added `preferredCommoditiesProvider` in [forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart) which resolves the active user's preference crop IDs to localized `Commodity` objects.
+  - Updated `ForecastsNotifier` to watch `forecastsFilterProvider` and pass filters down to `ForecastRepository.getForecastsForPreferredCrops`.
+- **UI Screens**:
+  - Converted `ForecastsScreen` in [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart) to a stateful consumer widget.
+  - Placed the horizontal row of `FilterDropdownButton<Market>` and `FilterDropdownButton<Commodity>` with corresponding action buttons under the app bar title.

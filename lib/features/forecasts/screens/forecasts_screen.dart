@@ -7,13 +7,71 @@ import '../widgets/forecast_card.dart';
 import 'forecast_detail_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
-class ForecastsScreen extends ConsumerWidget {
+import 'package:mandi_intelligence_app/features/mandi_prices/widgets/filter_dropdown.dart';
+import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
+import 'package:mandi_intelligence_app/data/models/market_model.dart';
+import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
+import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
+import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
+
+class ForecastsScreen extends ConsumerStatefulWidget {
   const ForecastsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ForecastsScreen> createState() => _ForecastsScreenState();
+}
+
+class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
+  Market? _tempMarket;
+  Commodity? _tempCommodity;
+
+  void _applyFilters() {
+    ref.read(forecastsFilterProvider.notifier).state = ForecastsFilterState(
+      commodityId: _tempCommodity?.id,
+      marketId: _tempMarket?.id,
+    );
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _tempMarket = null;
+      _tempCommodity = null;
+    });
+    ref.read(forecastsFilterProvider.notifier).state = const ForecastsFilterState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final forecastsAsync = ref.watch(forecastsNotifierProvider);
     final l10n = AppLocalizations.of(context)!;
+    final locale = ref.watch(localeProvider);
+    final profileAsync = ref.watch(profileNotifierProvider);
+    
+    final districtId = profileAsync.value?.districtId;
+    final marketsAsync = ref.watch(marketsListProvider(districtId));
+    final commoditiesAsync = ref.watch(preferredCommoditiesProvider);
+
+    final markets = marketsAsync.value ?? [];
+    final commodities = commoditiesAsync.value ?? [];
+
+    // Safely reset temp filters if the source collections no longer contain them (e.g. on profile edit)
+    if (_tempMarket != null && markets.isNotEmpty && !markets.any((m) => m.id == _tempMarket!.id)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _tempMarket = null;
+        });
+      });
+    }
+
+    if (_tempCommodity != null && commodities.isNotEmpty && !commodities.any((c) => c.id == _tempCommodity!.id)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _tempCommodity = null;
+        });
+      });
+    }
+
+    final bool hasFilters = _tempMarket != null || _tempCommodity != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -47,6 +105,107 @@ class ForecastsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Filter section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 160,
+                          child: FilterDropdownButton<Market>(
+                            hintText: l10n.market,
+                            items: markets,
+                            itemToString: (mkt) => mkt.getDisplayName(locale.languageCode),
+                            value: _tempMarket,
+                            onChanged: (value) {
+                              setState(() {
+                                _tempMarket = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 160,
+                          child: FilterDropdownButton<Commodity>(
+                            hintText: l10n.commodity,
+                            items: commodities,
+                            itemToString: (crop) => crop.getDisplayName(locale.languageCode),
+                            value: _tempCommodity,
+                            onChanged: (value) {
+                              setState(() {
+                                _tempCommodity = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 26, 152, 9),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: hasFilters ? _applyFilters : null,
+                            child: Text(
+                              l10n.applyFilters,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color.fromARGB(255, 26, 152, 9),
+                              side: const BorderSide(
+                                color: Color.fromARGB(255, 26, 152, 9),
+                                width: 1.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: hasFilters ? _clearFilters : null,
+                            child: Text(
+                              l10n.clearAll,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             // Forecast states switcher
             Expanded(
               child: forecastsAsync.when(
@@ -71,7 +230,7 @@ class ForecastsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
                         child: Row(
                           children: [
                             Icon(Icons.history_toggle_off, size: 18, color: Colors.grey.shade600),

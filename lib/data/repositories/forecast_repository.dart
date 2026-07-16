@@ -19,6 +19,8 @@ class ForecastRepository {
     String language = 'en',
     int page = 1,
     int pageSize = 15,
+    int? commodityId,
+    int? marketId,
   }) async {
     // 1. Simulate loading state
     if (simulateForecastLoading) {
@@ -54,6 +56,12 @@ class ForecastRepository {
     };
     if (language.isNotEmpty) {
       queryParams['language'] = language;
+    }
+    if (commodityId != null) {
+      queryParams['commodity_id'] = commodityId.toString();
+    }
+    if (marketId != null) {
+      queryParams['market_id'] = marketId.toString();
     }
 
     final uri = Uri.parse('$baseUrl/predictions/').replace(queryParameters: queryParams);
