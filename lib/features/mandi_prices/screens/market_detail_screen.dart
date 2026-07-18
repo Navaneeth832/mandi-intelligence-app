@@ -6,6 +6,7 @@ import '../../../data/models/mandi_price.dart';
 import '../../../data/models/price_history.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
+import '../../../core/constants/api_constants.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MarketDetailScreen extends StatefulWidget {
@@ -173,44 +174,61 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
   }
 
   Widget _buildHeaderImage() {
-    const String? imageUrl =
+    const String defaultFarmImage =
         "https://farm.ws/wp-content/uploads/2024/11/What-is-Crop-Farming_-Everything-You-Need-to-Know-930x620.webp";
 
-    if (imageUrl.isEmpty) {
-      return Container(
-        height: 220,
-        width: double.infinity,
-        color: const Color(0xFFE2E8F0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.image_not_supported_outlined,
-                size: 44, color: Colors.grey.shade500),
-            const SizedBox(height: 4),
-            Text(
-              AppLocalizations.of(context)!.noPreviewAvailable,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
-        ),
-      );
+    final String? rawUrl = widget.price.commodityImageUrl;
+    String targetImageUrl;
+
+    if (rawUrl == null || rawUrl.isEmpty) {
+      targetImageUrl = defaultFarmImage;
+    } else if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      targetImageUrl = rawUrl;
+    } else {
+      final String base = ApiConstants.baseUrl.endsWith('/')
+          ? ApiConstants.baseUrl.substring(0, ApiConstants.baseUrl.length - 1)
+          : ApiConstants.baseUrl;
+      final String path = rawUrl.startsWith('/') ? rawUrl : '/$rawUrl';
+      targetImageUrl = '$base$path';
     }
 
-    return Container(
+    return Image.network(
+      targetImageUrl,
       height: 220,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.network(
+          defaultFarmImage,
+          height: 220,
+          width: double.infinity,
           fit: BoxFit.cover,
-        ),
-      ),
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              height: 220,
+              width: double.infinity,
+              color: const Color(0xFFE2E8F0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.image_not_supported_outlined,
+                      size: 44, color: Colors.grey.shade500),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppLocalizations.of(context)!.noPreviewAvailable,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

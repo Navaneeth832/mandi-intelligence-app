@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+import os
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import or_, func
 from datetime import date, timedelta
@@ -16,8 +17,20 @@ from app.models.grade import Grade
 from app.models.market import Market
 from app.models.district import District
 from app.models.state import State
+from app.schemas.mandi_price import MandiPriceResponseSchema
 
 router = APIRouter()
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+COMMODITY_IMAGES_DIR = os.path.join(BASE_DIR, "static", "commodity-images")
+
+
+def get_commodity_image_url(commodity_id: int | None) -> str:
+    if commodity_id:
+        image_path = os.path.join(COMMODITY_IMAGES_DIR, f"{commodity_id}.jpeg")
+        if os.path.exists(image_path):
+            return f"/static/commodity-images/{commodity_id}.jpeg"
+    return "/static/commodity-images/default.jpeg"
 
 
 def get_translated_name(language_code: str, entity):
@@ -29,7 +42,7 @@ def get_translated_name(language_code: str, entity):
     return None
 
 
-@router.get("/")
+@router.get("/", response_model=MandiPriceResponseSchema)
 def get_mandi_prices(
     state: str | None = None,
     district: str | None = None,
@@ -43,7 +56,6 @@ def get_mandi_prices(
 
     db: Session = Depends(get_db)
 ):
-
     page_size = min(page_size, 100)
 
     query = (
@@ -161,6 +173,7 @@ def get_mandi_prices(
                 "max_price": float(row.max_price),
                 "arrival_date": row.arrival_date,
                 "created_at": row.created_at.isoformat(),
+                "commodity_image_url": get_commodity_image_url(row.commodity_id),
             }
             for row in results
         ]

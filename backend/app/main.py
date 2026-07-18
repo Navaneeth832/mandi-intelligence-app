@@ -15,6 +15,7 @@ from app.api.routes import predictions
 from app.api.auth import router as auth_router
 from app.api.profile import router as profile_router
 from app.api.crop_preferences import router as crop_preferences_router
+from fastapi.staticfiles import StaticFiles
 
 '''
 async def fetch_prices_task():
@@ -56,7 +57,16 @@ async def lifespan(app: FastAPI):
     await asyncio.gather(price_task, return_exceptions=True)'''
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 app = FastAPI()#lifespan=lifespan)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=STATIC_DIR),
+    name="static"
+)
 
 app.add_middleware(
     CORSMiddleware,
