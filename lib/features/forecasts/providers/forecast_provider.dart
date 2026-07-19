@@ -82,3 +82,23 @@ class ForecastsNotifier extends AutoDisposeAsyncNotifier<PaginatedForecastRespon
     });
   }
 }
+
+final commodityPredictionsProvider = FutureProvider.family<PaginatedForecastResponse, int>((ref, commodityId) async {
+  final locale = ref.watch(localeProvider);
+  final repository = ref.watch(forecastRepositoryProvider);
+  return repository.getForecastsForPreferredCrops(
+    language: locale.languageCode,
+    page: 1,
+    pageSize: 30,
+    commodityId: commodityId,
+  );
+});
+
+final bestMarketsProvider = FutureProvider.family<List<BestMarket>, int>((ref, commodityId) async {
+  final locale = ref.watch(localeProvider);
+  final repository = ref.watch(forecastRepositoryProvider);
+  return repository.getBestMarkets(
+    commodityId: commodityId,
+    language: locale.languageCode,
+  );
+});

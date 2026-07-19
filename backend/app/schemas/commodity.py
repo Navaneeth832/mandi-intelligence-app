@@ -14,6 +14,7 @@ class CommodityTranslationSchema(BaseModel):
 class CommoditySchema(BaseModel):
     id: int
     name: str
+    commodity_image_url: str | None = None
     translations: list[CommodityTranslationSchema] | None = None
 
     class Config:

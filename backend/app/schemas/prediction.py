@@ -11,6 +11,7 @@ class ForecastDay(BaseModel):
 class ForecastResponse(BaseModel):
     commodity_id: int
     commodity_name: str
+    commodity_image_url: str | None = None
     market_id: int
     market_name: str
     district_id: int
@@ -29,6 +30,25 @@ class ForecastResponse(BaseModel):
     recommendation: str
     best_sell_date: str
     expected_peak_price: float
+
+    class Config:
+        from_attributes = True
+
+class BestMarketResponse(BaseModel):
+    market_id: int
+    market_name: str
+    district_id: int
+    district_name: str
+    state_id: int
+    state_name: str
+    variety_id: int
+    variety_name: str
+    grade_id: int
+    grade_name: str
+    predicted_price: float
+    current_price: float
+    trend: str
+    recommendation: str
 
     class Config:
         from_attributes = True

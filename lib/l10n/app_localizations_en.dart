@@ -397,4 +397,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailedPriceForecasts => 'Detailed price forecasts for each of the upcoming 7 days';
+
+  @override
+  String get advisory => 'Advisory';
+
+  @override
+  String get exploreOtherMarketsCommodities => 'Explore Other Markets / Commodities';
+
+  @override
+  String get bestMarkets => 'Best Markets';
+
+  @override
+  String get explorePlaceholderTitle => 'Explore Other Markets';
+
+  @override
+  String get explorePlaceholderMessage => 'Browse and exploration features will be available in a future update.';
 }

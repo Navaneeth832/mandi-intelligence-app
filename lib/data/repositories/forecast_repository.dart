@@ -84,4 +84,36 @@ class ForecastRepository {
 
     return PaginatedForecastResponse.fromJson(data);
   }
+
+  Future<List<BestMarket>> getBestMarkets({
+    required int commodityId,
+    String language = 'en',
+  }) async {
+    final token = await _authRepository.getToken();
+    if (token == null) {
+      throw Exception('Authentication token not found. Please log in.');
+    }
+
+    final queryParams = <String, String>{
+      'commodity_id': commodityId.toString(),
+      'language': language,
+    };
+
+    final uri = Uri.parse('$baseUrl/predictions/best-markets').replace(queryParameters: queryParams);
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load best markets from server.');
+    }
+
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.map((item) => BestMarket.fromJson(item as Map<String, dynamic>)).toList();
+  }
 }

@@ -1,77 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:intl/intl.dart';
+import '../../../core/providers/locale_provider.dart';
+import '../../../core/widgets/commodity_image_widget.dart';
+import '../../../data/models/commodity_model.dart';
 import '../providers/forecast_provider.dart';
-import '../widgets/forecast_card.dart';
-import 'forecast_detail_screen.dart';
+import 'commodity_advisory_screen.dart';
+import 'explore_placeholder_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
-import 'package:mandi_intelligence_app/features/mandi_prices/widgets/filter_dropdown.dart';
-import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
-import 'package:mandi_intelligence_app/data/models/market_model.dart';
-import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
-import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
-import 'package:mandi_intelligence_app/core/providers/locale_provider.dart';
-
-class ForecastsScreen extends ConsumerStatefulWidget {
+class ForecastsScreen extends ConsumerWidget {
   const ForecastsScreen({super.key});
 
   @override
-  ConsumerState<ForecastsScreen> createState() => _ForecastsScreenState();
-}
-
-class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
-  Market? _tempMarket;
-  Commodity? _tempCommodity;
-
-  void _applyFilters() {
-    ref.read(forecastsFilterProvider.notifier).state = ForecastsFilterState(
-      commodityId: _tempCommodity?.id,
-      marketId: _tempMarket?.id,
-    );
-  }
-
-  void _clearFilters() {
-    setState(() {
-      _tempMarket = null;
-      _tempCommodity = null;
-    });
-    ref.read(forecastsFilterProvider.notifier).state = const ForecastsFilterState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final forecastsAsync = ref.watch(forecastsNotifierProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(localeProvider);
-    final profileAsync = ref.watch(profileNotifierProvider);
-    
-    final districtId = profileAsync.value?.districtId;
-    final marketsAsync = ref.watch(marketsListProvider(districtId));
-    final commoditiesAsync = ref.watch(preferredCommoditiesProvider);
-
-    final markets = marketsAsync.value ?? [];
-    final commodities = commoditiesAsync.value ?? [];
-
-    // Safely reset temp filters if the source collections no longer contain them (e.g. on profile edit)
-    if (_tempMarket != null && markets.isNotEmpty && !markets.any((m) => m.id == _tempMarket!.id)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _tempMarket = null;
-        });
-      });
-    }
-
-    if (_tempCommodity != null && commodities.isNotEmpty && !commodities.any((c) => c.id == _tempCommodity!.id)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _tempCommodity = null;
-        });
-      });
-    }
-
-    final bool hasFilters = _tempMarket != null || _tempCommodity != null;
+    final preferredCommoditiesAsync = ref.watch(preferredCommoditiesProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -83,17 +28,17 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.forecasts,
+              l10n.advisory,
               style: const TextStyle(
                 color: Color.fromARGB(255, 26, 152, 9),
                 fontWeight: FontWeight.bold,
-                fontSize: 22,
+                fontSize: 24,
               ),
             ),
             Text(
               l10n.yourPreferredCrops,
-              style: const TextStyle(
-                color: Colors.grey,
+              style: TextStyle(
+                color: Colors.grey.shade600,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -102,183 +47,141 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Filter section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    clipBehavior: Clip.none,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 160,
-                          child: FilterDropdownButton<Market>(
-                            hintText: l10n.market,
-                            items: markets,
-                            itemToString: (mkt) => mkt.getDisplayName(locale.languageCode),
-                            value: _tempMarket,
-                            onChanged: (value) {
-                              setState(() {
-                                _tempMarket = value;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        SizedBox(
-                          width: 160,
-                          child: FilterDropdownButton<Commodity>(
-                            hintText: l10n.commodity,
-                            items: commodities,
-                            itemToString: (crop) => crop.getDisplayName(locale.languageCode),
-                            value: _tempCommodity,
-                            onChanged: (value) {
-                              setState(() {
-                                _tempCommodity = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 26, 152, 9),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: hasFilters ? _applyFilters : null,
-                            child: Text(
-                              l10n.applyFilters,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color.fromARGB(255, 26, 152, 9),
-                              side: const BorderSide(
-                                color: Color.fromARGB(255, 26, 152, 9),
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: hasFilters ? _clearFilters : null,
-                            child: Text(
-                              l10n.clearAll,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Forecast states switcher
-            Expanded(
-              child: forecastsAsync.when(
-                data: (paginatedResponse) {
-                  final forecasts = paginatedResponse.predictions;
-                  if (forecasts.isEmpty) {
-                    return _buildEmptyState(context);
-                  }
+        child: preferredCommoditiesAsync.when(
+          data: (commodities) {
+            if (commodities.isEmpty) {
+              return _buildEmptyState(context);
+            }
 
-                  // Retrieve prediction date/time from the first forecast in the batch
-                  final latestPrediction = forecasts.first;
-                  final dateVal = latestPrediction.predictionDate;
-                  final timeVal = latestPrediction.predictionTime;
+            return RefreshIndicator(
+              color: const Color.fromARGB(255, 26, 152, 9),
+              onRefresh: () async {
+                ref.invalidate(preferredCommoditiesProvider);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Vertically scrollable list of preferred commodity cards
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: commodities.length,
+                      itemBuilder: (context, index) {
+                        final commodity = commodities[index];
+                        final displayName = commodity.getDisplayName(locale.languageCode);
 
-                  String formattedDate = dateVal;
-                  try {
-                    final parsed = DateTime.parse(dateVal);
-                    formattedDate = DateFormat('dd MMM, yyyy').format(parsed);
-                  } catch (_) {}
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.history_toggle_off, size: 18, color: Colors.grey.shade600),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${l10n.latestPredictionLabel}: $formattedDate, $timeVal',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: () => ref.read(forecastsNotifierProvider.notifier).refresh(),
-                          color: const Color.fromARGB(255, 26, 152, 9),
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(16.0),
-                            itemCount: forecasts.length,
-                            itemBuilder: (context, index) {
-                              return ForecastCard(
-                                forecast: forecasts[index],
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ForecastDetailScreen(
-                                        forecast: forecasts[index],
-                                      ),
-                                    ),
-                                  );
-                                },
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CommodityAdvisoryScreen(commodity: commodity),
+                                ),
                               );
                             },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CommodityImageWidget(
+                                    commodityId: commodity.id,
+                                    imageUrl: commodity.commodityImageUrl,
+                                    height: 160,
+                                    width: double.infinity,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          displayName,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_forward_ios_rounded,
+                                          size: 18,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // "Explore Other Markets / Commodities" Button
+                    SizedBox(
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color.fromARGB(255, 26, 152, 9),
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 26, 152, 9),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ExplorePlaceholderScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.explore_outlined),
+                        label: Text(
+                          l10n.exploreOtherMarketsCommodities,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ],
-                  );
-                },
-                loading: () => _buildLoadingState(),
-                error: (error, stack) => _buildErrorState(context, error.toString(), ref),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
-          ],
+            );
+          },
+          loading: () => _buildLoadingState(),
+          error: (error, stack) => _buildErrorState(context, error.toString(), ref),
         ),
       ),
     );
@@ -320,27 +223,27 @@ class _ForecastsScreenState extends ConsumerState<ForecastsScreen> {
             Icon(
               Icons.error_outline,
               color: theme.colorScheme.error,
-              size: 80,
+              size: 64,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text(
               l10n.somethingWentWrong,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               error,
-              style: theme.textTheme.bodyLarge,
+              style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 26, 152, 9),
                 foregroundColor: Colors.white,
               ),
-              onPressed: () => ref.read(forecastsNotifierProvider.notifier).refresh(),
+              onPressed: () => ref.invalidate(preferredCommoditiesProvider),
               icon: const Icon(Icons.refresh),
               label: Text(l10n.retryLabel),
             ),

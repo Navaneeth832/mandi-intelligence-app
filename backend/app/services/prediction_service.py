@@ -40,6 +40,8 @@ def compute_recommendation(best_sell_date: date, trend: str, today: date) -> str
         return "SELL TODAY"
     return "HOLD"
 
+from app.api.routes.mandi_prices import get_commodity_image_url
+
 def get_predictions_for_user(
     db: Session,
     current_user: User,
@@ -51,20 +53,22 @@ def get_predictions_for_user(
 ) -> dict:
     """
     Retrieve and process predictions for the user's preferred crops, paginated and sorted.
+    If commodity_id is explicitly specified, queries predictions for that commodity.
     """
-    # 1. Load user's preferred crop IDs
-    commodity_ids = [pref.commodity_id for pref in current_user.crop_preferences]
-    if not commodity_ids:
-        return {
-            "page": page,
-            "page_size": page_size,
-            "total": 0,
-            "has_next": False,
-            "predictions": []
-        }
-    
-    # Limit to maximum 5 preferred crops
-    commodity_ids = commodity_ids[:5]
+    # 1. Load crop IDs (override with commodity_id if provided)
+    if commodity_id is not None:
+        commodity_ids = [commodity_id]
+    else:
+        commodity_ids = [pref.commodity_id for pref in current_user.crop_preferences]
+        if not commodity_ids:
+            return {
+                "page": page,
+                "page_size": page_size,
+                "total": 0,
+                "has_next": False,
+                "predictions": []
+            }
+        commodity_ids = commodity_ids[:5]
 
     # 2. Find today's latest prediction batch
     batch = get_latest_batch(db)
@@ -167,6 +171,7 @@ def get_predictions_for_user(
         predictions_list.append({
             "commodity_id": first_row.commodity_id,
             "commodity_name": commodity_name,
+            "commodity_image_url": get_commodity_image_url(first_row.commodity_id),
             "market_id": first_row.market_id,
             "market_name": market_name,
             "district_id": first_row.market.district_id,
@@ -196,3 +201,87 @@ def get_predictions_for_user(
         "has_next": has_next,
         "predictions": predictions_list
     }
+
+
+def get_best_markets_for_commodity(
+    db: Session,
+    current_user: User,
+    commodity_id: int,
+    language: str
+) -> list[dict]:
+    """
+    Get best markets for a commodity. Filters to markets in the user's selected district,
+    sorted in descending order of predicted selling price (highest predicted selling price first).
+    If no markets exist in the user's selected district, falls back to all markets for this commodity.
+    """
+    batch = get_latest_batch(db)
+    if not batch:
+        return []
+
+    district_id = current_user.district_id
+
+    from app.repositories.prediction_repository import get_predictions_with_details
+    prediction_rows = get_predictions_with_details(db, batch.id, [commodity_id])
+    if not prediction_rows:
+        return []
+
+    grouped_predictions = {}
+    for row in prediction_rows:
+        key = (row.commodity_id, row.market_id, row.variety_id, row.grade_id)
+        if key not in grouped_predictions:
+            grouped_predictions[key] = []
+        grouped_predictions[key].append(row)
+
+    price_map = get_latest_mandi_prices_for_combinations(db, list(grouped_predictions.keys()))
+    today_val = date.today()
+
+    all_markets = []
+    district_markets = []
+
+    for key, pred_list in grouped_predictions.items():
+        if not pred_list:
+            continue
+        first_row = pred_list[0]
+        mkt = first_row.market
+
+        market_name = get_translated_name(language, mkt) or mkt.name
+        district_name = get_translated_name(language, mkt.district) or mkt.district.name
+        state_name = get_translated_name(language, mkt.district.state) or mkt.district.state.name
+        variety_name = first_row.variety.name
+        grade_name = first_row.grade.grade_name
+
+        prices = [float(p.predicted_price) for p in pred_list]
+        first_price = prices[0]
+        last_price = prices[-1]
+
+        trend_raw = compute_trend(first_price, last_price)
+        expected_peak = max(prices)
+        peak_index = prices.index(expected_peak)
+
+        best_sell_date_obj = pred_list[peak_index].prediction_day
+        recommendation_raw = compute_recommendation(best_sell_date_obj, trend_raw, today_val)
+
+        item = {
+            "market_id": mkt.id,
+            "market_name": market_name,
+            "district_id": mkt.district_id,
+            "district_name": district_name,
+            "state_id": mkt.district.state_id,
+            "state_name": state_name,
+            "variety_id": first_row.variety_id,
+            "variety_name": variety_name,
+            "grade_id": first_row.grade_id,
+            "grade_name": grade_name,
+            "predicted_price": expected_peak,
+            "current_price": price_map.get(key, 0.0),
+            "trend": translate_trend(trend_raw, language),
+            "recommendation": translate_recommendation(recommendation_raw, language)
+        }
+
+        all_markets.append(item)
+        if district_id and mkt.district_id == district_id:
+            district_markets.append(item)
+
+    target_list = district_markets if district_markets else all_markets
+    target_list.sort(key=lambda x: x["predicted_price"], reverse=True)
+    return target_list

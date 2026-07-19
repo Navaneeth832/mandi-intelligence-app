@@ -397,4 +397,19 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get detailedPriceForecasts => 'അടുത്ത 7 ദിവസങ്ങളിലെ ഓരോ ദിവസത്തെയും വിശദമായ വില പ്രവചനം';
+
+  @override
+  String get advisory => 'ഉപദേശം (Advisory)';
+
+  @override
+  String get exploreOtherMarketsCommodities => 'മറ്റ് വിപണികൾ / വിളകൾ പരിശോധിക്കുക';
+
+  @override
+  String get bestMarkets => 'മികച്ച വിപണികൾ';
+
+  @override
+  String get explorePlaceholderTitle => 'മറ്റ് വിപണികൾ പരിശോധിക്കുക';
+
+  @override
+  String get explorePlaceholderMessage => 'വിപണികളും വിളകളും തിരയാനുള്ള സൗകര്യം അടുത്ത അപ്‌ഡേറ്റിൽ ലഭ്യമാകും.';
 }

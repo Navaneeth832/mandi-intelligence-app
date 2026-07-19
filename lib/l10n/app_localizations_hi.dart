@@ -397,4 +397,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get detailedPriceForecasts => 'आगामी 7 दिनों में से प्रत्येक के लिए विस्तृत मूल्य पूर्वानुमान';
+
+  @override
+  String get advisory => 'सलाह (Advisory)';
+
+  @override
+  String get exploreOtherMarketsCommodities => 'अन्य बाज़ार / फसलें खोजें';
+
+  @override
+  String get bestMarkets => 'सर्वश्रेष्ठ बाज़ार';
+
+  @override
+  String get explorePlaceholderTitle => 'अन्य बाज़ार खोजें';
+
+  @override
+  String get explorePlaceholderMessage => 'बाज़ार और फ़सलों की विस्तृत खोज सुविधा आगामी अपडेट में उपलब्ध होगी।';
 }

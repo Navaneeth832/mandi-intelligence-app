@@ -828,6 +828,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Detailed price forecasts for each of the upcoming 7 days'**
   String get detailedPriceForecasts;
+
+  /// No description provided for @advisory.
+  ///
+  /// In en, this message translates to:
+  /// **'Advisory'**
+  String get advisory;
+
+  /// No description provided for @exploreOtherMarketsCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Other Markets / Commodities'**
+  String get exploreOtherMarketsCommodities;
+
+  /// No description provided for @bestMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Markets'**
+  String get bestMarkets;
+
+  /// No description provided for @explorePlaceholderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Other Markets'**
+  String get explorePlaceholderTitle;
+
+  /// No description provided for @explorePlaceholderMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse and exploration features will be available in a future update.'**
+  String get explorePlaceholderMessage;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

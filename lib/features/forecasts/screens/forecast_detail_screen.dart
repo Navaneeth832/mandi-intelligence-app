@@ -1,11 +1,15 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../data/models/forecast_model.dart';
+import '../../../core/widgets/commodity_image_widget.dart';
+import '../providers/forecast_provider.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
-class ForecastDetailScreen extends StatefulWidget {
+class ForecastDetailScreen extends ConsumerStatefulWidget {
   final CommodityForecast forecast;
 
   const ForecastDetailScreen({
@@ -14,11 +18,10 @@ class ForecastDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ForecastDetailScreen> createState() => _ForecastDetailScreenState();
+  ConsumerState<ForecastDetailScreen> createState() => _ForecastDetailScreenState();
 }
 
-class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
-  // These variables simulate future API integration states
+class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
   final bool _isLoading = false;
   final String? _errorMessage = null;
 
@@ -112,24 +115,46 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Redesigned Premium Header Hierarchy
-          _buildHeaderHierarchy(context),
-          const SizedBox(height: 24),
+          // 1. Commodity Image Header
+          Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: CommodityImageWidget(
+              commodityId: widget.forecast.commodityId,
+              imageUrl: widget.forecast.commodityImageUrl,
+              height: 180,
+              width: double.infinity,
+            ),
+          ),
+          const SizedBox(height: 16),
 
-          // 2. Recommendation & Trend Group Card
+          // 2. Redesigned Premium Header Hierarchy (Commodity Name, Variety, Grade, Selected Market)
+          _buildHeaderHierarchy(context),
+          const SizedBox(height: 20),
+
+          // 3. Recommendation & Trend Group Card
           _buildRecommendationTrendCard(context),
           const SizedBox(height: 16),
 
-          // 3. Price metrics Overview Card
+          // 4. Price metrics Overview Card (Peak Price, Current Price, Best Sell Date)
           _buildPriceOverviewCard(context),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // 4. 7-Day Forecast Chart Section (Primary visual element)
+          // 5. 7-Day Forecast Graph Section
           _buildChartSection(context),
           const SizedBox(height: 24),
 
-          // 5. Daily Forecast Table/List Section
-          _buildDailyForecastSection(context),
+          // 6. Best Markets Section (Replaces date list)
+          _buildBestMarketsSection(context),
         ],
       ),
     );
@@ -154,7 +179,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
         Text(
           widget.forecast.commodityName,
           style: const TextStyle(
-            fontSize: 32,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Color(0xFF111111),
             height: 1.2,
@@ -166,14 +191,14 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
           Text(
             varietyGrade,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               color: Colors.grey.shade700,
               fontWeight: FontWeight.w600,
             ),
           ),
         ],
-        const SizedBox(height: 12),
-        // Location (Market, District, State)
+        const SizedBox(height: 10),
+        // Selected Market (Market, District, State)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -186,7 +211,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                   Text(
                     widget.forecast.marketName,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF2D3748),
                     ),
@@ -194,7 +219,7 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
                   Text(
                     '${widget.forecast.districtName}, ${widget.forecast.stateName}',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.grey.shade600,
                       fontWeight: FontWeight.w500,
                     ),
@@ -204,11 +229,11 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // Prediction Date & Time
         Row(
           children: [
-            Icon(Icons.history_toggle_off, size: 16, color: Colors.grey.shade500),
+            Icon(Icons.history_toggle_off, size: 15, color: Colors.grey.shade500),
             const SizedBox(width: 6),
             Text(
               '${l10n.latestPredictionLabel}: $displayPredDate, ${widget.forecast.predictionTime}',
@@ -227,7 +252,6 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
   Widget _buildRecommendationTrendCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    // Recommendation translation and styling
     final recommendation = widget.forecast.recommendation.toUpperCase();
     Color recBgColor;
     Color recTextColor;
@@ -245,14 +269,12 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       recIcon = Icons.pause_circle_outline;
       recommendationText = l10n.holdLabel;
     } else {
-      // WAIT
       recBgColor = const Color(0xFFEBF3FC);
       recTextColor = const Color(0xFF1976D2);
       recIcon = Icons.watch_later_outlined;
       recommendationText = l10n.waitLabel;
     }
 
-    // Trend translation and styling
     final trend = widget.forecast.trend.toUpperCase();
     Color trendColor;
     IconData trendIcon;
@@ -366,7 +388,6 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       decimalDigits: 0,
     );
 
-    // Trend color for expected peak styling
     final trend = widget.forecast.trend.toUpperCase();
     final Color trendColor = trend == 'RISING'
         ? const Color(0xFF2E7D32)
@@ -495,7 +516,6 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
     final minPrice = prices.reduce((a, b) => a < b ? a : b);
     final maxPrice = prices.reduce((a, b) => a > b ? a : b);
 
-    // Setup nice Y bounds
     final minY = (minPrice * 0.96).floorToDouble();
     final maxY = (maxPrice * 1.04).ceilToDouble();
     final interval = ((maxY - minY) / 3).ceilToDouble();
@@ -693,11 +713,10 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
     );
   }
 
-  Widget _buildDailyForecastSection(BuildContext context) {
+  Widget _buildBestMarketsSection(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final forecast = widget.forecast.forecast;
-    final bestSellDate = widget.forecast.bestSellDate;
+    final bestMarketsAsync = ref.watch(bestMarketsProvider(widget.forecast.commodityId));
 
     final currencyFormatter = NumberFormat.currency(
       locale: 'en_IN',
@@ -716,101 +735,150 @@ class _ForecastDetailScreenState extends State<ForecastDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.dailyForecastLabel,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF111111),
-            ),
+          Row(
+            children: [
+              const Icon(Icons.stars_rounded, color: Color.fromARGB(255, 26, 152, 9), size: 22),
+              const SizedBox(width: 8),
+              Text(
+                l10n.bestMarkets,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF111111),
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.detailedPriceForecasts,
-            style: const TextStyle(
+            'Markets in your district sorted by highest predicted price',
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.grey,
+              color: Colors.grey.shade600,
             ),
           ),
           const SizedBox(height: 20),
 
-          // Daily rows
-          Column(
-            children: forecast.map((day) {
-              final isBestDay = day.date == bestSellDate;
-              
-              String rowDateFormatted = day.date;
-              try {
-                final parsed = DateTime.parse(day.date);
-                rowDateFormatted = DateFormat('EEEE, dd MMM').format(parsed);
-              } catch (_) {}
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10.0),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isBestDay ? const Color(0xFFE8F5E9) : const Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isBestDay ? const Color(0xFF2E7D32) : const Color(0xFFECEFF1),
-                    width: isBestDay ? 1.5 : 1.0,
+          bestMarketsAsync.when(
+            data: (markets) {
+              if (markets.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    l10n.noMarketsFound,
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        if (isBestDay) ...[
-                          const Icon(Icons.star, color: Colors.orange, size: 20),
-                          const SizedBox(width: 8),
-                        ] else ...[
-                          const Icon(Icons.calendar_today, color: Colors.grey, size: 18),
-                          const SizedBox(width: 8),
-                        ],
-                        Text(
-                          rowDateFormatted,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: isBestDay ? FontWeight.bold : FontWeight.w600,
-                            color: isBestDay ? const Color(0xFF1B5E20) : Colors.black87,
-                          ),
-                        ),
-                      ],
+                );
+              }
+
+              return Column(
+                children: markets.map((mkt) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12.0),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FA),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
                     ),
-                    Row(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          currencyFormatter.format(day.price),
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: isBestDay ? const Color(0xFF1B5E20) : Colors.black87,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                mkt.marketName,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${mkt.districtName}, ${mkt.stateName}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              if (mkt.varietyName.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  mkt.gradeName.isNotEmpty
+                                      ? '${mkt.varietyName} • ${mkt.gradeName}'
+                                      : mkt.varietyName,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        if (isBestDay) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2E7D32),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'BEST DAY',
-                              style: TextStyle(
-                                fontSize: 9,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              currencyFormatter.format(mkt.predictedPrice),
+                              style: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Color.fromARGB(255, 26, 152, 9),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                mkt.recommendation,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
+            loading: () => Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Column(
+                children: List.generate(
+                  3,
+                  (index) => Container(
+                    height: 60,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            error: (error, stack) => Text(
+              error.toString(),
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
           ),
         ],
       ),

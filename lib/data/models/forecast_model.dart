@@ -1,6 +1,7 @@
 class CommodityForecast {
   final int commodityId;
   final String commodityName; // Display name
+  final String? commodityImageUrl;
   final int marketId;
   final String marketName;
   final int districtId;
@@ -23,6 +24,7 @@ class CommodityForecast {
   CommodityForecast({
     required this.commodityId,
     required this.commodityName,
+    this.commodityImageUrl,
     required this.marketId,
     required this.marketName,
     required this.districtId,
@@ -46,6 +48,7 @@ class CommodityForecast {
   CommodityForecast copyWith({
     int? commodityId,
     String? commodityName,
+    String? commodityImageUrl,
     int? marketId,
     String? marketName,
     int? districtId,
@@ -68,6 +71,7 @@ class CommodityForecast {
     return CommodityForecast(
       commodityId: commodityId ?? this.commodityId,
       commodityName: commodityName ?? this.commodityName,
+      commodityImageUrl: commodityImageUrl ?? this.commodityImageUrl,
       marketId: marketId ?? this.marketId,
       marketName: marketName ?? this.marketName,
       districtId: districtId ?? this.districtId,
@@ -93,6 +97,7 @@ class CommodityForecast {
     return CommodityForecast(
       commodityId: json['commodity_id'] as int,
       commodityName: (json['commodity_name'] as String?) ?? '',
+      commodityImageUrl: json['commodity_image_url'] as String?,
       marketId: json['market_id'] as int? ?? 0,
       marketName: (json['market_name'] as String?) ?? '',
       districtId: json['district_id'] as int? ?? 0,
@@ -103,16 +108,17 @@ class CommodityForecast {
       varietyName: (json['variety_name'] as String?) ?? '',
       gradeId: json['grade_id'] as int? ?? 0,
       gradeName: (json['grade_name'] as String?) ?? '',
-      predictionDate: json['prediction_date'] as String,
-      predictionTime: json['prediction_time'] as String,
+      predictionDate: (json['prediction_date'] as String?) ?? '',
+      predictionTime: (json['prediction_time'] as String?) ?? '',
       currentPrice: (json['current_price'] as num).toDouble(),
-      forecast: (json['forecast'] as List<dynamic>)
-          .map((item) => ForecastDay.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      trend: json['trend'] as String,
-      bestSellDate: json['best_sell_date'] as String,
+      forecast: (json['forecast'] as List<dynamic>?)
+              ?.map((item) => ForecastDay.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+      trend: (json['trend'] as String?) ?? 'STABLE',
+      bestSellDate: (json['best_sell_date'] as String?) ?? '',
       expectedPeakPrice: (json['expected_peak_price'] as num).toDouble(),
-      recommendation: json['recommendation'] as String,
+      recommendation: (json['recommendation'] as String?) ?? 'HOLD',
     );
   }
 
@@ -120,6 +126,7 @@ class CommodityForecast {
     return {
       'commodity_id': commodityId,
       'commodity_name': commodityName,
+      'commodity_image_url': commodityImageUrl,
       'market_id': marketId,
       'market_name': marketName,
       'district_id': districtId,
@@ -139,6 +146,59 @@ class CommodityForecast {
       'expected_peak_price': expectedPeakPrice,
       'recommendation': recommendation,
     };
+  }
+}
+
+class BestMarket {
+  final int marketId;
+  final String marketName;
+  final int districtId;
+  final String districtName;
+  final int stateId;
+  final String stateName;
+  final int varietyId;
+  final String varietyName;
+  final int gradeId;
+  final String gradeName;
+  final double predictedPrice;
+  final double currentPrice;
+  final String trend;
+  final String recommendation;
+
+  BestMarket({
+    required this.marketId,
+    required this.marketName,
+    required this.districtId,
+    required this.districtName,
+    required this.stateId,
+    required this.stateName,
+    required this.varietyId,
+    required this.varietyName,
+    required this.gradeId,
+    required this.gradeName,
+    required this.predictedPrice,
+    required this.currentPrice,
+    required this.trend,
+    required this.recommendation,
+  });
+
+  factory BestMarket.fromJson(Map<String, dynamic> json) {
+    return BestMarket(
+      marketId: json['market_id'] as int? ?? 0,
+      marketName: (json['market_name'] as String?) ?? '',
+      districtId: json['district_id'] as int? ?? 0,
+      districtName: (json['district_name'] as String?) ?? '',
+      stateId: json['state_id'] as int? ?? 0,
+      stateName: (json['state_name'] as String?) ?? '',
+      varietyId: json['variety_id'] as int? ?? 0,
+      varietyName: (json['variety_name'] as String?) ?? '',
+      gradeId: json['grade_id'] as int? ?? 0,
+      gradeName: (json['grade_name'] as String?) ?? '',
+      predictedPrice: (json['predicted_price'] as num?)?.toDouble() ?? 0.0,
+      currentPrice: (json['current_price'] as num?)?.toDouble() ?? 0.0,
+      trend: (json['trend'] as String?) ?? 'STABLE',
+      recommendation: (json['recommendation'] as String?) ?? 'HOLD',
+    );
   }
 }
 

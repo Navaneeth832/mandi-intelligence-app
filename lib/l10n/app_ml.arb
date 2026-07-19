@@ -181,5 +181,10 @@
   "updateProfile": "നിങ്ങളുടെ പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുക",
   "finishProfile": "പ്രൊഫൈൽ സെറ്റപ്പ് പൂർത്തിയാക്കുക",
   "expectedPriceTrajectory": "അടുത്ത 7 ദിവസത്തേക്ക് പ്രതീക്ഷിക്കുന്ന വിലയുടെ ഗതി",
-  "detailedPriceForecasts": "അടുത്ത 7 ദിവസങ്ങളിലെ ഓരോ ദിവസത്തെയും വിശദമായ വില പ്രവചനം"
+  "detailedPriceForecasts": "അടുത്ത 7 ദിവസങ്ങളിലെ ഓരോ ദിവസത്തെയും വിശദമായ വില പ്രവചനം",
+  "advisory": "ഉപദേശം (Advisory)",
+  "exploreOtherMarketsCommodities": "മറ്റ് വിപണികൾ / വിളകൾ പരിശോധിക്കുക",
+  "bestMarkets": "മികച്ച വിപണികൾ",
+  "explorePlaceholderTitle": "മറ്റ് വിപണികൾ പരിശോധിക്കുക",
+  "explorePlaceholderMessage": "വിപണികളും വിളകളും തിരയാനുള്ള സൗകര്യം അടുത്ത അപ്‌ഡേറ്റിൽ ലഭ്യമാകും."
 }

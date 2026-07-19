@@ -1,11 +1,13 @@
 class Commodity {
   final int id;
   final String name;
+  final String? commodityImageUrl;
   final List<CommodityTranslation>? translations;
 
   Commodity({
     required this.id,
     required this.name,
+    this.commodityImageUrl,
     this.translations,
   });
 
@@ -32,6 +34,7 @@ class Commodity {
     return Commodity(
       id: json['id'],
       name: json['name'],
+      commodityImageUrl: json['commodity_image_url'] as String?,
       translations: (json['translations'] as List?)
           ?.map((t) => CommodityTranslation.fromJson(t))
           .toList(),

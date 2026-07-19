@@ -181,5 +181,10 @@
   "updateProfile": "अपनी प्रोफ़ाइल अपडेट करें",
   "finishProfile": "प्रोफ़ाइल सेटअप पूरा करें",
   "expectedPriceTrajectory": "अगले 7 दिनों के लिए अपेक्षित मूल्य उतार-चढ़ाव",
-  "detailedPriceForecasts": "आगामी 7 दिनों में से प्रत्येक के लिए विस्तृत मूल्य पूर्वानुमान"
+  "detailedPriceForecasts": "आगामी 7 दिनों में से प्रत्येक के लिए विस्तृत मूल्य पूर्वानुमान",
+  "advisory": "सलाह (Advisory)",
+  "exploreOtherMarketsCommodities": "अन्य बाज़ार / फसलें खोजें",
+  "bestMarkets": "सर्वश्रेष्ठ बाज़ार",
+  "explorePlaceholderTitle": "अन्य बाज़ार खोजें",
+  "explorePlaceholderMessage": "बाज़ार और फ़सलों की विस्तृत खोज सुविधा आगामी अपडेट में उपलब्ध होगी।"
 }
