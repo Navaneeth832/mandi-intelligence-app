@@ -35,8 +35,8 @@ def fetch_and_display_mandi_data_v2(
     market="[100002]",
     variety="[100007]",
     grade="[100003]",
-    from_date= datetime.today().strftime("%Y-%m-%d"),
-    to_date = datetime.today().strftime("%Y-%m-%d"),
+    from_date= None,
+    to_date = None,
     limit=10000,
     page=1
 ):
@@ -49,6 +49,12 @@ def fetch_and_display_mandi_data_v2(
     # Establish DB session if available
     db = SessionLocal() if SessionLocal else None
     
+    if from_date is None:
+        from_date = datetime.now().strftime("%Y-%m-%d")
+
+    if to_date is None:
+        to_date = datetime.now().strftime("%Y-%m-%d")
+        
     try:
         # Resolve all parameters to IDs
         group_id = getId.get_group_id(group, db)
@@ -168,3 +174,4 @@ def fetch_and_display_mandi_data_v2(
             print("-" * 40)'''
             
         return valid_records
+    

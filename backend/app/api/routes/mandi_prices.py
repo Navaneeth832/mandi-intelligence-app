@@ -30,7 +30,10 @@ def get_commodity_image_url(commodity_id: int | None) -> str:
         image_path = os.path.join(COMMODITY_IMAGES_DIR, f"{commodity_id}.jpeg")
         if os.path.exists(image_path):
             return f"/static/commodity-images/{commodity_id}.jpeg"
-    return "/static/commodity-images/default.jpeg"
+        image_path=os.path.join(COMMODITY_IMAGES_DIR, f"{commodity_id}.webp")
+        if os.path.exists(image_path):
+            return f"/static/commodity-images/{commodity_id}.webp"
+    return "/static/commodity-images/default.webp"
 
 
 def get_translated_name(language_code: str, entity):
