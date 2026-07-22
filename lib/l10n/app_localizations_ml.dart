@@ -60,7 +60,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get forecasts => 'പ്രവചനങ്ങൾ';
 
   @override
-  String get yourPreferredCrops => 'നിങ്ങൾ തിരഞ്ഞെടുത്ത വിളകൾ';
+  String get yourPreferredCrops => 'നിങ്ങൾ തിരഞ്ഞെടുത്ത വിലകൾ';
 
   @override
   String get mockData => 'മോക്ക് ഡാറ്റ';
@@ -90,7 +90,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get dailyForecastLabel => 'ദിന പ്രവചനം';
 
   @override
-  String get noPreferredCropsSelectedForecasts => 'തിരഞ്ഞെടുത്ത വിളകളൊന്നുമില്ല. പ്രവചനങ്ങൾ ലഭിക്കുന്നതിന് നിങ്ങളുടെ പ്രൊഫൈലിൽ നിന്ന് നിങ്ങളുടെ വിളകൾ തിരഞ്ഞെടുക്കുക.';
+  String get noPreferredCropsSelectedForecasts => 'തിരഞ്ഞെടുത്ത വിളകളൊന്നുമില്ല. പ്രവചനങ്ങൾ ലഭിക്കുന്നതിന് നിങ്ങളുടെ പ്രൊഫൈലിൽ നിന്ന് നിങ്ങളുടെ വിലകൾ തിരഞ്ഞെടുക്കുക.';
 
   @override
   String get retryLabel => 'വീണ്ടും ശ്രമിക്കുക';
@@ -322,7 +322,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get personalInformation => 'വ്യക്തിഗത വിവരങ്ങൾ';
 
   @override
-  String get preferredCrops => 'താൽപ്പര്യമുള്ള വിളകൾ';
+  String get preferredCrops => 'താൽപ്പര്യമുള്ള വിലകൾ';
 
   @override
   String get noPreferredCropsSelected => 'താൽപ്പര്യമുള്ള വിളകളൊന്നും തിരഞ്ഞെടുത്തിട്ടില്ല.';
@@ -348,13 +348,13 @@ class AppLocalizationsMl extends AppLocalizations {
   String get selectLanguage => 'ഭാഷ തിരഞ്ഞെടുക്കുക';
 
   @override
-  String get chooseUpTo5Crops => 'പരമാവധി 5 വിളകൾ വരെ തിരഞ്ഞെടുക്കുക.';
+  String get chooseUpTo5Crops => 'പരമാവധി 5 വിലകൾ വരെ തിരഞ്ഞെടുക്കുക.';
 
   @override
-  String get searchCrops => 'വിളകൾ തിരയുക...';
+  String get searchCrops => 'വിലകൾ തിരയുക...';
 
   @override
-  String get maxPreferredCrops => 'നിങ്ങൾക്ക് പരമാവധി 5 വിളകൾ മാത്രമേ തിരഞ്ഞെടുക്കാൻ കഴിയൂ.';
+  String get maxPreferredCrops => 'നിങ്ങൾക്ക് പരമാവധി 5 വിലകൾ മാത്രമേ തിരഞ്ഞെടുക്കാൻ കഴിയൂ.';
 
   @override
   String get english => 'ഇംഗ്ലീഷ്';
@@ -402,7 +402,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get advisory => 'ഉപദേശം (Advisory)';
 
   @override
-  String get exploreOtherMarketsCommodities => 'മറ്റ് വിപണികൾ / വിളകൾ പരിശോധിക്കുക';
+  String get exploreOtherMarketsCommodities => 'മറ്റ് വിപണികൾ / വിലകൾ പരിശോധിക്കുക';
 
   @override
   String get bestMarkets => 'മികച്ച വിപണികൾ';

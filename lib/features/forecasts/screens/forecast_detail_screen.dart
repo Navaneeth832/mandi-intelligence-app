@@ -28,15 +28,15 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFFFFBF7), // Cream background
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: Color(0xFF111111),
+            color: Color(0xFF1F2937), // Primary Text
             size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -44,13 +44,10 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         title: Text(
           widget.forecast.commodityName,
           style: const TextStyle(
-            color: Color(0xFF111111),
+            color: Color(0xFF1F2937), // Primary Text
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
-        ),
-        shape: const Border(
-          bottom: BorderSide(color: Color(0xFFEFEFEF), width: 1),
         ),
       ),
       body: SafeArea(
@@ -68,12 +65,12 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(
-              color: Color.fromARGB(255, 26, 152, 9),
+              color: Color(0xFFF97316), // Primary Orange
             ),
             const SizedBox(height: 16),
             Text(
               l10n.loadingLabel,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Color(0xFF6B7280)),
             ),
           ],
         ),
@@ -87,18 +84,21 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 60),
+              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 60),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 26, 152, 9),
+                  backgroundColor: const Color(0xFFF97316),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
                 onPressed: () {},
                 child: Text(l10n.retryLabel),
@@ -119,14 +119,19 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24), // 24px radius
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: const Color(0xFFF97316).withOpacity(0.14), // Soft orange shadow
+                  blurRadius: 18,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 8),
                 ),
               ],
+              border: Border.all(
+                color: const Color(0xFFFFE0CC),
+                width: 1,
+              ),
             ),
             child: CommodityImageWidget(
               commodityId: widget.forecast.commodityId,
@@ -135,11 +140,11 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               width: double.infinity,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // 2. Redesigned Premium Header Hierarchy (Commodity Name, Variety, Grade, Selected Market)
           _buildHeaderHierarchy(context),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // 3. Recommendation & Trend Group Card
           _buildRecommendationTrendCard(context),
@@ -181,29 +186,29 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111111),
+            color: Color(0xFF1F2937), // Primary Text
             height: 1.2,
           ),
         ),
         if (varietyGrade.isNotEmpty) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           // Variety • Grade
           Text(
             varietyGrade,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 15,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.w600,
+              color: Color(0xFF6B7280), // Secondary Text
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         // Selected Market (Market, District, State)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.location_on_outlined, size: 18, color: Colors.grey.shade600),
-            const SizedBox(width: 4),
+            const Icon(Icons.location_on_rounded, size: 18, color: Color(0xFFF97316)), // Orange icon
+            const SizedBox(width: 6),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,14 +218,15 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: Color(0xFF1F2937), // Primary Text
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     '${widget.forecast.districtName}, ${widget.forecast.stateName}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color: Color(0xFF6B7280), // Secondary Text
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -229,17 +235,17 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         // Prediction Date & Time
         Row(
           children: [
-            Icon(Icons.history_toggle_off, size: 15, color: Colors.grey.shade500),
+            const Icon(Icons.history_toggle_off_rounded, size: 15, color: Color(0xFFF97316)), // Orange history icon
             const SizedBox(width: 6),
             Text(
               '${l10n.latestPredictionLabel}: $displayPredDate, ${widget.forecast.predictionTime}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade500,
+                color: Color(0xFF6B7280), // Secondary Text
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -259,19 +265,19 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
     String recommendationText;
 
     if (recommendation == 'SELL TODAY') {
-      recBgColor = const Color(0xFFE8F5E9);
-      recTextColor = const Color(0xFF2E7D32);
-      recIcon = Icons.check_circle_outline;
+      recBgColor = const Color(0xFFF97316); // Solid Orange
+      recTextColor = Colors.white; // White text
+      recIcon = Icons.check_circle_rounded;
       recommendationText = l10n.sellTodayLabel;
     } else if (recommendation == 'HOLD') {
-      recBgColor = const Color(0xFFFFF3E0);
-      recTextColor = const Color(0xFFE65100);
-      recIcon = Icons.pause_circle_outline;
+      recBgColor = const Color(0xFFF3F4F6); // Grey
+      recTextColor = const Color(0xFF6B7280); // Grey text
+      recIcon = Icons.pause_circle_rounded;
       recommendationText = l10n.holdLabel;
     } else {
-      recBgColor = const Color(0xFFEBF3FC);
-      recTextColor = const Color(0xFF1976D2);
-      recIcon = Icons.watch_later_outlined;
+      recBgColor = const Color(0xFFFFF2E7); // Light Orange
+      recTextColor = const Color(0xFFF97316); // Orange text
+      recIcon = Icons.watch_later_rounded;
       recommendationText = l10n.waitLabel;
     }
 
@@ -281,27 +287,35 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
     String trendText;
 
     if (trend == 'RISING') {
-      trendColor = const Color(0xFF2E7D32);
-      trendIcon = Icons.trending_up;
+      trendColor = const Color(0xFFF97316); // Orange
+      trendIcon = Icons.trending_up_rounded;
       trendText = l10n.risingLabel;
     } else if (trend == 'FALLING') {
-      trendColor = const Color(0xFFC62828);
-      trendIcon = Icons.trending_down;
+      trendColor = const Color(0xFFEF4444); // Red
+      trendIcon = Icons.trending_down_rounded;
       trendText = l10n.fallingLabel;
     } else {
-      trendColor = const Color(0xFF757575);
-      trendIcon = Icons.trending_flat;
+      trendColor = const Color(0xFFF59E0B); // Amber
+      trendIcon = Icons.trending_flat_rounded;
       trendText = l10n.stableLabel;
     }
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
+        borderRadius: BorderRadius.circular(24), // 24 radius
+        border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0), // Orange-tinted border
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0), // Premium padding
         child: Row(
           children: [
             Expanded(
@@ -310,24 +324,24 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 children: [
                   Text(
                     l10n.recommendationLabel,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280), // Secondary Text
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: recBgColor,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(recIcon, size: 16, color: recTextColor),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           recommendationText,
                           style: TextStyle(
@@ -342,7 +356,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 ],
               ),
             ),
-            Container(width: 1.5, height: 44, color: const Color(0xFFE2E8F0)),
+            Container(width: 1.5, height: 48, color: const Color(0xFFFFE0CC)), // Orange divider
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -350,17 +364,17 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 children: [
                   Text(
                     l10n.trendLabel,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280), // Secondary Text
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Icon(trendIcon, size: 20, color: trendColor),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         trendText,
                         style: TextStyle(
@@ -390,8 +404,8 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
 
     final trend = widget.forecast.trend.toUpperCase();
     final Color trendColor = trend == 'RISING'
-        ? const Color(0xFF2E7D32)
-        : (trend == 'FALLING' ? const Color(0xFFC62828) : const Color(0xFF757575));
+        ? const Color(0xFFF97316) // Orange
+        : (trend == 'FALLING' ? const Color(0xFFEF4444) : const Color(0xFFF59E0B));
 
     String displayBestSellDate = widget.forecast.bestSellDate;
     try {
@@ -402,20 +416,28 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDCDFE4), width: 1.5),
+        borderRadius: BorderRadius.circular(24), // 24 radius
+        border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0), // Premium padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               l10n.priceSummary,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF111111),
+                color: Color(0xFF1F2937), // Primary Text
               ),
             ),
             const SizedBox(height: 16),
@@ -427,25 +449,25 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     children: [
                       Text(
                         l10n.currentPriceLabel,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280), // Secondary Text
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         currencyFormatter.format(widget.forecast.currentPrice),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF111111),
+                          color: Color(0xFF1F2937), // Primary Text
                         ),
                       ),
                     ],
                   ),
                 ),
-                Container(width: 1.5, height: 40, color: const Color(0xFFE2E8F0)),
+                Container(width: 1.5, height: 40, color: const Color(0xFFFFE0CC)), // Orange divider
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -453,19 +475,19 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     children: [
                       Text(
                         l10n.expectedPeakPriceLabel,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280), // Secondary Text
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         currencyFormatter.format(widget.forecast.expectedPeakPrice),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: trendColor,
+                          color: trendColor, // Trend Color
                         ),
                       ),
                     ],
@@ -473,26 +495,26 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 ),
               ],
             ),
-            const Divider(height: 24, color: Color(0xFFE2E8F0)),
+            const Divider(height: 32, color: Color(0xFFFFE0CC)), // Orange divider
             Row(
               children: [
-                const Icon(Icons.star, color: Colors.orange, size: 20),
-                const SizedBox(width: 6),
+                const Icon(Icons.star_rounded, color: Color(0xFFF97316), size: 22),
+                const SizedBox(width: 8),
                 Text(
                   '${l10n.bestSellingDayLabel}:',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade600,
+                    color: Color(0xFF6B7280), // Secondary Text
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Text(
                   displayBestSellDate,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E7D32),
+                    color: Color(0xFFF97316), // Orange color
                   ),
                 ),
               ],
@@ -530,8 +552,16 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEFEFEF), width: 1.5),
+        borderRadius: BorderRadius.circular(24), // 24 radius
+        border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -541,15 +571,15 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
             '7-Day Trend Chart',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF111111),
+              color: const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             l10n.expectedPriceTrajectory,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade500,
+              color: Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 24),
@@ -563,14 +593,14 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.shade100,
+                  getDrawingHorizontalLine: (value) => const FlLine(
+                    color: Color(0xFFFFF2E7), // Very light orange grid
                     strokeWidth: 1,
                   ),
                 ),
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (group) => const Color(0xFF111111),
+                    getTooltipColor: (group) => Colors.white, // White card tooltip
                     tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((touchedSpot) {
@@ -587,7 +617,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                         return LineTooltipItem(
                           '${currencyFormatter.format(touchedSpot.y)}\n',
                           const TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFFF97316), // Orange price title
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -595,7 +625,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                             TextSpan(
                               text: dateStr,
                               style: const TextStyle(
-                                color: Colors.white70,
+                                color: Color(0xFF6B7280), // Secondary text date
                                 fontWeight: FontWeight.w500,
                                 fontSize: 12,
                               ),
@@ -624,10 +654,10 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                           space: 8.0,
                           child: Text(
                             currencyFormatter.format(value),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 10,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF6B7280), // Grey text
+                              fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
                           ),
@@ -660,10 +690,10 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                             angle: -math.pi / 6,
                             child: Text(
                               dateLabel,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 9.5,
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280), // Grey text
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -680,14 +710,14 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                         .map((entry) => FlSpot(entry.key.toDouble(), entry.value.price))
                         .toList(),
                     isCurved: true,
-                    color: const Color.fromARGB(255, 26, 152, 9),
+                    color: const Color(0xFFF97316), // Orange line
                     barWidth: 3.5,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
                         radius: 4,
-                        color: const Color.fromARGB(255, 26, 152, 9),
+                        color: const Color(0xFFEA580C), // Deep Orange dots
                         strokeColor: Colors.white,
                         strokeWidth: 2,
                       ),
@@ -696,8 +726,8 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          const Color.fromARGB(255, 26, 152, 9).withOpacity(0.2),
-                          const Color.fromARGB(255, 26, 152, 9).withOpacity(0.0),
+                          const Color(0xFFFFF2E7), // Light Orange gradient
+                          const Color(0xFFFFF2E7).withOpacity(0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -728,8 +758,16 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEFEFEF), width: 1.5),
+        borderRadius: BorderRadius.circular(24), // 24 radius
+        border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -737,24 +775,24 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.stars_rounded, color: Color.fromARGB(255, 26, 152, 9), size: 22),
+              const Icon(Icons.stars_rounded, color: Color(0xFFF97316), size: 24), // Orange icon
               const SizedBox(width: 8),
               Text(
                 l10n.bestMarkets,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF111111),
+                  color: const Color(0xFF1F2937),
                   fontSize: 18,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
+          const SizedBox(height: 6),
+          const Text(
             'Markets in your district sorted by highest predicted price',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 20),
@@ -766,7 +804,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
                     l10n.noMarketsFound,
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: const TextStyle(color: Color(0xFF6B7280)),
                   ),
                 );
               }
@@ -777,10 +815,10 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     margin: const EdgeInsets.only(bottom: 12.0),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFFFFBF7), // Cream background
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0xFFE2E8F0),
+                        color: const Color(0xFFFFE0CC), // Orange border
                         width: 1,
                       ),
                     ),
@@ -796,33 +834,34 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E293B),
+                                  color: Color(0xFF1F2937),
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Text(
                                 '${mkt.districtName}, ${mkt.stateName}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                  color: Color(0xFF6B7280),
                                 ),
                               ),
                               if (mkt.varietyName.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Text(
                                   mkt.gradeName.isNotEmpty
                                       ? '${mkt.varietyName} • ${mkt.gradeName}'
                                       : mkt.varietyName,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey.shade700,
-                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF6B7280),
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -831,24 +870,41 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 26, 152, 9),
+                                color: Color(0xFFF97316), // Orange color
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                mkt.recommendation,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade800,
-                                ),
-                              ),
+                            const SizedBox(height: 6),
+                            Builder(
+                              builder: (context) {
+                                final mktRec = mkt.recommendation.toUpperCase();
+                                Color recBg;
+                                Color recText;
+                                if (mktRec.contains('SELL') || mktRec.contains('വിൽപ്പന')) {
+                                  recBg = const Color(0xFFF97316);
+                                  recText = Colors.white;
+                                } else if (mktRec.contains('HOLD') || mktRec.contains('കൈവശം')) {
+                                  recBg = const Color(0xFFF3F4F6);
+                                  recText = const Color(0xFF6B7280);
+                                } else {
+                                  recBg = const Color(0xFFFFF2E7);
+                                  recText = const Color(0xFFF97316);
+                                }
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: recBg,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    mkt.recommendation,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: recText,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -859,8 +915,8 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               );
             },
             loading: () => Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
+              baseColor: Colors.orange[100]!,
+              highlightColor: Colors.orange[50]!,
               child: Column(
                 children: List.generate(
                   3,
@@ -869,7 +925,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),
@@ -877,7 +933,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
             ),
             error: (error, stack) => Text(
               error.toString(),
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
             ),
           ),
         ],

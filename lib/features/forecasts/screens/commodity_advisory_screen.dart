@@ -25,15 +25,22 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
     final commodityDisplayName = commodity.getDisplayName(locale.languageCode);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFFFFBF7), // Cream background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF1F2937), // Primary Text
+            size: 20,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           commodityDisplayName,
           style: const TextStyle(
-            color: Color(0xFF1E293B),
+            color: Color(0xFF1F2937), // Primary Text
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -53,14 +60,19 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(24), // 24px radius
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: const Color(0xFFF97316).withOpacity(0.14), // Soft orange shadow
+                        blurRadius: 18,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 8),
                       ),
                     ],
+                    border: Border.all(
+                      color: const Color(0xFFFFE0CC), // Border
+                      width: 1,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +84,7 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
                         width: double.infinity,
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(20.0), // Lots of padding
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -84,29 +96,29 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E293B),
+                                    color: Color(0xFF1F2937), // Primary Text
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   l10n.advisory,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF6B7280), // Secondary Text
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
                             Container(
                               padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFFF2E7), // Light Orange
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.insights_rounded,
-                                color: Colors.green.shade700,
+                                color: Color(0xFFF97316), // Primary Orange
                                 size: 24,
                               ),
                             ),
@@ -130,17 +142,17 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
                       child: Center(
                         child: Column(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.storefront_outlined,
                               size: 48,
-                              color: Colors.grey.shade400,
+                              color: Color(0xFFFB923C), // Secondary Orange
                             ),
                             const SizedBox(height: 12),
                             Text(
                               l10n.noForecastsAvailable,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade600,
+                                color: Color(0xFF6B7280), // Secondary Text
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -180,19 +192,20 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(Icons.error_outline, size: 44, color: Colors.red.shade400),
+                        const Icon(Icons.error_outline, size: 44, color: Color(0xFFEF4444)), // Red error
                         const SizedBox(height: 12),
                         Text(
                           l10n.somethingWentWrong,
                           style: const TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           error.toString(),
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -217,13 +230,13 @@ class CommodityAdvisoryScreen extends ConsumerWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
           child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
+            baseColor: Colors.orange[100]!,
+            highlightColor: Colors.orange[50]!,
             child: Container(
               height: 160,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ),

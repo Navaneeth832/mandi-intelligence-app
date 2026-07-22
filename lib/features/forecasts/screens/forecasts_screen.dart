@@ -12,6 +12,18 @@ import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 class ForecastsScreen extends ConsumerWidget {
   const ForecastsScreen({super.key});
 
+  String _getCardSubtitle(String languageCode) {
+    switch (languageCode) {
+      case 'ml':
+        return 'കൃഷി നുറുങ്ങുകൾ, രോഗനിയന്ത്രണം, വില വിവരങ്ങൾ';
+      case 'hi':
+        return 'कृषि युक्तियाँ, रोग नियंत्रण, मूल्य विवरण';
+      case 'en':
+      default:
+        return 'Farming tips, disease control, price details';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -19,33 +31,7 @@ class ForecastsScreen extends ConsumerWidget {
     final preferredCommoditiesAsync = ref.watch(preferredCommoditiesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.advisory,
-              style: const TextStyle(
-                color: Color.fromARGB(255, 26, 152, 9),
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
-            Text(
-              l10n.yourPreferredCrops,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: const Color(0xFFFFFBF7), // Cream background
       body: SafeArea(
         child: preferredCommoditiesAsync.when(
           data: (commodities) {
@@ -54,16 +40,75 @@ class ForecastsScreen extends ConsumerWidget {
             }
 
             return RefreshIndicator(
-              color: const Color.fromARGB(255, 26, 152, 9),
+              color: const Color(0xFFF97316), // Primary Orange
               onRefresh: () async {
                 ref.invalidate(preferredCommoditiesProvider);
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Custom Premium Header (No AppBar)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFF2E7), // Light Orange
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.eco_rounded,
+                              color: Color(0xFFF97316), // Primary Orange
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.advisory,
+                                  style: const TextStyle(
+                                    color: Color(0xFFF97316), // Primary Orange
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.yourPreferredCrops,
+                                  style: const TextStyle(
+                                    color: Color(0xFF6B7280), // Secondary Text
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFE0CC)),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none_rounded,
+                              color: Color(0xFF1F2937), // Primary Text
+                              size: 22,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // Vertically scrollable list of preferred commodity cards
                     ListView.builder(
                       shrinkWrap: true,
@@ -75,61 +120,128 @@ class ForecastsScreen extends ConsumerWidget {
 
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CommodityAdvisoryScreen(commodity: commodity),
-                                ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CommodityAdvisoryScreen(commodity: commodity),
                                   ),
-                                ],
-                                border: Border.all(
-                                  color: Colors.grey.shade200,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(24),
+                              splashColor: const Color(0xFFF97316).withOpacity(0.05),
+                              highlightColor: const Color(0xFFF97316).withOpacity(0.02),
+                              child: Stack(
                                 children: [
-                                  CommodityImageWidget(
-                                    commodityId: commodity.id,
-                                    imageUrl: commodity.commodityImageUrl,
-                                    height: 160,
-                                    width: double.infinity,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          displayName,
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1E293B),
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          size: 18,
-                                          color: Colors.grey.shade400,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFF97316).withOpacity(0.14),
+                                          blurRadius: 18,
+                                          spreadRadius: 1,
+                                          offset: const Offset(0, 8),
                                         ),
                                       ],
+                                      border: Border.all(
+                                        color: const Color(0xFFFFE0CC), // Border
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: Row(
+                                        children: [
+                                          CommodityImageWidget(
+                                            commodityId: commodity.id,
+                                            imageUrl: commodity.commodityImageUrl,
+                                            height: 130,
+                                            width: 130,
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(16.0),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(
+                                                          displayName,
+                                                          style: const TextStyle(
+                                                            fontSize: 22,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Color(0xFF1F2937), // Primary Text
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 6),
+                                                        Text(
+                                                          _getCardSubtitle(locale.languageCode),
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            color: Color(0xFF6B7280), // Secondary Text
+                                                            height: 1.4,
+                                                          ),
+                                                          maxLines: 3,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Container(
+                                                    width: 36,
+                                                    height: 36,
+                                                    decoration: const BoxDecoration(
+                                                      color: Color(0xFFFFF2E7), // Light Orange
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Center(
+                                                      child: Icon(
+                                                        Icons.arrow_forward_ios_rounded,
+                                                        color: Color(0xFFF97316), // Primary Orange
+                                                        size: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  // Top Right badge
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF97316),
+                                        borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(24),
+                                          bottomLeft: Radius.circular(12),
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.eco_rounded,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -145,16 +257,17 @@ class ForecastsScreen extends ConsumerWidget {
                     // "Explore Other Markets / Commodities" Button
                     SizedBox(
                       height: 52,
-                      child: OutlinedButton.icon(
+                      child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color.fromARGB(255, 26, 152, 9),
+                          foregroundColor: const Color(0xFFF97316),
                           side: const BorderSide(
-                            color: Color.fromARGB(255, 26, 152, 9),
+                            color: Color(0xFFF97316),
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(24),
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
                         onPressed: () {
                           Navigator.push(
@@ -164,17 +277,33 @@ class ForecastsScreen extends ConsumerWidget {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.explore_outlined),
-                        label: Text(
-                          l10n.exploreOtherMarketsCommodities,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.menu_book_outlined, color: Color(0xFFF97316)),
+                                const SizedBox(width: 12),
+                                Text(
+                                  l10n.exploreOtherMarketsCommodities,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFF97316),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 16,
+                              color: Color(0xFFF97316),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -192,17 +321,17 @@ class ForecastsScreen extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16.0),
       child: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: Colors.orange[100]!,
+        highlightColor: Colors.orange[50]!,
         child: Column(
           children: List.generate(
             3,
             (index) => Container(
-              height: 200,
+              height: 130,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ),
@@ -220,28 +349,35 @@ class ForecastsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
-              color: theme.colorScheme.error,
+              color: Color(0xFFF97316),
               size: 64,
             ),
             const SizedBox(height: 16),
             Text(
               l10n.somethingWentWrong,
-              style: theme.textTheme.titleLarge,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: const Color(0xFF1F2937),
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               error,
-              style: theme.textTheme.bodyMedium,
+              style: const TextStyle(color: Color(0xFF6B7280)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 26, 152, 9),
+                backgroundColor: const Color(0xFFF97316),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               onPressed: () => ref.invalidate(preferredCommoditiesProvider),
               icon: const Icon(Icons.refresh),
@@ -264,7 +400,7 @@ class ForecastsScreen extends ConsumerWidget {
           children: [
             const Icon(
               Icons.analytics_outlined,
-              color: Colors.grey,
+              color: Color(0xFFFB923C),
               size: 80,
             ),
             const SizedBox(height: 24),
@@ -272,6 +408,7 @@ class ForecastsScreen extends ConsumerWidget {
               l10n.noPreferredCropsSelected,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: const Color(0xFF1F2937),
               ),
               textAlign: TextAlign.center,
             ),
@@ -279,7 +416,7 @@ class ForecastsScreen extends ConsumerWidget {
             Text(
               l10n.noPreferredCropsSelectedForecasts,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: Colors.grey.shade600,
+                color: const Color(0xFF6B7280),
               ),
               textAlign: TextAlign.center,
             ),
