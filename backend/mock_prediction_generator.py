@@ -48,8 +48,15 @@ with engine.begin() as conn:
     batch_id=conn.execute(text("""
     INSERT INTO prediction_batches(prediction_date,prediction_time,model_version,created_at)
     VALUES(:d,'09:00:00','mock-v4',NOW())
+    ON CONFLICT (prediction_date, prediction_time)
+    DO UPDATE SET model_version=EXCLUDED.model_version, created_at=NOW()
     RETURNING id
     """),{"d":today}).scalar_one()
+
+    conn.execute(
+        text("DELETE FROM commodity_predictions WHERE batch_id=:batch"),
+        {"batch":batch_id}
+    )
 
     conn.execute(text("""
     SELECT setval(
