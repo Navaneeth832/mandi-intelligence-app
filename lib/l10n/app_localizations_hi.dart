@@ -412,4 +412,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get explorePlaceholderMessage => 'बाज़ार और फ़सलों की विस्तृत खोज सुविधा आगामी अपडेट में उपलब्ध होगी।';
+
+  @override
+  String get sevenDayTrendChart => '7-दिन का ट्रेंड चार्ट';
+
+  @override
+  String get marketsSortedByHighestPredictedPrice => 'आपके जिले के बाजार उच्चतम अनुमानित मूल्य के अनुसार क्रमबद्ध';
 }

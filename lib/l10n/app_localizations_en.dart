@@ -412,4 +412,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get explorePlaceholderMessage => 'Browse and exploration features will be available in a future update.';
+
+  @override
+  String get sevenDayTrendChart => '7-Day Trend Chart';
+
+  @override
+  String get marketsSortedByHighestPredictedPrice => 'Markets in your district sorted by highest predicted price';
 }

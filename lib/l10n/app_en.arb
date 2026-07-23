@@ -186,5 +186,7 @@
   "exploreOtherMarketsCommodities": "Explore Other Markets / Commodities",
   "bestMarkets": "Best Markets",
   "explorePlaceholderTitle": "Explore Other Markets",
-  "explorePlaceholderMessage": "Browse and exploration features will be available in a future update."
+  "explorePlaceholderMessage": "Browse and exploration features will be available in a future update.",
+  "sevenDayTrendChart": "7-Day Trend Chart",
+  "marketsSortedByHighestPredictedPrice": "Markets in your district sorted by highest predicted price"
 }

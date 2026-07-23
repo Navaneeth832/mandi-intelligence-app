@@ -568,7 +568,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '7-Day Trend Chart',
+            l10n.sevenDayTrendChart,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1F2937),
@@ -788,9 +788,11 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Markets in your district sorted by highest predicted price',
-            style: TextStyle(
+          Text(
+            l10n.marketsSortedByHighestPredictedPrice,
+            maxLines: 2,
+            softWrap: true,
+            style: const TextStyle(
               fontSize: 12,
               color: Color(0xFF6B7280),
             ),

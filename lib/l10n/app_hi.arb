@@ -186,5 +186,7 @@
   "exploreOtherMarketsCommodities": "अन्य बाज़ार / फसलें खोजें",
   "bestMarkets": "सर्वश्रेष्ठ बाज़ार",
   "explorePlaceholderTitle": "अन्य बाज़ार खोजें",
-  "explorePlaceholderMessage": "बाज़ार और फ़सलों की विस्तृत खोज सुविधा आगामी अपडेट में उपलब्ध होगी।"
+  "explorePlaceholderMessage": "बाज़ार और फ़सलों की विस्तृत खोज सुविधा आगामी अपडेट में उपलब्ध होगी।",
+  "sevenDayTrendChart": "7-दिन का ट्रेंड चार्ट",
+  "marketsSortedByHighestPredictedPrice": "आपके जिले के बाजार उच्चतम अनुमानित मूल्य के अनुसार क्रमबद्ध"
 }

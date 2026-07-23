@@ -15,12 +15,12 @@ class ForecastsScreen extends ConsumerWidget {
   String _getCardSubtitle(String languageCode) {
     switch (languageCode) {
       case 'ml':
-        return 'കൃഷി നുറുങ്ങുകൾ, രോഗനിയന്ത്രണം, വില വിവരങ്ങൾ';
+        return 'വില വിവരങ്ങളും വിപണി അടിസ്ഥാനത്തിലുള്ള വില താരതമ്യവും.';
       case 'hi':
-        return 'कृषि युक्तियाँ, रोग नियंत्रण, मूल्य विवरण';
+        return 'कीमत की जानकारी और बाज़ार के हिसाब से कीमतों की तुलना।';
       case 'en':
       default:
-        return 'Farming tips, disease control, price details';
+        return 'Price details and market wise price comparsion.';
     }
   }
 
@@ -255,8 +255,10 @@ class ForecastsScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
 
                     // "Explore Other Markets / Commodities" Button
-                    SizedBox(
-                      height: 52,
+                    ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: 52,
+                        ),
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFF97316),
@@ -280,19 +282,28 @@ class ForecastsScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.menu_book_outlined, color: Color(0xFFF97316)),
-                                const SizedBox(width: 12),
-                                Text(
-                                  l10n.exploreOtherMarketsCommodities,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.menu_book_outlined,
                                     color: Color(0xFFF97316),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      l10n.exploreOtherMarketsCommodities,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFF97316),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             const Icon(
                               Icons.arrow_forward_ios_rounded,

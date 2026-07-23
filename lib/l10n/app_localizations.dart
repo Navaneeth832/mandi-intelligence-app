@@ -858,6 +858,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Browse and exploration features will be available in a future update.'**
   String get explorePlaceholderMessage;
+
+  /// No description provided for @sevenDayTrendChart.
+  ///
+  /// In en, this message translates to:
+  /// **'7-Day Trend Chart'**
+  String get sevenDayTrendChart;
+
+  /// No description provided for @marketsSortedByHighestPredictedPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets in your district sorted by highest predicted price'**
+  String get marketsSortedByHighestPredictedPrice;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
