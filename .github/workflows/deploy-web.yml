@@ -51,7 +51,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build Flutter Web
-        run: flutter build web --release --base-href "/mandi-intelligence-app/"
+        run: flutter build web --release --base-href "/"
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
