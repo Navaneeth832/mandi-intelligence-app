@@ -45,11 +45,28 @@ with engine.begin() as conn:
     )
     """))
 
-    batch_id=conn.execute(text("""
-    INSERT INTO prediction_batches(prediction_date,prediction_time,model_version,created_at)
-    VALUES(:d,'09:00:00','mock-v4',NOW())
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
+    today = now.date()
+    current_time = now.time().replace(microsecond=0)
+
+    batch_id = conn.execute(text("""
+    INSERT INTO prediction_batches(
+        prediction_date,
+        prediction_time,
+        model_version,
+        created_at
+    )
+    VALUES(
+        :d,
+        :t,
+        'mock-v4',
+        NOW()
+    )
     RETURNING id
-    """),{"d":today}).scalar_one()
+    """), {
+        "d": today,
+        "t": current_time,
+    }).scalar_one()
 
     conn.execute(text("""
     SELECT setval(
