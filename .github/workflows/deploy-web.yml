@@ -1,11 +1,13 @@
 name: Deploy Flutter Web
 
 on:
-  workflow_run:
-    workflows:
-      - Build and Release APK
-    types:
-      - completed
+    workflow_run:
+      workflows:
+        - Build and Release APK
+      types:
+        - completed
+  
+    workflow_dispatch:
 
 permissions:
   contents: read
