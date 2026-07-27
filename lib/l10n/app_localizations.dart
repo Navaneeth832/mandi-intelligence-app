@@ -870,6 +870,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Markets in your district sorted by highest predicted price'**
   String get marketsSortedByHighestPredictedPrice;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password?'**
+  String get forgotPassword;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your registered email or mobile number to receive an OTP.'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @sendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send OTP'**
+  String get sendOtp;
+
+  /// No description provided for @sendingOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending OTP...'**
+  String get sendingOtp;
+
+  /// No description provided for @enterOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter OTP'**
+  String get enterOtp;
+
+  /// No description provided for @verifyOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify OTP'**
+  String get verifyOtp;
+
+  /// No description provided for @verifyingOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying OTP...'**
+  String get verifyingOtp;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @resettingPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting Password...'**
+  String get resettingPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @passwordResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully! Please login with your new password.'**
+  String get passwordResetSuccess;
+
+  /// No description provided for @enterRegisteredIdentifier.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your registered email or mobile number'**
+  String get enterRegisteredIdentifier;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

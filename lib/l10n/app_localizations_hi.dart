@@ -418,4 +418,49 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get marketsSortedByHighestPredictedPrice => 'आपके जिले के बाजार उच्चतम अनुमानित मूल्य के अनुसार क्रमबद्ध';
+
+  @override
+  String get forgotPassword => 'पासवर्ड भूल गए?';
+
+  @override
+  String get forgotPasswordTitle => 'पासवर्ड रीसेट करें';
+
+  @override
+  String get forgotPasswordSubtitle => 'ओटीपी प्राप्त करने के लिए अपना पंजीकृत ईमेल या मोबाइल नंबर दर्ज करें।';
+
+  @override
+  String get sendOtp => 'ओटीपी भेजें';
+
+  @override
+  String get sendingOtp => 'ओटीपी भेजा जा रहा है...';
+
+  @override
+  String get enterOtp => 'ओटीपी दर्ज करें';
+
+  @override
+  String get verifyOtp => 'ओटीपी सत्यापित करें';
+
+  @override
+  String get verifyingOtp => 'सत्यापित हो रहा है...';
+
+  @override
+  String get resetPassword => 'पासवर्ड रीसेट करें';
+
+  @override
+  String get resettingPassword => 'पासवर्ड रीसेट हो रहा है...';
+
+  @override
+  String get newPassword => 'नया पासवर्ड';
+
+  @override
+  String get confirmNewPassword => 'नए पासवर्ड की पुष्टि करें';
+
+  @override
+  String get passwordsDoNotMatch => 'पासवर्ड मेल नहीं खाते';
+
+  @override
+  String get passwordResetSuccess => 'पासवर्ड सफलतापूर्वक रीसेट हो गया! कृपया अपने नए पासवर्ड से लॉगिन करें।';
+
+  @override
+  String get enterRegisteredIdentifier => 'कृपया अपना पंजीकृत ईमेल या मोबाइल नंबर दर्ज करें';
 }

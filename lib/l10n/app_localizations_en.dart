@@ -418,4 +418,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketsSortedByHighestPredictedPrice => 'Markets in your district sorted by highest predicted price';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get forgotPasswordTitle => 'Reset Password';
+
+  @override
+  String get forgotPasswordSubtitle => 'Enter your registered email or mobile number to receive an OTP.';
+
+  @override
+  String get sendOtp => 'Send OTP';
+
+  @override
+  String get sendingOtp => 'Sending OTP...';
+
+  @override
+  String get enterOtp => 'Enter OTP';
+
+  @override
+  String get verifyOtp => 'Verify OTP';
+
+  @override
+  String get verifyingOtp => 'Verifying OTP...';
+
+  @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get resettingPassword => 'Resetting Password...';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get passwordResetSuccess => 'Password reset successfully! Please login with your new password.';
+
+  @override
+  String get enterRegisteredIdentifier => 'Please enter your registered email or mobile number';
 }

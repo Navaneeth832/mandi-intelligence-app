@@ -418,4 +418,49 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get marketsSortedByHighestPredictedPrice => 'നിങ്ങളുടെ ജില്ലയിലെ ഉയർന്ന പ്രവചിത വിലയുടെ ക്രമത്തിൽ വിപണികൾ';
+
+  @override
+  String get forgotPassword => 'പാസ്‌വേഡ് മറന്നുപോയോ?';
+
+  @override
+  String get forgotPasswordTitle => 'പാസ്‌വേഡ് റീസെറ്റ് ചെയ്യുക';
+
+  @override
+  String get forgotPasswordSubtitle => 'ഒടിപി ലഭിക്കുന്നതിനായി നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക.';
+
+  @override
+  String get sendOtp => 'ഒടിപി അയക്കുക';
+
+  @override
+  String get sendingOtp => 'ഒടിപി അയക്കുന്നു...';
+
+  @override
+  String get enterOtp => 'ഒടിപി നൽകുക';
+
+  @override
+  String get verifyOtp => 'ഒടിപി പരിശോധിക്കുക';
+
+  @override
+  String get verifyingOtp => 'പരിശോധിക്കുന്നു...';
+
+  @override
+  String get resetPassword => 'പാസ്‌വേഡ് റീസെറ്റ് ചെയ്യുക';
+
+  @override
+  String get resettingPassword => 'റീസെറ്റ് ചെയ്യുന്നു...';
+
+  @override
+  String get newPassword => 'പുതിയ പാസ്‌വേഡ്';
+
+  @override
+  String get confirmNewPassword => 'പുതിയ പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക';
+
+  @override
+  String get passwordsDoNotMatch => 'പാസ്‌വേഡുകൾ ചേരുന്നില്ല';
+
+  @override
+  String get passwordResetSuccess => 'പാസ്‌വേഡ് വിജയകരമായി റീസെറ്റ് ചെയ്തു! നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക.';
+
+  @override
+  String get enterRegisteredIdentifier => 'നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക';
 }
