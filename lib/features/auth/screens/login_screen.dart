@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import 'package:mandi_intelligence_app/main_screen.dart';
+import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'signup_screen.dart';
 import '../providers/auth_provider.dart';
+
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -130,21 +132,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       }
                                             ),
                       const SizedBox(height: 12.0),
-                      /*Align(
+                      Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(
+                          onPressed: () {
+                            ref.read(authProvider.notifier).clearError();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            AppLocalizations.of(context)?.forgotPassword ?? 'Forgot Password?',
+                            style: const TextStyle(
                               color: _primaryGreen,
                               fontSize: 13.0,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      ),*/
+                      ),
                       const SizedBox(height: 24.0),
+
                       if (displayError!= null) ...[
                         Container(
                           width: double.infinity,

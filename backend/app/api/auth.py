@@ -7,6 +7,7 @@ from app.schemas.user import (
     UserLogin,
     UserResponse,
     VerifyOTPRequest,
+    ResetPasswordRequest,
 )
 from app.services.auth_service import AuthService
 from app.core.database import get_db
@@ -50,6 +51,51 @@ def verify_otp(
         )
 
 
+@router.post("/forgot-password/send-otp")
+def send_forgot_password_otp(
+    request: SendOTPRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        return AuthService.send_forgot_password_otp(db, request)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.post("/forgot-password/verify-otp")
+def verify_forgot_password_otp(
+    request: VerifyOTPRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        return AuthService.verify_forgot_password_otp(db, request)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.post("/forgot-password/reset-password")
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        return AuthService.reset_password(db, request)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
 @router.post("/register", response_model=UserResponse)
 def register(
     user: UserRegister,
@@ -84,3 +130,4 @@ def get_profile(
     current_user: User = Depends(get_current_user)
 ):
     return current_user
+

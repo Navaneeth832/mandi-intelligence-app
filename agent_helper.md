@@ -20,6 +20,7 @@ This document serves as the persistent memory and architectural blueprint of the
   - **Frontend**: Full-featured Flutter mobile application with complete translations, riverpod caching, and fl_chart integrations.
 - **Major completed features**:
   - OTP verification flow with temporary verification tokens.
+  - Forgot Password OTP verification and password reset flow.
   - Dual price ingestion (Agmarknet V2 Private API + Data.gov.in V1 Fallback API).
   - Advanced fuzzy matching normalization for Markets, Commodities, and Varieties.
   - Multi-language localization (English, Hindi, Malayalam) for both App UI and DB-driven entity names.
@@ -71,7 +72,7 @@ This document serves as the persistent memory and architectural blueprint of the
       - `market_directory.py`: Paginated directory of active markets.
       - `price_history.py`: Returns historical prices (last 7 data points).
       - `states.py`: Returns states having active markets.
-    - `auth.py`: Direct authentication endpoints (OTP send, verify, login, register).
+    - `auth.py`: Direct authentication endpoints (OTP send, verify, login, register, forgot-password send-otp, verify-otp, reset-password).
     - `crop_preferences.py`: Editing/fetching user crop preferences.
     - `profile.py`: Profile details retrieval and updates.
   - `core/`: Config (`config.py`), DB Engine (`database.py`), Dependencies (`dependencies.py`), Security utilities (`security.py`).
@@ -79,7 +80,7 @@ This document serves as the persistent memory and architectural blueprint of the
   - `repositories/`: Custom SQL queries, currently houses `mandi_price_repository.py`.
   - `schemas/`: Pydantic validation schemas.
   - `services/`: Core logic:
-    - `auth_service.py`: Verification logic, user creation, JWT issuance.
+    - `auth_service.py`: Verification logic, user creation, password reset, JWT issuance.
     - `crop_preference_service.py`: Mapping user crops preferences.
     - `email_service.py`: Resend email wrapper.
     - `otp_service.py`: Generates and verifies transient OTPs.
@@ -103,7 +104,7 @@ This document serves as the persistent memory and architectural blueprint of the
   - `repositories/`: Repos bridging services and UI (`auth_repository.dart`, `mandi_repository.dart`).
   - `services/`: API communication wrappers (`auth_api_service.dart`, `mandi_api_service.dart`).
 - `lib/features/`
-  - `auth/`: Login/signup screens, widgets, onboarding screens, and providers (`auth_provider.dart`, `profile_notifier.dart`).
+  - `auth/`: Login/signup/forgot-password screens, widgets, onboarding screens, and providers (`auth_provider.dart`, `profile_notifier.dart`).
   - `mandi_prices/`: Home Screen, Market Directory Screen, Detailed Charts, and filters (`mandi_prices_provider.dart`, `filter_selection_provider.dart`).
 - `lib/l10n/`: Multi-language ARB definitions (en, hi, ml).
 
@@ -146,9 +147,13 @@ graph TD
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `/auth/send-otp` | `POST` | Generate and dispatch verification OTP | `SendOTPRequest` | `{"message", "identifier", "registration_method"}` | `auth.py`, `auth_service.py`, `otp_service.py` | `otp_verifications` |
 | `/auth/verify-otp` | `POST` | Validate OTP; issue temporary token | `VerifyOTPRequest` | `{"verification_token", "token_type", "expires_in_seconds"}` | `auth.py`, `auth_service.py`, `verification_token_service.py` | `otp_verifications`, `verification_tokens` |
+| `/auth/forgot-password/send-otp` | `POST` | Generate and dispatch password reset OTP | `SendOTPRequest` | `{"message", "identifier", "registration_method"}` | `auth.py`, `auth_service.py`, `otp_service.py` | `users`, `otp_verifications` |
+| `/auth/forgot-password/verify-otp` | `POST` | Validate password reset OTP; issue reset verification token | `VerifyOTPRequest` | `{"verification_token", "token_type", "expires_in_seconds"}` | `auth.py`, `auth_service.py`, `verification_token_service.py` | `users`, `otp_verifications`, `verification_tokens` |
+| `/auth/forgot-password/reset-password` | `POST` | Reset user password using verification token | `ResetPasswordRequest` | `{"message"}` | `auth.py`, `auth_service.py` | `verification_tokens`, `users` |
 | `/auth/register` | `POST` | Create verified user profile using verification token | `UserRegister` | `UserResponse` | `auth.py`, `auth_service.py` | `verification_tokens`, `users` |
 | `/auth/login` | `POST` | Authenticate credentials; return JWT | `UserLogin` | `{"access_token", "token_type", "user"}` | `auth.py`, `auth_service.py` | `users` |
 | `/auth/me` | `GET` | Retrieve session profile info | Bearer Auth Header | `UserResponse` | `auth.py`, `dependencies.py` | `users` |
+
 | `/profile` | `GET` | Get logged-in user profile with state/district | Bearer Auth Header | `UserResponse` | `profile.py`, `profile_service.py` | `users`, `states`, `districts` |
 | `/profile` | `PUT` | Edit user profile (name, state, district, language) | `UserProfileUpdate` | `UserResponse` | `profile.py`, `profile_service.py` | `users` |
 | `/profile/preferences` | `GET` | List user tracked crop preferences | Bearer Auth Header | `List[CropPreferenceResponse]` | `crop_preferences.py`, `crop_preference_service.py` | `user_crop_preferences`, `commodities` |
@@ -322,21 +327,26 @@ All primary schema definitions exist in `backend/app/models/`.
 
 ### Screens & Widget Inventory
 
-1. **`LoginScreen`** (`login_screen.dart`): Collects credentials (email/phone and password), directs to sign up or logs in.
-2. **`SignupScreen`** (`signup_screen.dart`): Multiphasic registration flow.
+1. **`LoginScreen`** (`login_screen.dart`): Collects credentials (email/phone and password), directs to sign up, forgot password, or logs in.
+2. **`ForgotPasswordScreen`** (`forgot_password_screen.dart`): Multi-stage password reset flow.
+   - Phase 1: Inputs registered email/phone. Calls `/auth/forgot-password/send-otp`.
+   - Phase 2: User inputs OTP. Calls `/auth/forgot-password/verify-otp` and receives a reset verification token.
+   - Phase 3: User inputs new password and confirmation. Calls `/auth/forgot-password/reset-password`, pops back to `LoginScreen` upon success.
+3. **`SignupScreen`** (`signup_screen.dart`): Multiphasic registration flow.
    - Phase 1: Inputs email/phone. Calls `/auth/send-otp`.
    - Phase 2: User inputs OTP. Calls `/auth/verify-otp` and receives a verification token.
    - Phase 3: Input Name and Password. Sends token and user details to `/auth/register` to finalize.
-3. **`OnboardingScreen`** (`onboarding_screen.dart`): Profile completion configuration. Contains selections for State, District, Preferred Language, and crop tags (multiselection grid). Also functions as the profile editing form when `isEditMode = true`.
-4. **`HomeScreen`** (`home_screen.dart`): Dashboard. Renders:
+4. **`OnboardingScreen`** (`onboarding_screen.dart`): Profile completion configuration. Contains selections for State, District, Preferred Language, and crop tags (multiselection grid). Also functions as the profile editing form when `isEditMode = true`.
+5. **`HomeScreen`** (`home_screen.dart`): Dashboard. Renders:
    - Profile summary (Greeting + localized tracked commodity tags).
    - Localized dropdowns for States, Districts, Markets, and Commodities.
    - Paginated ListView of `PriceCard` elements showing modal, minimum, and maximum prices for the current day.
-5. **`FilterResultsScreen`** (`filter_results_screen.dart`): Renders results of user-customized dropdown values.
-6. **`MarketsScreen`** (`markets_screen.dart`): Displays a searchable index of mandis. Users must select a State first to initialize the list.
-7. **`MarketDirectoryDetailScreen`** (`market_directory_detail_screen.dart`): Displays specific market metadata. Fetches the list of active commodities via `/markets/{market_id}/commodities`. Tapping a commodity launches `FilterResultsScreen` pre-filtered for that market and crop.
-8. **`MarketDetailScreen`** (`market_detail_screen.dart`): Detailed commodity views. Integrates `fl_chart` to render a 7-day price timeline.
-9. **`ProfileScreen`** (`profile_screen.dart`): Shows user details (avatar, name, email/phone, region, language) and tracked crops. Provides action buttons to Edit Profile (pushes `OnboardingScreen(isEditMode: true)`) and Logout.
+6. **`FilterResultsScreen`** (`filter_results_screen.dart`): Renders results of user-customized dropdown values.
+7. **`MarketsScreen`** (`markets_screen.dart`): Displays a searchable index of mandis. Users must select a State first to initialize the list.
+8. **`MarketDirectoryDetailScreen`** (`market_directory_detail_screen.dart`): Displays specific market metadata. Fetches the list of active commodities via `/markets/{market_id}/commodities`. Tapping a commodity launches `FilterResultsScreen` pre-filtered for that market and crop.
+9. **`MarketDetailScreen`** (`market_detail_screen.dart`): Detailed commodity views. Integrates `fl_chart` to render a 7-day price timeline.
+10. **`ProfileScreen`** (`profile_screen.dart`): Shows user details (avatar, name, email/phone, region, language) and tracked crops. Provides action buttons to Edit Profile (pushes `OnboardingScreen(isEditMode: true)`) and Logout.
+
 
 ---
 
@@ -875,3 +885,36 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **UI Screens**:
   - Converted `ForecastsScreen` in [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart) to a stateful consumer widget.
   - Placed the horizontal row of `FilterDropdownButton<Market>` and `FilterDropdownButton<Commodity>` with corresponding action buttons under the app bar title.
+
+---
+
+# 28. Forgot Password Feature (Implemented July 2026)
+
+### Feature Overview
+- **Forgot Password Flow**: Implemented a multi-step password recovery mechanism for registered users.
+- **Redirection & Login**: Clicking "Forgot Password?" on `LoginScreen` redirects the user to `ForgotPasswordScreen`.
+- **OTP Verification & Transient Tokens**:
+  - Phase 1: User inputs their registered identifier (email or mobile number) and clicks "Send OTP".
+  - Phase 2: System dispatches a 6-digit OTP to the registered identifier (email via Resend, phone via console stub). User enters the OTP in the space provided and clicks "Verify OTP".
+  - Phase 3: Verification issues a transient `VerificationToken` with purpose `"reset_password"`. User enters their new password and password confirmation, then submits.
+  - Redirect: On successful password reset, the app displays a success feedback banner, resets transient forgot password state, and pops back to `LoginScreen`, allowing the user to sign in with their new password.
+
+### Backend Endpoints (`backend/app/`)
+- `POST /auth/forgot-password/send-otp`: Accepts `SendOTPRequest`. Validates that an account exists with the provided email/phone number, creates an OTP with purpose `"reset_password"`, and dispatches it via Resend / SMS.
+- `POST /auth/forgot-password/verify-otp`: Accepts `VerifyOTPRequest`. Validates OTP for purpose `"reset_password"` and generates a transient verification token.
+- `POST /auth/forgot-password/reset-password`: Accepts `ResetPasswordRequest` (`identifier`, `verification_token`, `new_password`). Validates the verification token, hashes the new password, updates `password_hash` in `users` table, and invalidates the token.
+
+### Frontend Data & State Management (`lib/`)
+- **Data Models**:
+  - Added `ResetPasswordRequest` model in [reset_password_request.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/models/auth/reset_password_request.dart).
+- **Service & Repository**:
+  - Added `sendForgotPasswordOTP`, `verifyForgotPasswordOTP`, and `resetPassword` methods in `AuthApiService` ([auth_api_service.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/services/auth_api_service.dart)) and `AuthRepository` ([auth_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/auth_repository.dart)).
+- **Riverpod State Management**:
+  - Extended `AuthState` and `AuthNotifier` in [auth_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/auth/providers/auth_provider.dart) with `forgotPasswordIdentifier`, `forgotPasswordToken`, `forgotPasswordOtpVerified`, `isForgotPasswordSendingOtp`, `isForgotPasswordVerifyingOtp`, and `isResettingPassword`.
+  - Added `sendForgotPasswordOtp`, `verifyForgotPasswordOtp`, `resetPassword`, and `resetForgotPasswordFlow` methods.
+- **UI Screens & Widgets**:
+  - Activated "Forgot Password?" button on [login_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/auth/screens/login_screen.dart).
+  - Created [forgot_password_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/auth/screens/forgot_password_screen.dart) supporting all 3 phases with Material 3 design and localization.
+- **Localization**:
+  - Added multi-language keys (`forgotPassword`, `forgotPasswordTitle`, `forgotPasswordSubtitle`, `sendOtp`, `sendingOtp`, `enterOtp`, `verifyOtp`, `verifyingOtp`, `resetPassword`, `resettingPassword`, `newPassword`, `confirmNewPassword`, `passwordsDoNotMatch`, `passwordResetSuccess`, `enterRegisteredIdentifier`) in `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
+

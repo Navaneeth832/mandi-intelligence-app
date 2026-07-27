@@ -27,6 +27,13 @@ class UserLogin(BaseModel):
     password: str
 
 
+class ResetPasswordRequest(BaseModel):
+    identifier: str
+    verification_token: str
+    new_password: str
+
+
+
 class UserProfileUpdate(BaseModel):
     name: str
     state_id: int | None = None

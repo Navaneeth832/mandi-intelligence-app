@@ -10,6 +10,7 @@ from app.schemas.user import (
     UserRegister,
     UserLogin,
     VerifyOTPRequest,
+    ResetPasswordRequest,
 )
 from app.core.security import (
     hash_password,
@@ -21,6 +22,8 @@ from app.services.verification_token_service import VerificationTokenService
 from app.utils.auth_identifiers import IdentifierType, normalize_identifier
 
 REGISTRATION_PURPOSE = "registration"
+RESET_PASSWORD_PURPOSE = "reset_password"
+
 
 
 class AuthService:
@@ -149,6 +152,91 @@ class AuthService:
             "token_type": "bearer",
             "user": user,
         }
+
+    @staticmethod
+    def send_forgot_password_otp(db: Session, request: SendOTPRequest) -> dict[str, str]:
+        """Create and send an OTP for password reset of an existing user."""
+
+        identifier, identifier_type = normalize_identifier(request.identifier)
+
+        user = AuthService._get_user_by_identifier(db, identifier)
+        if not user:
+            raise ValueError("No account found registered with this email or mobile number")
+
+        otp = OTPService.create_otp(
+            db,
+            identifier,
+            RESET_PASSWORD_PURPOSE,
+        )
+
+        if identifier_type == IdentifierType.EMAIL:
+            OTPService.send_email_otp(identifier, otp)
+        else:
+            OTPService.send_sms_otp(identifier, otp)
+
+        return {
+            "message": "OTP sent successfully",
+            "identifier": identifier,
+            "registration_method": identifier_type.value,
+        }
+
+    @staticmethod
+    def verify_forgot_password_otp(db: Session, request: VerifyOTPRequest) -> dict[str, object]:
+        """Verify password reset OTP and issue transient reset verification token."""
+
+        identifier, _ = normalize_identifier(request.identifier)
+
+        user = AuthService._get_user_by_identifier(db, identifier)
+        if not user:
+            raise ValueError("No account found registered with this email or mobile number")
+
+        OTPService.verify_otp(
+            db,
+            identifier,
+            request.otp,
+            RESET_PASSWORD_PURPOSE,
+        )
+
+        verification_token = VerificationTokenService.create_verification_token(
+            db,
+            identifier,
+            RESET_PASSWORD_PURPOSE,
+        )
+
+        return {
+            "verification_token": verification_token,
+            "token_type": "reset_password_verification",
+            "expires_in_seconds": VerificationTokenService.TOKEN_EXPIRY_MINUTES * 60,
+        }
+
+    @staticmethod
+    def reset_password(db: Session, request: ResetPasswordRequest) -> dict[str, str]:
+        """Reset user password after validating the password reset verification token."""
+
+        identifier, _ = normalize_identifier(request.identifier)
+
+        user = AuthService._get_user_by_identifier(db, identifier)
+        if not user:
+            raise ValueError("No account found registered with this email or mobile number")
+
+        verification_token = VerificationTokenService.verify_verification_token(
+            db,
+            identifier,
+            request.verification_token,
+            RESET_PASSWORD_PURPOSE,
+        )
+
+        user.password_hash = hash_password(request.new_password)
+        VerificationTokenService.invalidate_token(db, verification_token)
+
+        try:
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            raise ValueError("Failed to update password. Please try again.") from exc
+
+        return {"message": "Password reset successfully"}
+
 
     @staticmethod
     def _get_user_by_identifier(

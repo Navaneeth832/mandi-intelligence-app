@@ -15,12 +15,20 @@ class AuthState {
   final bool isSendingOtp;
   final bool isVerifyingOtp;
   final bool isRegistering;
+  final bool isForgotPasswordSendingOtp;
+  final bool isForgotPasswordVerifyingOtp;
+  final bool isResettingPassword;
   final String? error;
   final bool isAuthenticated;
   final String? signupIdentifier;
   final String? signupRegistrationMethod;
   final String? verificationToken;
   final bool otpVerified;
+
+  final String? forgotPasswordIdentifier;
+  final String? forgotPasswordRegistrationMethod;
+  final String? forgotPasswordToken;
+  final bool forgotPasswordOtpVerified;
 
   AuthState({
     this.currentUser,
@@ -29,20 +37,38 @@ class AuthState {
     this.isSendingOtp = false,
     this.isVerifyingOtp = false,
     this.isRegistering = false,
+    this.isForgotPasswordSendingOtp = false,
+    this.isForgotPasswordVerifyingOtp = false,
+    this.isResettingPassword = false,
     this.error,
     this.isAuthenticated = false,
     this.signupIdentifier,
     this.signupRegistrationMethod,
     this.verificationToken,
     this.otpVerified = false,
+    this.forgotPasswordIdentifier,
+    this.forgotPasswordRegistrationMethod,
+    this.forgotPasswordToken,
+    this.forgotPasswordOtpVerified = false,
   });
 
   bool get isBusy =>
-      isInitializing || isLoginLoading || isSendingOtp || isVerifyingOtp || isRegistering;
+      isInitializing ||
+      isLoginLoading ||
+      isSendingOtp ||
+      isVerifyingOtp ||
+      isRegistering ||
+      isForgotPasswordSendingOtp ||
+      isForgotPasswordVerifyingOtp ||
+      isResettingPassword;
 
   bool get hasRequestedOtp => signupIdentifier != null;
 
   bool get canRegister => otpVerified && verificationToken != null;
+
+  bool get hasRequestedForgotPasswordOtp => forgotPasswordIdentifier != null;
+
+  bool get canResetPassword => forgotPasswordOtpVerified && forgotPasswordToken != null;
 
   AuthState copyWith({
     UserProfile? currentUser,
@@ -51,12 +77,19 @@ class AuthState {
     bool? isSendingOtp,
     bool? isVerifyingOtp,
     bool? isRegistering,
+    bool? isForgotPasswordSendingOtp,
+    bool? isForgotPasswordVerifyingOtp,
+    bool? isResettingPassword,
     Object? error = _unset,
     bool? isAuthenticated,
     Object? signupIdentifier = _unset,
     Object? signupRegistrationMethod = _unset,
     Object? verificationToken = _unset,
     bool? otpVerified,
+    Object? forgotPasswordIdentifier = _unset,
+    Object? forgotPasswordRegistrationMethod = _unset,
+    Object? forgotPasswordToken = _unset,
+    bool? forgotPasswordOtpVerified,
   }) {
     return AuthState(
       currentUser: currentUser ?? this.currentUser,
@@ -65,6 +98,11 @@ class AuthState {
       isSendingOtp: isSendingOtp ?? this.isSendingOtp,
       isVerifyingOtp: isVerifyingOtp ?? this.isVerifyingOtp,
       isRegistering: isRegistering ?? this.isRegistering,
+      isForgotPasswordSendingOtp:
+          isForgotPasswordSendingOtp ?? this.isForgotPasswordSendingOtp,
+      isForgotPasswordVerifyingOtp:
+          isForgotPasswordVerifyingOtp ?? this.isForgotPasswordVerifyingOtp,
+      isResettingPassword: isResettingPassword ?? this.isResettingPassword,
       error: identical(error, _unset) ? this.error : error as String?,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       signupIdentifier: identical(signupIdentifier, _unset)
@@ -77,9 +115,22 @@ class AuthState {
           ? this.verificationToken
           : verificationToken as String?,
       otpVerified: otpVerified ?? this.otpVerified,
+      forgotPasswordIdentifier: identical(forgotPasswordIdentifier, _unset)
+          ? this.forgotPasswordIdentifier
+          : forgotPasswordIdentifier as String?,
+      forgotPasswordRegistrationMethod:
+          identical(forgotPasswordRegistrationMethod, _unset)
+              ? this.forgotPasswordRegistrationMethod
+              : forgotPasswordRegistrationMethod as String?,
+      forgotPasswordToken: identical(forgotPasswordToken, _unset)
+          ? this.forgotPasswordToken
+          : forgotPasswordToken as String?,
+      forgotPasswordOtpVerified:
+          forgotPasswordOtpVerified ?? this.forgotPasswordOtpVerified,
     );
   }
 }
+
 
 class AuthNotifier extends Notifier<AuthState> {
   String _normalizeLanguageCode(String? value) {
@@ -133,6 +184,122 @@ class AuthNotifier extends Notifier<AuthState> {
       isRegistering: false,
     );
   }
+
+  void resetForgotPasswordFlow() {
+    state = state.copyWith(
+      error: null,
+      forgotPasswordIdentifier: null,
+      forgotPasswordRegistrationMethod: null,
+      forgotPasswordToken: null,
+      forgotPasswordOtpVerified: false,
+      isForgotPasswordSendingOtp: false,
+      isForgotPasswordVerifyingOtp: false,
+      isResettingPassword: false,
+    );
+  }
+
+  Future<bool> sendForgotPasswordOtp(String identifier) async {
+    if (state.isForgotPasswordSendingOtp ||
+        state.isForgotPasswordVerifyingOtp ||
+        state.isResettingPassword) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isForgotPasswordSendingOtp: true,
+      error: null,
+      forgotPasswordToken: null,
+      forgotPasswordOtpVerified: false,
+    );
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.sendForgotPasswordOTP(identifier.trim());
+      state = state.copyWith(
+        isForgotPasswordSendingOtp: false,
+        forgotPasswordIdentifier: response.identifier,
+        forgotPasswordRegistrationMethod: response.registrationMethod,
+        forgotPasswordToken: null,
+        forgotPasswordOtpVerified: false,
+        error: null,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isForgotPasswordSendingOtp: false,
+        error: _formatError(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyForgotPasswordOtp(String otp) async {
+    final identifier = state.forgotPasswordIdentifier;
+    if (identifier == null ||
+        state.isForgotPasswordSendingOtp ||
+        state.isForgotPasswordVerifyingOtp ||
+        state.isResettingPassword) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isForgotPasswordVerifyingOtp: true,
+      error: null,
+    );
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.verifyForgotPasswordOTP(identifier, otp.trim());
+      state = state.copyWith(
+        isForgotPasswordVerifyingOtp: false,
+        forgotPasswordToken: response.verificationToken,
+        forgotPasswordOtpVerified: true,
+        error: null,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isForgotPasswordVerifyingOtp: false,
+        error: _formatError(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String newPassword) async {
+    final identifier = state.forgotPasswordIdentifier;
+    final token = state.forgotPasswordToken;
+
+    if (identifier == null || token == null || !state.forgotPasswordOtpVerified) {
+      state = state.copyWith(error: 'Please verify your OTP before resetting password.');
+      return false;
+    }
+
+    if (state.isForgotPasswordSendingOtp ||
+        state.isForgotPasswordVerifyingOtp ||
+        state.isResettingPassword) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isResettingPassword: true,
+      error: null,
+    );
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.resetPassword(identifier, token, newPassword);
+      resetForgotPasswordFlow();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isResettingPassword: false,
+        error: _formatError(e),
+      );
+      return false;
+    }
+  }
+
 
   Future<UserProfile?> _loadAuthenticatedUser() async {
     final repo = ref.read(authRepositoryProvider);

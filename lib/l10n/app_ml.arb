@@ -188,5 +188,20 @@
   "explorePlaceholderTitle": "മറ്റ് വിപണികൾ പരിശോധിക്കുക",
   "explorePlaceholderMessage": "വിപണികളും വിളകളും തിരയാനുള്ള സൗകര്യം അടുത്ത അപ്‌ഡേറ്റിൽ ലഭ്യമാകും.",
   "sevenDayTrendChart": "7 ദിവസത്തെ ട്രെൻഡ് ചാർട്ട്",
-  "marketsSortedByHighestPredictedPrice": "നിങ്ങളുടെ ജില്ലയിലെ ഉയർന്ന പ്രവചിത വിലയുടെ ക്രമത്തിൽ വിപണികൾ"
-}
+  "marketsSortedByHighestPredictedPrice": "നിങ്ങളുടെ ജില്ലയിലെ ഉയർന്ന പ്രവചിത വിലയുടെ ക്രമത്തിൽ വിപണികൾ",
+  "forgotPassword": "പാസ്‌വേഡ് മറന്നുപോയോ?",
+  "forgotPasswordTitle": "പാസ്‌വേഡ് റീസെറ്റ് ചെയ്യുക",
+  "forgotPasswordSubtitle": "ഒടിപി ലഭിക്കുന്നതിനായി നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക.",
+  "sendOtp": "ഒടിപി അയക്കുക",
+  "sendingOtp": "ഒടിപി അയക്കുന്നു...",
+  "enterOtp": "ഒടിപി നൽകുക",
+  "verifyOtp": "ഒടിപി പരിശോധിക്കുക",
+  "verifyingOtp": "പരിശോധിക്കുന്നു...",
+  "resetPassword": "പാസ്‌വേഡ് റീസെറ്റ് ചെയ്യുക",
+  "resettingPassword": "റീസെറ്റ് ചെയ്യുന്നു...",
+  "newPassword": "പുതിയ പാസ്‌വേഡ്",
+  "confirmNewPassword": "പുതിയ പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക",
+  "passwordsDoNotMatch": "പാസ്‌വേഡുകൾ ചേരുന്നില്ല",
+  "passwordResetSuccess": "പാസ്‌വേഡ് വിജയകരമായി റീസെറ്റ് ചെയ്തു! നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക.",
+  "enterRegisteredIdentifier": "നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക"
+}

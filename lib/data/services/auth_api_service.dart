@@ -70,6 +70,60 @@ class AuthApiService {
     return VerifyOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  Future<SendOtpResponse> sendForgotPasswordOTP(String identifier) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/send-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'identifier': identifier}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to send OTP'),
+      );
+    }
+
+    return SendOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<VerifyOtpResponse> verifyForgotPasswordOTP(String identifier, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/verify-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'identifier': identifier,
+        'otp': otp,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to verify OTP'),
+      );
+    }
+
+    return VerifyOtpResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<void> resetPassword(String identifier, String verificationToken, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'identifier': identifier,
+        'verification_token': verificationToken,
+        'new_password': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _extractErrorMessage(response, 'Failed to reset password'),
+      );
+    }
+  }
+
+
   Future<UserProfile> register(SignupRequest request) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/register'),

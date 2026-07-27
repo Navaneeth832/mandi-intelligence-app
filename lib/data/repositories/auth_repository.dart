@@ -21,6 +21,19 @@ class AuthRepository {
     return _apiService.verifyOTP(identifier, otp);
   }
 
+  Future<SendOtpResponse> sendForgotPasswordOTP(String identifier) async {
+    return _apiService.sendForgotPasswordOTP(identifier);
+  }
+
+  Future<VerifyOtpResponse> verifyForgotPasswordOTP(String identifier, String otp) async {
+    return _apiService.verifyForgotPasswordOTP(identifier, otp);
+  }
+
+  Future<void> resetPassword(String identifier, String verificationToken, String newPassword) async {
+    return _apiService.resetPassword(identifier, verificationToken, newPassword);
+  }
+
+
   Future<UserProfile> register(SignupRequest request) async {
     return _apiService.register(request);
   }
