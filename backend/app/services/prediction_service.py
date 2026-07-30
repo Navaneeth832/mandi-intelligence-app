@@ -49,18 +49,22 @@ def get_predictions_for_user(
     page: int = 1,
     page_size: int = 15,
     commodity_id: int | None = None,
-    market_id: int | None = None
+    market_id: int | None = None,
+    commodity_ids: list[int] | None = None,
+    market_ids: list[int] | None = None
 ) -> dict:
     """
-    Retrieve and process predictions for the user's preferred crops, paginated and sorted.
-    If commodity_id is explicitly specified, queries predictions for that commodity.
+    Retrieve and process predictions, paginated and sorted.
+    If commodity_ids or commodity_id is explicitly specified, queries predictions for those commodities.
     """
-    # 1. Load crop IDs (override with commodity_id if provided)
-    if commodity_id is not None:
-        commodity_ids = [commodity_id]
+    # 1. Load crop IDs (override with commodity_ids / commodity_id if provided)
+    if commodity_ids is not None and len(commodity_ids) > 0:
+        target_commodity_ids = commodity_ids
+    elif commodity_id is not None:
+        target_commodity_ids = [commodity_id]
     else:
-        commodity_ids = [pref.commodity_id for pref in current_user.crop_preferences]
-        if not commodity_ids:
+        target_commodity_ids = [pref.commodity_id for pref in current_user.crop_preferences]
+        if not target_commodity_ids:
             return {
                 "page": page,
                 "page_size": page_size,
@@ -68,7 +72,7 @@ def get_predictions_for_user(
                 "has_next": False,
                 "predictions": []
             }
-        commodity_ids = commodity_ids[:5]
+        target_commodity_ids = target_commodity_ids[:5]
 
     # 2. Find today's latest prediction batch
     batch = get_latest_batch(db)
@@ -86,11 +90,12 @@ def get_predictions_for_user(
     prediction_rows, paginated_combos, total = get_predictions_with_details_paginated(
         db,
         batch.id,
-        commodity_ids,
+        target_commodity_ids,
         page=page,
         page_size=page_size,
         commodity_id=commodity_id,
-        market_id=market_id
+        market_id=market_id,
+        market_ids=market_ids
     )
     if not prediction_rows:
         return {

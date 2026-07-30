@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/widgets/commodity_image_widget.dart';
-import '../../../data/models/commodity_model.dart';
 import '../providers/forecast_provider.dart';
 import 'commodity_advisory_screen.dart';
-import 'explore_placeholder_screen.dart';
+import 'explore_more_commodities_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class ForecastsScreen extends ConsumerWidget {
@@ -275,7 +274,7 @@ class ForecastsScreen extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ExplorePlaceholderScreen(),
+                              builder: (context) => const ExploreMoreCommoditiesScreen(),
                             ),
                           );
                         },

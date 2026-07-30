@@ -21,6 +21,8 @@ class ForecastRepository {
     int pageSize = 15,
     int? commodityId,
     int? marketId,
+    List<int>? commodityIds,
+    List<int>? marketIds,
   }) async {
     // 1. Simulate loading state
     if (simulateForecastLoading) {
@@ -50,7 +52,7 @@ class ForecastRepository {
     }
 
     // 5. Construct Predictions API endpoint URI
-    final queryParams = <String, String>{
+    final queryParams = <String, dynamic>{
       'page': page.toString(),
       'page_size': pageSize.toString(),
     };
@@ -62,6 +64,12 @@ class ForecastRepository {
     }
     if (marketId != null) {
       queryParams['market_id'] = marketId.toString();
+    }
+    if (commodityIds != null && commodityIds.isNotEmpty) {
+      queryParams['commodity_ids'] = commodityIds.map((e) => e.toString()).toList();
+    }
+    if (marketIds != null && marketIds.isNotEmpty) {
+      queryParams['market_ids'] = marketIds.map((e) => e.toString()).toList();
     }
 
     final uri = Uri.parse('$baseUrl/predictions/').replace(queryParameters: queryParams);

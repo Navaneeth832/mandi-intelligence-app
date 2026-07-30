@@ -463,4 +463,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterRegisteredIdentifier => 'Please enter your registered email or mobile number';
+
+  @override
+  String get exploreMoreCommodities => 'Explore More Commodities';
+
+  @override
+  String get exploreAdvisoryResults => 'Explore Advisory Results';
+
+  @override
+  String get selectCommodities => 'Select Commodities';
+
+  @override
+  String get selectMarkets => 'Select Markets';
+
+  @override
+  String get showAdvisory => 'Show Advisory';
+
+  @override
+  String get allActiveCommodities => 'All Active Commodities';
+
+  @override
+  String get pleaseSelectCommodity => 'Please select at least one commodity';
 }

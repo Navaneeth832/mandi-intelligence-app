@@ -929,4 +929,41 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **Grade & Variety Scope**: Dynamically extracts available grades and varieties specific to the selected commodity predictions.
 - **Interactive Filtering**: Provides "Apply Filters" and "Clear" buttons to filter forecast cards in real-time or reset filter parameters.
 
+---
+
+# 30. Explore More Commodities Feature (Implemented July 2026)
+
+### Feature Overview
+- **Explore More Commodities Workflow**: Allows users to explore price advisory predictions for any active commodity in the database across selected markets, expanding beyond their saved preferred crops.
+- **Navigation Flow**:
+  - `Advisory Screen` (ForecastsScreen) -> `Explore More Commodities Screen` -> `Explore Advisory Results Screen` -> `Forecast Detail Screen`.
+- **Cascading Filter Selection**:
+  - **State** (Single Select): Loads all active states (`statesProvider`). Selecting a state populates districts.
+  - **District** (Single Select): Loads districts within the state (`districtsProvider`). Selecting a district populates markets.
+  - **Markets** (Multi Select): Searchable multi-select chips for markets in the selected district (`marketsListProvider`).
+  - **Commodity Selection** (Multi Select): Searchable multi-select chips for **ALL active commodities** in the database (`activeCommoditiesProvider` calling `GET /commodities/active`).
+- **Explore Advisory Results Screen**:
+  - Displays top horizontal choice chips for each selected commodity (e.g. Banana, Tomato, Rice).
+  - Tapping a chip dynamically loads advisory cards for that commodity and the selected markets.
+  - Reuses existing `ForecastCard` widgets. Tapping "View Forecast" routes to `ForecastDetailScreen`.
+
+### Backend Extensions (`backend/app/`)
+- **Predictions Route** ([predictions.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/api/routes/predictions.py)):
+  - Extended `GET /predictions/` to accept query parameters `commodity_ids: List[int] = Query(None)` and `market_ids: List[int] = Query(None)`.
+- **Service Layer** ([prediction_service.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/services/prediction_service.py)):
+  - Updated `get_predictions_for_user` to handle `commodity_ids` and `market_ids` lists.
+- **Repository Layer** ([prediction_repository.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/repositories/prediction_repository.py)):
+  - Extended `get_predictions_with_details_paginated` to apply SQL filters `CommodityPrediction.commodity_id.in_(commodity_ids)` and `CommodityPrediction.market_id.in_(market_ids)`.
+
+### Frontend Architecture & Providers (`lib/`)
+- **Repository**: Updated `ForecastRepository.getForecastsForPreferredCrops` ([forecast_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/forecast_repository.dart)) to support `List<int>? commodityIds` and `List<int>? marketIds`.
+- **Riverpod Provider**: Added `explorePredictionsProvider` family in [forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart) to fetch predictions on demand when viewing results.
+- **Screens**:
+  - Created [explore_more_commodities_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/explore_more_commodities_screen.dart) for cascading filters and active commodity selection.
+  - Created [explore_advisory_results_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/explore_advisory_results_screen.dart) for commodity chips and forecast cards.
+  - Updated [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart) to navigate to `ExploreMoreCommoditiesScreen`.
+  - Removed outdated placeholder `explore_placeholder_screen.dart`.
+- **Localization**: Added multi-language keys (`exploreMoreCommodities`, `exploreAdvisoryResults`, `selectCommodities`, `selectMarkets`, `showAdvisory`, `allActiveCommodities`, `pleaseSelectCommodity`) in `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
+
+
 

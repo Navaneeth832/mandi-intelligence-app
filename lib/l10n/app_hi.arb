@@ -203,5 +203,12 @@
   "confirmNewPassword": "नए पासवर्ड की पुष्टि करें",
   "passwordsDoNotMatch": "पासवर्ड मेल नहीं खाते",
   "passwordResetSuccess": "पासवर्ड सफलतापूर्वक रीसेट हो गया! कृपया अपने नए पासवर्ड से लॉगिन करें।",
-  "enterRegisteredIdentifier": "कृपया अपना पंजीकृत ईमेल या मोबाइल नंबर दर्ज करें"
+  "enterRegisteredIdentifier": "कृपया अपना पंजीकृत ईमेल या मोबाइल नंबर दर्ज करें",
+  "exploreMoreCommodities": "अधिक फसलें खोजें",
+  "exploreAdvisoryResults": "फसल सलाह परिणाम",
+  "selectCommodities": "फसलें चुनें",
+  "selectMarkets": "बाज़ार चुनें",
+  "showAdvisory": "सलाह देखें",
+  "allActiveCommodities": "सभी सक्रिय फसलें",
+  "pleaseSelectCommodity": "कृपया कम से कम एक फसल चुनें"
 }

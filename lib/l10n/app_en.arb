@@ -203,6 +203,13 @@
   "confirmNewPassword": "Confirm New Password",
   "passwordsDoNotMatch": "Passwords do not match",
   "passwordResetSuccess": "Password reset successfully! Please login with your new password.",
-  "enterRegisteredIdentifier": "Please enter your registered email or mobile number"
+  "enterRegisteredIdentifier": "Please enter your registered email or mobile number",
+  "exploreMoreCommodities": "Explore More Commodities",
+  "exploreAdvisoryResults": "Explore Advisory Results",
+  "selectCommodities": "Select Commodities",
+  "selectMarkets": "Select Markets",
+  "showAdvisory": "Show Advisory",
+  "allActiveCommodities": "All Active Commodities",
+  "pleaseSelectCommodity": "Please select at least one commodity"
 }
 

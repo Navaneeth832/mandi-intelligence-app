@@ -85,7 +85,8 @@ def get_predictions_with_details_paginated(
     page: int = 1,
     page_size: int = 15,
     commodity_id: int | None = None,
-    market_id: int | None = None
+    market_id: int | None = None,
+    market_ids: list[int] | None = None
 ) -> tuple[list[CommodityPrediction], list[tuple[int, int, int, int]], int]:
     """
     Paginate and sort distinct prediction combinations, and eagerly load detail rows.
@@ -121,7 +122,9 @@ def get_predictions_with_details_paginated(
     # Apply future filters if provided
     if commodity_id is not None:
         base_query = base_query.filter(CommodityPrediction.commodity_id == commodity_id)
-    if market_id is not None:
+    if market_ids is not None and len(market_ids) > 0:
+        base_query = base_query.filter(CommodityPrediction.market_id.in_(market_ids))
+    elif market_id is not None:
         base_query = base_query.filter(CommodityPrediction.market_id == market_id)
         
     # Get distinct count of combinations

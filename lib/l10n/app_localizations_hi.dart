@@ -463,4 +463,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get enterRegisteredIdentifier => 'कृपया अपना पंजीकृत ईमेल या मोबाइल नंबर दर्ज करें';
+
+  @override
+  String get exploreMoreCommodities => 'अधिक फसलें खोजें';
+
+  @override
+  String get exploreAdvisoryResults => 'फसल सलाह परिणाम';
+
+  @override
+  String get selectCommodities => 'फसलें चुनें';
+
+  @override
+  String get selectMarkets => 'बाज़ार चुनें';
+
+  @override
+  String get showAdvisory => 'सलाह देखें';
+
+  @override
+  String get allActiveCommodities => 'सभी सक्रिय फसलें';
+
+  @override
+  String get pleaseSelectCommodity => 'कृपया कम से कम एक फसल चुनें';
 }

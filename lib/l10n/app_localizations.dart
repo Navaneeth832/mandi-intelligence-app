@@ -960,6 +960,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter your registered email or mobile number'**
   String get enterRegisteredIdentifier;
+
+  /// No description provided for @exploreMoreCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore More Commodities'**
+  String get exploreMoreCommodities;
+
+  /// No description provided for @exploreAdvisoryResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Advisory Results'**
+  String get exploreAdvisoryResults;
+
+  /// No description provided for @selectCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Commodities'**
+  String get selectCommodities;
+
+  /// No description provided for @selectMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Markets'**
+  String get selectMarkets;
+
+  /// No description provided for @showAdvisory.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Advisory'**
+  String get showAdvisory;
+
+  /// No description provided for @allActiveCommodities.
+  ///
+  /// In en, this message translates to:
+  /// **'All Active Commodities'**
+  String get allActiveCommodities;
+
+  /// No description provided for @pleaseSelectCommodity.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least one commodity'**
+  String get pleaseSelectCommodity;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

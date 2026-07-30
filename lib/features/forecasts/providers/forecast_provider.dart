@@ -102,3 +102,15 @@ final bestMarketsProvider = FutureProvider.family<List<BestMarket>, int>((ref, c
     language: locale.languageCode,
   );
 });
+
+final explorePredictionsProvider = FutureProvider.family<PaginatedForecastResponse, ({int commodityId, List<int>? marketIds})>((ref, arg) async {
+  final locale = ref.watch(localeProvider);
+  final repository = ref.watch(forecastRepositoryProvider);
+  return repository.getForecastsForPreferredCrops(
+    language: locale.languageCode,
+    page: 1,
+    pageSize: 50,
+    commodityId: arg.commodityId,
+    marketIds: arg.marketIds,
+  );
+});

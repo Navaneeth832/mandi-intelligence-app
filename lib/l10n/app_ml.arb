@@ -203,5 +203,12 @@
   "confirmNewPassword": "പുതിയ പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക",
   "passwordsDoNotMatch": "പാസ്‌വേഡുകൾ ചേരുന്നില്ല",
   "passwordResetSuccess": "പാസ്‌വേഡ് വിജയകരമായി റീസെറ്റ് ചെയ്തു! നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക.",
-  "enterRegisteredIdentifier": "നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക"
+  "enterRegisteredIdentifier": "നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക",
+  "exploreMoreCommodities": "കൂടുതൽ വിളകൾ പരിശോധിക്കുക",
+  "exploreAdvisoryResults": "വിള ഉപദേശ ഫലങ്ങൾ",
+  "selectCommodities": "വിളകൾ തിരഞ്ഞെടുക്കുക",
+  "selectMarkets": "വിപണികൾ തിരഞ്ഞെടുക്കുക",
+  "showAdvisory": "ഉപദേശം കാണുക",
+  "allActiveCommodities": "എല്ലാ സജീവ വിളകളും",
+  "pleaseSelectCommodity": "കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക"
 }

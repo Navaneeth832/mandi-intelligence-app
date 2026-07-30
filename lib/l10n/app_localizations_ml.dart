@@ -463,4 +463,25 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get enterRegisteredIdentifier => 'നിങ്ങളുടെ രജിസ്റ്റർ ചെയ്ത ഇമെയിൽ അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ നൽകുക';
+
+  @override
+  String get exploreMoreCommodities => 'കൂടുതൽ വിളകൾ പരിശോധിക്കുക';
+
+  @override
+  String get exploreAdvisoryResults => 'വിള ഉപദേശ ഫലങ്ങൾ';
+
+  @override
+  String get selectCommodities => 'വിളകൾ തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get selectMarkets => 'വിപണികൾ തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get showAdvisory => 'ഉപദേശം കാണുക';
+
+  @override
+  String get allActiveCommodities => 'എല്ലാ സജീവ വിളകളും';
+
+  @override
+  String get pleaseSelectCommodity => 'കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക';
 }
