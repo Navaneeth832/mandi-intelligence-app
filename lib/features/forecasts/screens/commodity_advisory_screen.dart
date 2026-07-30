@@ -322,7 +322,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                                   ),
                                   onPressed: _clearFilters,
                                   child: Text(
-                                    l10n.clear,
+                                    l10n.clearAll,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -366,7 +366,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                                     onPressed: _clearFilters,
                                     icon: const Icon(Icons.refresh, color: Color(0xFFF97316)),
                                     label: Text(
-                                      l10n.clear,
+                                      l10n.clearAll,
                                       style: const TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold),
                                     ),
                                   ),
