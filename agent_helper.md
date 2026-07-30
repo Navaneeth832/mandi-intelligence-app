@@ -918,3 +918,15 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **Localization**:
   - Added multi-language keys (`forgotPassword`, `forgotPasswordTitle`, `forgotPasswordSubtitle`, `sendOtp`, `sendingOtp`, `enterOtp`, `verifyOtp`, `verifyingOtp`, `resetPassword`, `resettingPassword`, `newPassword`, `confirmNewPassword`, `passwordsDoNotMatch`, `passwordResetSuccess`, `enterRegisteredIdentifier`) in `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
 
+---
+
+# 29. Commodity Advisory Screen Filter Dropdowns (Implemented July 2026)
+
+### Feature Overview
+- **Commodity-Specific Advisory Dropdowns**: Added 3 filter dropdowns (**Market**, **Grade**, and **Variety**) to `CommodityAdvisoryScreen` when tapping a commodity card in the Advisory section.
+- **Home Screen Matching Layout**: The dropdowns are rendered in a horizontal scrollable row using `FilterDropdownButton<String>` matching the visual hierarchy and layout of the Home Screen filters.
+- **Market Scope**: Filters market options to those located in the user's preferred district (derived from `profileNotifierProvider` and `marketsProvider`).
+- **Grade & Variety Scope**: Dynamically extracts available grades and varieties specific to the selected commodity predictions.
+- **Interactive Filtering**: Provides "Apply Filters" and "Clear" buttons to filter forecast cards in real-time or reset filter parameters.
+
+
