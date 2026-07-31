@@ -28,6 +28,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: |
           cd backend
           python price_fetcher.py
