@@ -6,8 +6,9 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'core/providers/locale_provider.dart';
 import 'main_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
+
+import 'core/widgets/mobile_frame_wrapper.dart';
 
 void main() {
   runApp(
@@ -30,6 +31,9 @@ class MyApp extends ConsumerWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+        builder: (context, child) {
+          return MobileFrameWrapper(child: child);
+        },
         home: const AuthWrapper(),
       );
   }
