@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -7,6 +7,7 @@ from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.prediction import PaginatedForecastResponse, BestMarketResponse
 from app.services.prediction_service import get_predictions_for_user, get_best_markets_for_commodity
+from app.services.prediction_runner import run_daily_prediction_job
 
 router = APIRouter()
 
@@ -50,3 +51,13 @@ def get_best_markets(
         commodity_id=commodity_id,
         language=lang
     )
+
+@router.post("/trigger")
+def trigger_prediction_pipeline(
+    background_tasks: BackgroundTasks,
+    days: int = 7,
+    current_user: User = Depends(get_current_user),
+):
+    """Trigger commodity price prediction pipeline in background."""
+    background_tasks.add_task(run_daily_prediction_job, n_days=days)
+    return {"message": f"Commodity price prediction pipeline triggered for {days} days"}

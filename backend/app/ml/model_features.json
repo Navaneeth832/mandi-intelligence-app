@@ -1,0 +1,1 @@
+{"features": ["state_name", "district_name", "market_name", "cmdt_name", "grade_name", "variety_name", "year", "month", "day_of_week", "day_of_year", "quarter", "month_sin", "month_cos", "model_price_lag_1", "model_price_lag_3", "model_price_lag_7", "MA7", "MA30", "alpha_volatility", "seasonal_index", "trend_state_encoded"]}

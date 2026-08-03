@@ -313,6 +313,15 @@ def run_fetching_pipeline():
     finally:
         db.close()
 
+    # Automatically trigger price prediction pipeline after updating price records
+    try:
+        from app.services.prediction_runner import run_daily_prediction_job
+        print("[Scheduler] Triggering automatic commodity price prediction pipeline...")
+        run_daily_prediction_job()
+    except Exception as e:
+        print(f"[Scheduler Error] Failed to execute price prediction pipeline: {e}")
+
+
 
 if __name__ == "__main__":
     run_fetching_pipeline()
