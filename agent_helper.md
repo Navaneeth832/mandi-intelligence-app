@@ -281,71 +281,131 @@ All primary schema definitions exist in `backend/app/models/`.
 
 # 7. Frontend Architecture
 
-### Navigation Flow
+### Navigation & Screen Component Architecture
 
-```
-                      +-------------------+
-                      |    LoginScreen    |
-                      +-------------------+
-                                |  (Successful Authentication)
-                                v
-                      +-------------------+
-                      |   AuthWrapper     |
-                      +-------------------+
-                                |
-             +------------------+------------------+
-             | (Completed profile == false)        | (Completed profile == true)
-             v                                     v
-   +-------------------+                 +-------------------+
-   | OnboardingScreen  |                 |    MainScreen     |
-   +-------------------+                 +-------------------+
-             | (Submits onboarding data)           | (Bottom Navigation Bar)
-             +------------------+                  +---------+---------+---------+
-                                v                            |         |         |
-                      +-------------------+                  |         |         |
-                      |    MainScreen     |<-----------------+         |         |
-                      +-------------------+                            |         |
-                                |                                      |         |
-            +-------------------+-------------------+                  |         |
-            | Tab 0: Home                           | Tab 1: Markets   |         | Tab 3: Profile
-            v                                       v                  v         v
-  +--------------------+                 +--------------------+   [Alerts]   +---------------+
-  |    HomeScreen      |                 |   MarketsScreen    |   (Stub)     | ProfileScreen |
-  +--------------------+                 +--------------------+              +---------------+
-            | (Quick Filters Applied)               | (Select Market)                | (Edit Profile)
-            v                                       v                                v
-  +--------------------+                 +--------------------+              +---------------+
-  |FilterResultsScreen |                 |MktDirectoryDetailSc|              |OnboardingScr  |
-  +--------------------+                 +--------------------+              | (isEdit=true) |
-            | (Tap Price Card)                      | (Select Commodity)             +---------------+
-            +-------------------+-------------------+
-                                v
-                      +-------------------+
-                      |MarketDetailScreen |
-                      +-------------------+
+```mermaid
+flowchart TB
+ subgraph AuthLayer["Authentication & Onboarding Layer"]
+        AuthWrapper["<b>AuthWrapper</b><br>───────────────────────<br><b>Role:</b> Navigation Guard &amp; Router<br><b>Providers:</b> authProvider, profileNotifierProvider"]
+        LoginScreen["<b>LoginScreen</b><br>───────────────────────<br><b>Components:</b><br>• AuthHeader<br>• AuthTextField (Identifier &amp; Password)<br>• PrimaryAuthButton<br>• Sign Up Link &amp; Forgot Password Link"]
+        SignupScreen["<b>SignupScreen</b> (3-Phase)<br>───────────────────────<br><b>Components:</b><br>• Phase 1: Identifier Input &amp; Send OTP<br>• Phase 2: OTP Verification<br>• Phase 3: Name, Password &amp; Register"]
+        ForgotPasswordScreen["<b>ForgotPasswordScreen</b> (3-Phase)<br>───────────────────────<br><b>Components:</b><br>• Phase 1: Registered ID &amp; Send Reset OTP<br>• Phase 2: Reset OTP Verification<br>• Phase 3: New Password Input &amp; Reset"]
+        OnboardingScreen["<b>OnboardingScreen</b><br>───────────────────────<br><b>Components:</b><br>• FilterDropdownButton (State &amp; District)<br>• Language Selector (RadioListTile)<br>• Tracked Crop Chips (FilterChipWidget)<br>• Save Button (supports isEditMode)"]
+  end
+ subgraph AppHub["Main Application Shell"]
+        MainScreen["<b>MainScreen</b><br>───────────────────────<br><b>Components:</b><br>• BottomNavBar (4 Main Tabs)<br>• IndexedStack View Router"]
+  end
+ subgraph HomeTab["Tab 0: Mandi Prices (Home)"]
+        HomeScreen["<b>HomeScreen</b><br>───────────────────────<br><b>Components:</b><br>• Profile Summary Header<br>• FilterDropdownButton (State, District, Market, Crop)<br>• Filter Action Buttons (Apply / Clear)<br>• Paginated PriceCard ListView"]
+        FilterResultsScreen["<b>FilterResultsScreen</b><br>───────────────────────<br><b>Components:</b><br>• Active Filter Chips Header<br>• Paginated PriceCard ListView<br>• Variety &amp; Grade Chips (_buildVarietyGradeChips)"]
+  end
+ subgraph MarketsTab["Tab 1: Market Directory"]
+        MarketsScreen["<b>MarketsScreen</b><br>───────────────────────<br><b>Components:</b><br>• State Dropdown (FilterDropdownButton)<br>• Market Search Input (TextField)<br>• Mandi Directory Card List"]
+        MarketDirectoryDetailScreen["<b>MarketDirectoryDetailScreen</b><br>───────────────────────<br><b>Components:</b><br>• Market Metadata Header<br>• Active Commodities Grid<br>• Commodity Tap Trigger"]
+        MarketDetailScreen["<b>MarketDetailScreen</b><br>───────────────────────<br><b>Components:</b><br>• Commodity Metadata Block (Variety, Grade, Location)<br>• 7-Day Price Timeline Chart (fl_chart LineChart)<br>• Summary Stats Cards (Modal/Min/Max)"]
+  end
+ subgraph AdvisoryTab["Tab 2: Forecasts & Advisory"]
+        ForecastsScreen["<b>ForecastsScreen</b><br>───────────────────────<br><b>Components:</b><br>• Advisory Dropdowns (Market &amp; Commodity)<br>• Filter Action Buttons (Apply / Clear)<br>• Explore More Commodities Banner<br>• Preferred Crop ForecastCard List<br>• Async States (LoadingWidget, ErrorDisplayWidget)"]
+        CommodityAdvisoryScreen["<b>CommodityAdvisoryScreen</b><br>───────────────────────<br><b>Components:</b><br>• Commodity Title Header<br>• Filter Row (Market, Grade, Variety)<br>• Filter Action Buttons<br>• Paginated ForecastCard List"]
+        ExploreMoreCommoditiesScreen["<b>ExploreMoreCommoditiesScreen</b><br>───────────────────────<br><b>Components:</b><br>• Single-Select State &amp; District Dropdowns<br>• Searchable Market Multi-Select Chips<br>• Active Commodities Multi-Select Chips<br>• Show Advisory Action Button"]
+        ExploreAdvisoryResultsScreen["<b>ExploreAdvisoryResultsScreen</b><br>───────────────────────<br><b>Components:</b><br>• Top Horizontal Commodity Choice Chips<br>• Paginated ForecastCard List"]
+        ForecastDetailScreen@{ label: "<b>ForecastDetailScreen</b><br>───────────────────────<br><b>Components:</b><br>• Hero Summary Card (Commodity, Location, Badges)<br>• Price Overview Card (Current vs Peak, Best Day)<br>• 7-Day Prediction Trajectory LineChart (fl_chart)<br>• Daily Forecast List with 'BEST DAY' Highlight" }
+  end
+ subgraph ProfileTab["Tab 3: Profile Management"]
+        ProfileScreen["<b>ProfileScreen</b><br>───────────────────────<br><b>Components:</b><br>• User Info Card (Avatar, Name, ID, Region, Lang)<br>• Saved Tracked Crops Grid (FilterChipWidget)<br>• Edit Profile Button<br>• Logout Button"]
+  end
+    LoginScreen -- Tap Sign Up --> SignupScreen
+    LoginScreen -- Tap Forgot Password? --> ForgotPasswordScreen
+    LoginScreen -- Authenticates --> AuthWrapper
+    SignupScreen -- Register Success --> AuthWrapper
+    ForgotPasswordScreen -- Reset Success --> LoginScreen
+    AuthWrapper -- Profile Incomplete --> OnboardingScreen
+    AuthWrapper -- Profile Complete --> MainScreen
+    OnboardingScreen -- Submit Profile --> MainScreen
+    MainScreen -- Tab 0: Home --> HomeScreen
+    MainScreen -- Tab 1: Markets --> MarketsScreen
+    MainScreen -- Tab 2: Advisory --> ForecastsScreen
+    MainScreen -- Tab 3: Profile --> ProfileScreen
+    HomeScreen -- Apply Filters --> FilterResultsScreen
+    HomeScreen -- Tap PriceCard --> MarketDetailScreen
+    FilterResultsScreen -- Tap PriceCard --> MarketDetailScreen
+    MarketsScreen -- Select Market --> MarketDirectoryDetailScreen
+    MarketDirectoryDetailScreen -- Select Commodity --> FilterResultsScreen
+    MarketDirectoryDetailScreen -- Tap Commodity Price --> MarketDetailScreen
+    ForecastsScreen -- Tap Commodity Card --> CommodityAdvisoryScreen
+    ForecastsScreen -- Tap Explore More --> ExploreMoreCommoditiesScreen
+    CommodityAdvisoryScreen -- Tap View Forecast --> ForecastDetailScreen
+    ExploreMoreCommoditiesScreen -- Tap Show Advisory --> ExploreAdvisoryResultsScreen
+    ExploreAdvisoryResultsScreen -- Tap View Forecast --> ForecastDetailScreen
+    ProfileScreen -- Tap Edit Profile --> OnboardingScreen
+
+    ForecastDetailScreen@{ shape: rect}
+     AuthWrapper:::authStyle
+     LoginScreen:::authStyle
+     SignupScreen:::authStyle
+     ForgotPasswordScreen:::authStyle
+     OnboardingScreen:::authStyle
+     MainScreen:::mainStyle
+     HomeScreen:::homeStyle
+     FilterResultsScreen:::homeStyle
+     MarketsScreen:::mktStyle
+     MarketDirectoryDetailScreen:::mktStyle
+     MarketDetailScreen:::mktStyle
+     ForecastsScreen:::advStyle
+     CommodityAdvisoryScreen:::advStyle
+     ExploreMoreCommoditiesScreen:::advStyle
+     ExploreAdvisoryResultsScreen:::advStyle
+     ForecastDetailScreen:::advStyle
+     ProfileScreen:::profStyle
+    classDef authStyle fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#fff
+    classDef mainStyle fill:#0f172a,stroke:#3b82f6,stroke-width:2px,color:#fff
+    classDef homeStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff
+    classDef mktStyle fill:#701a75,stroke:#d946ef,stroke-width:2px,color:#fff
+    classDef advStyle fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#fff
+    classDef profStyle fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#fff
 ```
 
 ### Screens & Widget Inventory
 
-1. **`LoginScreen`** (`login_screen.dart`): Collects credentials (email/phone and password), directs to sign up, forgot password, or logs in.
-2. **`ForgotPasswordScreen`** (`forgot_password_screen.dart`): Multi-stage password reset flow.
-   - Phase 1: Inputs registered email/phone. Calls `/auth/forgot-password/send-otp`.
-   - Phase 2: User inputs OTP. Calls `/auth/forgot-password/verify-otp` and receives a reset verification token.
-   - Phase 3: User inputs new password and confirmation. Calls `/auth/forgot-password/reset-password`, pops back to `LoginScreen` upon success.
-3. **`SignupScreen`** (`signup_screen.dart`): Multiphasic registration flow.
-   - Phase 1: Inputs email/phone. Calls `/auth/send-otp`.
-   - Phase 2: User inputs OTP. Calls `/auth/verify-otp` and receives a verification token.
-   - Phase 3: Input Name and Password. Sends token and user details to `/auth/register` to finalize.
-4. **`OnboardingScreen`** (`onboarding_screen.dart`): Profile completion configuration. Contains selections for State, District, Preferred Language, and crop tags (multiselection grid). Also functions as the profile editing form when `isEditMode = true`.
-5. **`HomeScreen`** (`home_screen.dart`): Dashboard. Renders:
-   - Profile summary (Greeting + localized tracked commodity tags).
-   - Localized dropdowns for States, Districts, Markets, and Commodities.
-   - Paginated ListView of `PriceCard` elements showing modal, minimum, and maximum prices for the current day.
-6. **`FilterResultsScreen`** (`filter_results_screen.dart`): Renders results of user-customized dropdown values.
-7. **`MarketsScreen`** (`markets_screen.dart`): Displays a searchable index of mandis. Users must select a State first to initialize the list.
-8. **`MarketDirectoryDetailScreen`** (`market_directory_detail_screen.dart`): Displays specific market metadata. Fetches the list of active commodities via `/markets/{market_id}/commodities`. Tapping a commodity launches `FilterResultsScreen` pre-filtered for that market and crop.
-9. **`MarketDetailScreen`** (`market_detail_screen.dart`): Detailed commodity views. Integrates `fl_chart` to render a 7-day price timeline.
-10. **`ProfileScreen`** (`profile_screen.dart`): Shows user details (avatar, name, email/phone, region, language) and tracked crops. Provides action buttons to Edit Profile (pushes `OnboardingScreen(isEditMode: true)`) and Logout.
+1. **`AuthWrapper`** (`auth_wrapper.dart` / `main.dart`): Central navigation guard listening to `authProvider` and `profileNotifierProvider`. Routes unauthenticated users to `LoginScreen`, incomplete profiles to `OnboardingScreen`, and active profiles to `MainScreen`.
+2. **`LoginScreen`** (`login_screen.dart`): Authentication screen supporting email/phone and password logins, redirecting to signup or forgot password flows.
+   - **Key Widgets**: `AuthHeader`, `AuthTextField`, `PrimaryAuthButton`.
+3. **`SignupScreen`** (`signup_screen.dart`): Multi-stage user registration flow.
+   - **Phase 1**: Inputs email/phone; triggers `/auth/send-otp`.
+   - **Phase 2**: Inputs 6-digit OTP; triggers `/auth/verify-otp` to store a transient verification token.
+   - **Phase 3**: Inputs Name and Password; calls `/auth/register` with verification token to create account.
+   - **Key Widgets**: `AuthHeader`, `AuthTextField`, `PrimaryAuthButton`.
+4. **`ForgotPasswordScreen`** (`forgot_password_screen.dart`): Multi-stage password recovery mechanism.
+   - **Phase 1**: Inputs registered email/phone; triggers `/auth/forgot-password/send-otp`.
+   - **Phase 2**: Inputs 6-digit OTP; triggers `/auth/forgot-password/verify-otp` to receive reset verification token.
+   - **Phase 3**: Inputs new password and confirmation; calls `/auth/forgot-password/reset-password` and returns to `LoginScreen` on success.
+   - **Key Widgets**: `AuthHeader`, `AuthTextField`, `PrimaryAuthButton`.
+5. **`OnboardingScreen`** (`onboarding_screen.dart`): Profile completion configuration and edit screen.
+   - **Key Widgets**: `FilterDropdownButton` (State, District), Language Selector (`RadioListTile`), Tracked Crops multi-select grid (`FilterChipWidget`), Submit Action Button (`isEditMode` support).
+6. **`MainScreen`** (`main_screen.dart`): Main application frame managing tab navigation.
+   - **Key Widgets**: `BottomNavBar` with 4 main tabs (Home, Markets, Advisory/Forecasts, Profile), `IndexedStack`.
+7. **`HomeScreen`** (`home_screen.dart`): Primary price tracking dashboard (Tab 0).
+   - **Key Widgets**: Profile Header Summary (Greeting + Localized crop tags), Location & Commodity Filters (`FilterDropdownButton` for State, District, Market, Commodity), Paginated ListView of `PriceCard` widgets, Filter Action Buttons ("Apply Filters", "Clear All").
+8. **`FilterResultsScreen`** (`filter_results_screen.dart`): Custom query price results view.
+   - **Key Widgets**: Active Filter Chips Header (`FilterChipWidget`), Paginated ListView of standardized `PriceCard` widgets with top-right Variety & Grade chips (`_buildVarietyGradeChips`).
+9. **`MarketsScreen`** (`markets_screen.dart`): Market directory index (Tab 1).
+   - **Key Widgets**: State Filter Dropdown (`FilterDropdownButton`), Market Search Bar (`TextField`), Paginated ListView of Mandi Directory Cards (`MandiDirectoryCard`).
+10. **`MarketDirectoryDetailScreen`** (`market_directory_detail_screen.dart`): Detailed market metadata screen.
+    - **Key Widgets**: Market Header Metadata Block (Market, District, State), Active Commodities Grid/List, Commodity selection trigger (routes to `FilterResultsScreen` or `MarketDetailScreen`).
+11. **`MarketDetailScreen`** (`market_detail_screen.dart`): Commodity price history and analytics view.
+    - **Key Widgets**: Structured Metadata Block (Commodity, Variety, Grade, Market, District, State), 7-Day Price Timeline Line Chart (`fl_chart` `LineChart`), Summary Statistics Cards (Modal, Min, Max prices).
+12. **`ForecastsScreen`** (`forecasts_screen.dart`): Price predictions & advisory section dashboard (Tab 2 - Advisory). Replaces former Alerts stub.
+    - **Key Widgets**: Advisory Filter Dropdowns (`FilterDropdownButton` for Market & Commodity), "Apply Filters" & "Clear All" Buttons, "Explore More Commodities" Banner Button, Paginated List of Preferred Crop Advisory Cards (`ForecastCard`), Async States (`LoadingWidget`, `ErrorDisplayWidget`).
+13. **`CommodityAdvisoryScreen`** (`commodity_advisory_screen.dart`): Commodity-specific advisory breakdown page.
+    - **Key Widgets**: Commodity Title Header, Filter Row (`FilterDropdownButton` for Market, Grade, Variety), Filter Action Buttons, Paginated List of `ForecastCard` widgets.
+14. **`ExploreMoreCommoditiesScreen`** (`explore_more_commodities_screen.dart`): Search portal for exploring advisory predictions across non-preferred commodities.
+    - **Key Widgets**: Single-Select State & District Dropdowns (`FilterDropdownButton`), Searchable Multi-Select Market Chips (`FilterChipWidget`), Searchable Multi-Select Commodity Chips (`FilterChipWidget` for all active commodities), "Show Advisory" Action Button.
+15. **`ExploreAdvisoryResultsScreen`** (`explore_advisory_results_screen.dart`): Customized advisory results page for explored commodities.
+    - **Key Widgets**: Top Horizontal Commodity Choice Chips (`FilterChipWidget`), Paginated List of `ForecastCard` widgets.
+16. **`ForecastDetailScreen`** (`forecast_detail_screen.dart`): Detailed price prediction analytics page.
+    - **Key Widgets**: Hero Summary Card (Commodity, Variety • Grade, Location, Recommendation & Trend Badges), Price Overview Card (Current vs Peak Price, Best Selling Day), 7-Day Prediction Trajectory Line Chart (`fl_chart` `LineChart`), Daily Forecast Price List with "BEST DAY" highlight badge.
+17. **`ProfileScreen`** (`profile_screen.dart`): User profile and settings dashboard (Tab 3).
+    - **Key Widgets**: User Info Card (Avatar, Name, Email/Phone, Location, Language), Tracked Crops Grid (`FilterChipWidget`), Edit Profile Action Button (pushes `OnboardingScreen(isEditMode: true)`), Logout Action Button.
 
 
 ---
