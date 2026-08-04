@@ -58,7 +58,24 @@ def validate_records(records, target_commodity=None):
         # 3. If target_commodity is passed, ensure commodity is of same
         if target_commodity is not None and "commodity" in record:
             rec_commodity = record["commodity"]
-            if not rec_commodity or rec_commodity.strip().lower() != target_commodity.strip().lower():
+            import re
+            
+            def are_commodities_compatible(name1, name2):
+                if not name1 or not name2:
+                    return False
+                n1 = name1.strip().lower()
+                n2 = name2.strip().lower()
+                if n1 == n2:
+                    return True
+                n1_clean = re.sub(r'\(.*?\)', '', n1).strip()
+                n2_clean = re.sub(r'\(.*?\)', '', n2).strip()
+                if n1_clean == n2_clean:
+                    return True
+                if n1_clean in n2_clean or n2_clean in n1_clean:
+                    return True
+                return False
+
+            if not rec_commodity or not are_commodities_compatible(rec_commodity, target_commodity):
                 errors.append(f"Commodity mismatch: expected '{target_commodity}', got '{rec_commodity}'")
                 
         # 4. Ensure min_price < max_price

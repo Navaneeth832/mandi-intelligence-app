@@ -1,0 +1,2 @@
+# Ensure LightGBM model weights file preserves Unix (LF) line endings across all OS environments
+lightgbm_weights.txt text eol=lf

@@ -12,7 +12,6 @@ if root_dir not in sys.path:
     sys.path.append(root_dir)
 import getId
 import price_fetcher_v1
-import price_fetcher_v2
 import market_normalizer
 import variety_normalizer
 import commodity_normalizer
@@ -208,77 +207,25 @@ def fetch_and_display_mandi_data(
 ):
     valid_records = []
     
-    # Resolve group for v2 upfront
-    if not group and commodity:
-        group = resolve_group_from_commodity(commodity)
-        print(f"Resolved group for '{commodity}': {group}")
-
-    # Map parameters for Version 2
-    v2_args = {
-        "group": group or "Vegetables",
-        "commodity": commodity or "Tomato",
-    }
-    if state is not None:
-        v2_args["state"] = state
-    if district is not None:
-        v2_args["district"] = district
-    if market is not None:
-        v2_args["market"] = market
-    if variety is not None:
-        v2_args["variety"] = variety
-    if grade is not None:
-        v2_args["grade"] = grade
-    if to_date is None:
-        v2_args["to_date"] = datetime.today().strftime("%d/%m/%Y")
-    if from_date is None:
-        v2_args["from_date"] = datetime.today().strftime("%d/%m/%Y")
-    if limit:
-        v2_args["limit"] = limit
-
-
     try:
-        # Attempt Version 2 (Internal Report API) first
-        print("Attempting to fetch Mandi data using Version 2 (Internal Report API)...")
-        valid_records = price_fetcher_v2.fetch_and_display_mandi_data_v2(**v2_args)
-    except httpx.HTTPStatusError as e:
-        status = e.response.status_code
-        if status == 402:
-            print(f"\n[Warning] Version 2 Error: 402 Payment/Access Required.")
-        elif status >= 500:
-            print(f"\n[Warning] Version 2 Error: {status} Server Error.")
-        else:
-            print(f"\n[Warning] Version 2 Error: HTTP status {status} - {e.response.text}")
-        print("Switching to Version 1 (Public API)...")
+        # Fetch Mandi data using Version 1 (Public API)
+        print(f"Fetching Mandi data using Version 1 (Public API) for commodity: {commodity}...")
+        valid_records = price_fetcher_v1.fetch_and_display_mandi_data(
+            state=state,
+            district=district,
+            market=market,
+            commodity=commodity,
+            variety=variety,
+            grade=grade,
+            limit=limit,
+            offset=offset
+        )
     except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
-        print(f"\n[Warning] Version 2 Fetcher failed due to timeout: {type(e).__name__} - {e}")
-        print("Switching to Version 1 (Public API)...")
-    except httpx.RequestError as e:
-        print(f"\n[Warning] Version 2 Error: Network connection issue: {e}")
-        print("Switching to Version 1 (Public API)...")
+        print(f"\n[Error] Version 1 Fetcher failed due to timeout: {type(e).__name__} - {e}")
+    except httpx.HTTPStatusError as e:
+        print(f"\n[Error] Version 1 Fetcher failed with HTTP status {e.response.status_code}: {e}")
     except Exception as e:
-        print(f"\n[Warning] Version 2 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
-        print("Switching to Version 1 (Public API)...")
-
-    if not valid_records:
-        try:
-            # Fallback to Version 1 (Public API)
-            print("Attempting to fetch Mandi data using Version 1 (Public API)...")
-            valid_records = price_fetcher_v1.fetch_and_display_mandi_data(
-                state=state,
-                district=district,
-                market=market,
-                commodity=commodity,
-                variety=variety,
-                grade=grade,
-                limit=limit,
-                offset=offset
-            )
-        except (httpx.TimeoutException, httpx.ConnectTimeout) as e:
-            print(f"\n[Error] Version 1 Fetcher failed due to timeout: {type(e).__name__} - {e}")
-        except httpx.HTTPStatusError as e:
-            print(f"\n[Error] Version 1 Fetcher failed with HTTP status {e.response.status_code}: {e}")
-        except Exception as e:
-            print(f"\n[Error] Version 1 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
+        print(f"\n[Error] Version 1 Fetcher failed with unexpected error: {type(e).__name__} - {e}")
 
     if valid_records:
         upsert_records_to_db(valid_records)
