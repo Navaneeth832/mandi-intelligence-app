@@ -385,6 +385,14 @@ def write_predictions(engine, batch_id: int, records: list[dict]):
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     rows = [{**r, "batch_id": batch_id, "created_at": now} for r in records]
     with engine.begin() as conn:
+        # Sync the sequence to avoid UniqueViolation if mock data was inserted manually
+        conn.execute(text("""
+            SELECT setval(
+              pg_get_serial_sequence('commodity_predictions', 'id'),
+              COALESCE((SELECT MAX(id) FROM commodity_predictions), 1),
+              true
+            )
+        """))
         conn.execute(sql, rows)
     log.info("Inserted %d prediction rows.", len(rows))
 
