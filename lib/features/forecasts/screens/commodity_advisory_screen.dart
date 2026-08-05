@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../data/models/commodity_model.dart';
+import '../../../data/models/forecast_model.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/widgets/commodity_image_widget.dart';
 import '../providers/forecast_provider.dart';
@@ -25,6 +26,16 @@ class CommodityAdvisoryScreen extends ConsumerStatefulWidget {
 }
 
 class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  final List<CommodityForecast> _predictions = [];
+  int _currentPage = 1;
+  bool _hasNext = true;
+  bool _isLoadingInitial = true;
+  bool _isLoadingMore = false;
+  String? _errorMessage;
+  int? _loadedDistrictId;
+
   String? _tempMarket;
   String? _tempGrade;
   String? _tempVariety;
@@ -32,6 +43,127 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
   String? _appliedMarket;
   String? _appliedGrade;
   String? _appliedVariety;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 250) {
+      _fetchNextPage();
+    }
+  }
+
+  Future<void> _fetchInitialData(int? districtId) async {
+    setState(() {
+      _isLoadingInitial = true;
+      _errorMessage = null;
+      _currentPage = 1;
+      _predictions.clear();
+      _hasNext = true;
+      _loadedDistrictId = districtId;
+    });
+
+    try {
+      final repository = ref.read(forecastRepositoryProvider);
+      final locale = ref.read(localeProvider);
+
+      List<int>? districtMarketIds;
+      if (districtId != null) {
+        final districtMarkets = await ref.read(marketsListProvider(districtId).future);
+        if (districtMarkets.isNotEmpty) {
+          districtMarketIds = districtMarkets.map((m) => m.id).toList();
+        }
+      }
+
+      final response = await repository.getForecastsForPreferredCrops(
+        language: locale.languageCode,
+        page: 1,
+        pageSize: 30,
+        commodityId: widget.commodity.id,
+        marketIds: districtMarketIds,
+      );
+
+      // Also filter by district on client side to guarantee district scoping
+      List<CommodityForecast> fetched = response.predictions;
+      if (districtId != null) {
+        fetched = fetched.where((p) => p.districtId == districtId || (districtMarketIds != null && districtMarketIds.contains(p.marketId))).toList();
+      }
+
+      if (mounted) {
+        setState(() {
+          _predictions.addAll(fetched);
+          _hasNext = response.hasNext;
+          _isLoadingInitial = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoadingInitial = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchNextPage() async {
+    if (_isLoadingMore || !_hasNext || _isLoadingInitial) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final repository = ref.read(forecastRepositoryProvider);
+      final locale = ref.read(localeProvider);
+      final nextPage = _currentPage + 1;
+
+      List<int>? districtMarketIds;
+      if (_loadedDistrictId != null) {
+        final districtMarkets = await ref.read(marketsListProvider(_loadedDistrictId).future);
+        if (districtMarkets.isNotEmpty) {
+          districtMarketIds = districtMarkets.map((m) => m.id).toList();
+        }
+      }
+
+      final response = await repository.getForecastsForPreferredCrops(
+        language: locale.languageCode,
+        page: nextPage,
+        pageSize: 30,
+        commodityId: widget.commodity.id,
+        marketIds: districtMarketIds,
+      );
+
+      List<CommodityForecast> fetched = response.predictions;
+      if (_loadedDistrictId != null) {
+        fetched = fetched.where((p) => p.districtId == _loadedDistrictId || (districtMarketIds != null && districtMarketIds.contains(p.marketId))).toList();
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentPage = nextPage;
+          _predictions.addAll(fetched);
+          _hasNext = response.hasNext;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
 
   void _applyFilters() {
     setState(() {
@@ -56,16 +188,59 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider);
     final l10n = AppLocalizations.of(context)!;
-    final predictionsAsync = ref.watch(commodityPredictionsProvider(widget.commodity.id));
     final commodityDisplayName = widget.commodity.getDisplayName(locale.languageCode);
 
     // Watch user profile to get preferred district
     final profileAsync = ref.watch(profileNotifierProvider);
     final districtId = profileAsync.value?.districtId;
+
+    // Trigger initial fetch when district is available or changed
+    if (_isLoadingInitial && _errorMessage == null && _predictions.isEmpty) {
+      _fetchInitialData(districtId);
+    } else if (_loadedDistrictId != districtId) {
+      _fetchInitialData(districtId);
+    }
+
     final marketsAsync = ref.watch(marketsProvider(districtId));
 
     final bool hasTempFilters = _tempMarket != null || _tempGrade != null || _tempVariety != null;
     final bool hasAppliedFilters = _appliedMarket != null || _appliedGrade != null || _appliedVariety != null;
+
+    // Extract available grades and varieties
+    final gradesSet = <String>{};
+    final varietiesSet = <String>{};
+    for (final p in _predictions) {
+      if (p.gradeName.trim().isNotEmpty) {
+        gradesSet.add(p.gradeName.trim());
+      }
+      if (p.varietyName.trim().isNotEmpty) {
+        varietiesSet.add(p.varietyName.trim());
+      }
+    }
+
+    final gradeOptions = gradesSet.toList()..sort();
+    final varietyOptions = varietiesSet.toList()..sort();
+    final marketOptions = marketsAsync.value ?? [];
+
+    // Apply active filters
+    final filteredPredictions = _predictions.where((p) {
+      if (_appliedMarket != null && _appliedMarket!.isNotEmpty) {
+        if (p.marketName.toLowerCase() != _appliedMarket!.toLowerCase()) {
+          return false;
+        }
+      }
+      if (_appliedGrade != null && _appliedGrade!.isNotEmpty) {
+        if (p.gradeName.toLowerCase() != _appliedGrade!.toLowerCase()) {
+          return false;
+        }
+      }
+      if (_appliedVariety != null && _appliedVariety!.isNotEmpty) {
+        if (p.varietyName.toLowerCase() != _appliedVariety!.toLowerCase()) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFBF7), // Cream background
@@ -91,6 +266,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(bottom: 24.0),
           child: Column(
@@ -175,240 +351,16 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
 
               const SizedBox(height: 12),
 
-              // Filter Dropdowns Section (Same layout as Home Screen)
-              predictionsAsync.when(
-                data: (response) {
-                  final allPredictions = response.predictions;
-
-                  // Extract available grades and varieties for this tapped commodity
-                  final gradesSet = <String>{};
-                  final varietiesSet = <String>{};
-                  for (final p in allPredictions) {
-                    if (p.gradeName.trim().isNotEmpty) {
-                      gradesSet.add(p.gradeName.trim());
-                    }
-                    if (p.varietyName.trim().isNotEmpty) {
-                      varietiesSet.add(p.varietyName.trim());
-                    }
-                  }
-
-                  final gradeOptions = gradesSet.toList()..sort();
-                  final varietyOptions = varietiesSet.toList()..sort();
-                  final marketOptions = marketsAsync.value ?? [];
-
-                  // Apply active filters
-                  final filteredPredictions = allPredictions.where((p) {
-                    if (_appliedMarket != null && _appliedMarket!.isNotEmpty) {
-                      if (p.marketName.toLowerCase() != _appliedMarket!.toLowerCase()) {
-                        return false;
-                      }
-                    }
-                    if (_appliedGrade != null && _appliedGrade!.isNotEmpty) {
-                      if (p.gradeName.toLowerCase() != _appliedGrade!.toLowerCase()) {
-                        return false;
-                      }
-                    }
-                    if (_appliedVariety != null && _appliedVariety!.isNotEmpty) {
-                      if (p.varietyName.toLowerCase() != _appliedVariety!.toLowerCase()) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  }).toList();
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Dropdowns Horizontal Scroll Row
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          clipBehavior: Clip.none,
-                          child: Row(
-                            children: [
-                              // 1. Market Dropdown (Markets in user's preferred district)
-                              SizedBox(
-                                width: 160,
-                                child: FilterDropdownButton<String>(
-                                  hintText: l10n.market,
-                                  items: marketOptions,
-                                  value: _tempMarket,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _tempMarket = value;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-
-                              // 2. Grade Dropdown (Grades of this commodity)
-                              SizedBox(
-                                width: 160,
-                                child: FilterDropdownButton<String>(
-                                  hintText: l10n.grade,
-                                  items: gradeOptions,
-                                  value: _tempGrade,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _tempGrade = value;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-
-                              // 3. Variety Dropdown (Varieties of this commodity)
-                              SizedBox(
-                                width: 160,
-                                child: FilterDropdownButton<String>(
-                                  hintText: l10n.variety,
-                                  items: varietyOptions,
-                                  value: _tempVariety,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _tempVariety = value;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Action Buttons (Apply & Clear Filters)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 48,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFF97316),
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onPressed: hasTempFilters ? _applyFilters : null,
-                                  child: Text(
-                                    l10n.applyFilters,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (hasTempFilters || hasAppliedFilters) ...[
-                              const SizedBox(width: 12),
-                              SizedBox(
-                                height: 48,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFFF97316),
-                                    side: const BorderSide(color: Color(0xFFF97316), width: 1.5),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onPressed: _clearFilters,
-                                  child: Text(
-                                    l10n.clearAll,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Advisory Cards Section
-                      if (filteredPredictions.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                const Icon(
-                                  Icons.storefront_outlined,
-                                  size: 48,
-                                  color: Color(0xFFFB923C), // Secondary Orange
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  allPredictions.isEmpty
-                                      ? l10n.noForecastsAvailable
-                                      : l10n.noOptionsFound,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF6B7280), // Secondary Text
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (hasAppliedFilters) ...[
-                                  const SizedBox(height: 16),
-                                  TextButton.icon(
-                                    onPressed: _clearFilters,
-                                    icon: const Icon(Icons.refresh, color: Color(0xFFF97316)),
-                                    label: Text(
-                                      l10n.clearAll,
-                                      style: const TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          itemCount: filteredPredictions.length,
-                          itemBuilder: (context, index) {
-                            final forecast = filteredPredictions[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: ForecastCard(
-                                forecast: forecast,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ForecastDetailScreen(forecast: forecast),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                    ],
-                  );
-                },
-                loading: () => _buildShimmerLoading(),
-                error: (error, stack) => Padding(
+              // Filter Dropdowns Section
+              if (_isLoadingInitial)
+                _buildShimmerLoading()
+              else if (_errorMessage != null)
+                Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Center(
                     child: Column(
                       children: [
-                        const Icon(Icons.error_outline, size: 44, color: Color(0xFFEF4444)), // Red error
+                        const Icon(Icons.error_outline, size: 44, color: Color(0xFFEF4444)),
                         const SizedBox(height: 12),
                         Text(
                           l10n.somethingWentWrong,
@@ -420,15 +372,216 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          error.toString(),
+                          _errorMessage!,
                           style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF97316),
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => _fetchInitialData(districtId),
+                          icon: const Icon(Icons.refresh),
+                          label: Text(l10n.retryLabel),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else ...[
+                // Dropdowns Horizontal Scroll Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
+                      children: [
+                        // 1. Market Dropdown (Markets in user's preferred district)
+                        SizedBox(
+                          width: 160,
+                          child: FilterDropdownButton<String>(
+                            hintText: l10n.market,
+                            items: marketOptions,
+                            value: _tempMarket,
+                            onChanged: (value) {
+                              setState(() {
+                                _tempMarket = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // 2. Grade Dropdown (Grades of this commodity)
+                        SizedBox(
+                          width: 160,
+                          child: FilterDropdownButton<String>(
+                            hintText: l10n.grade,
+                            items: gradeOptions,
+                            value: _tempGrade,
+                            onChanged: (value) {
+                              setState(() {
+                                _tempGrade = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // 3. Variety Dropdown (Varieties of this commodity)
+                        SizedBox(
+                          width: 160,
+                          child: FilterDropdownButton<String>(
+                            hintText: l10n.variety,
+                            items: varietyOptions,
+                            value: _tempVariety,
+                            onChanged: (value) {
+                              setState(() {
+                                _tempVariety = value;
+                              });
+                            },
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 12),
+
+                // Action Buttons (Apply & Clear Filters)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF97316),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: hasTempFilters ? _applyFilters : null,
+                            child: Text(
+                              l10n.applyFilters,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (hasTempFilters || hasAppliedFilters) ...[
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          height: 48,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFF97316),
+                              side: const BorderSide(color: Color(0xFFF97316), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _clearFilters,
+                            child: Text(
+                              l10n.clearAll,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Advisory Cards Section
+                if (filteredPredictions.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.storefront_outlined,
+                            size: 48,
+                            color: Color(0xFFFB923C), // Secondary Orange
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _predictions.isEmpty
+                                ? l10n.noForecastsAvailable
+                                : l10n.noOptionsFound,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF6B7280), // Secondary Text
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (hasAppliedFilters) ...[
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: _clearFilters,
+                              icon: const Icon(Icons.refresh, color: Color(0xFFF97316)),
+                              label: Text(
+                                l10n.clearAll,
+                                style: const TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  )
+                else ...[
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    itemCount: filteredPredictions.length,
+                    itemBuilder: (context, index) {
+                      final forecast = filteredPredictions[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: ForecastCard(
+                          forecast: forecast,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForecastDetailScreen(forecast: forecast),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  if (_isLoadingMore)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFF97316),
+                        ),
+                      ),
+                    ),
+                ],
+              ],
             ],
           ),
         ),

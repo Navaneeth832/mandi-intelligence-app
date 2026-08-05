@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../data/models/forecast_model.dart';
 import '../../../core/widgets/commodity_image_widget.dart';
 import '../providers/forecast_provider.dart';
@@ -24,6 +25,81 @@ class ForecastDetailScreen extends ConsumerStatefulWidget {
 class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
   final bool _isLoading = false;
   final String? _errorMessage = null;
+
+  Future<void> _onTapMarket(BestMarket mkt) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFF97316)),
+      ),
+    );
+
+    try {
+      final repository = ref.read(forecastRepositoryProvider);
+      final locale = ref.read(localeProvider);
+      final response = await repository.getForecastsForPreferredCrops(
+        language: locale.languageCode,
+        commodityId: widget.forecast.commodityId,
+        marketId: mkt.marketId,
+        pageSize: 1,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Dismiss loading dialog
+      }
+
+      if (response.predictions.isNotEmpty && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ForecastDetailScreen(forecast: response.predictions.first),
+          ),
+        );
+      } else {
+        // Fallback: construct CommodityForecast from BestMarket
+        final fallbackForecast = CommodityForecast(
+          commodityId: widget.forecast.commodityId,
+          commodityName: widget.forecast.commodityName,
+          commodityImageUrl: widget.forecast.commodityImageUrl,
+          marketId: mkt.marketId,
+          marketName: mkt.marketName,
+          districtId: mkt.districtId,
+          districtName: mkt.districtName,
+          stateId: mkt.stateId,
+          stateName: mkt.stateName,
+          varietyId: mkt.varietyId,
+          varietyName: mkt.varietyName,
+          gradeId: mkt.gradeId,
+          gradeName: mkt.gradeName,
+          predictionDate: widget.forecast.predictionDate,
+          predictionTime: widget.forecast.predictionTime,
+          currentPrice: mkt.currentPrice,
+          forecast: widget.forecast.forecast,
+          trend: mkt.trend,
+          bestSellDate: widget.forecast.bestSellDate,
+          expectedPeakPrice: mkt.predictedPrice,
+          recommendation: mkt.recommendation,
+        );
+
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ForecastDetailScreen(forecast: fallbackForecast),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Dismiss loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -813,104 +889,111 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
 
               return Column(
                 children: markets.map((mkt) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12.0),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFBF7), // Cream background
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _onTapMarket(mkt),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFFFFE0CC), // Orange border
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                mkt.marketName,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${mkt.districtName}, ${mkt.stateName}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                              if (mkt.varietyName.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                Text(
-                                  mkt.gradeName.isNotEmpty
-                                      ? '${mkt.varietyName} • ${mkt.gradeName}'
-                                      : mkt.varietyName,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF6B7280),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ],
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBF7), // Cream background
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFFFE0CC), // Orange border
+                            width: 1,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              currencyFormatter.format(mkt.predictedPrice),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFF97316), // Orange color
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Builder(
-                              builder: (context) {
-                                final mktRec = mkt.recommendation.toUpperCase();
-                                Color recBg;
-                                Color recText;
-                                if (mktRec.contains('SELL') || mktRec.contains('വിൽപ്പന')) {
-                                  recBg = const Color(0xFFF97316);
-                                  recText = Colors.white;
-                                } else if (mktRec.contains('HOLD') || mktRec.contains('കൈവശം')) {
-                                  recBg = const Color(0xFFF3F4F6);
-                                  recText = const Color(0xFF6B7280);
-                                } else {
-                                  recBg = const Color(0xFFFFF2E7);
-                                  recText = const Color(0xFFF97316);
-                                }
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: recBg,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    mkt.recommendation,
-                                    style: TextStyle(
-                                      fontSize: 10,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    mkt.marketName,
+                                    style: const TextStyle(
+                                      fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: recText,
+                                      color: Color(0xFF1F2937),
                                     ),
                                   ),
-                                );
-                              },
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${mkt.districtName}, ${mkt.stateName}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                  if (mkt.varietyName.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      mkt.gradeName.isNotEmpty
+                                          ? '${mkt.varietyName} • ${mkt.gradeName}'
+                                          : mkt.varietyName,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF6B7280),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  currencyFormatter.format(mkt.predictedPrice),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFF97316), // Orange color
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Builder(
+                                  builder: (context) {
+                                    final mktRec = mkt.recommendation.toUpperCase();
+                                    Color recBg;
+                                    Color recText;
+                                    if (mktRec.contains('SELL') || mktRec.contains('വിൽപ്പന')) {
+                                      recBg = const Color(0xFFF97316);
+                                      recText = Colors.white;
+                                    } else if (mktRec.contains('HOLD') || mktRec.contains('കൈവശം')) {
+                                      recBg = const Color(0xFFF3F4F6);
+                                      recText = const Color(0xFF6B7280);
+                                    } else {
+                                      recBg = const Color(0xFFFFF2E7);
+                                      recText = const Color(0xFFF97316);
+                                    }
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: recBg,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        mkt.recommendation,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: recText,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   );
                 }).toList(),
