@@ -15,6 +15,7 @@ Requirements:
 import os
 import sys
 import json
+import time
 import argparse
 import logging
 from datetime import date, timedelta, datetime, timezone
@@ -78,6 +79,8 @@ def fetch_historical_data(engine) -> pd.DataFrame:
     and the full geographic hierarchy.
     Returns a raw DataFrame with columns needed for feature engineering.
     """
+    log.info("Fetching historical price data from DB...")
+    t0 = time.time()
     sql = text("""
         SELECT
             s.name            AS state_name,
@@ -108,7 +111,7 @@ def fetch_historical_data(engine) -> pd.DataFrame:
     with engine.connect() as conn:
         df = pd.read_sql(sql, conn)
 
-    log.info("Fetched %d price rows from DB.", len(df))
+    log.info("Fetched %d price rows from DB in %.2f seconds.", len(df), time.time() - t0)
     df["arrival_date"] = pd.to_datetime(df["arrival_date"])
     return df
 
@@ -118,6 +121,7 @@ def fetch_id_map(engine):
     Build lookup maps: (commodity_id, market_id, variety_id, grade_id)
     keyed on the canonical string names used in the feature DataFrame.
     """
+    t0 = time.time()
     sql = text("""
         SELECT DISTINCT
             mp.commodity_id, mp.market_id, mp.variety_id, mp.grade_id,
@@ -144,7 +148,7 @@ def fetch_id_map(engine):
                r["grade_name"], r["state_name"], r["district_name"])
         id_map[key] = (r["commodity_id"], r["market_id"],
                        r["variety_id"],   r["grade_id"])
-    log.info("Built ID map with %d entries.", len(id_map))
+    log.info("Built ID map with %d entries in %.2f seconds.", len(id_map), time.time() - t0)
     return id_map
 
 
@@ -198,7 +202,7 @@ def load_model(model_path: Path) -> lgb.Booster:
 
 
 # ===========================================================================
-# Iterative multi-step prediction
+# Iterative multi-step prediction (Single Group Helper)
 # ===========================================================================
 
 def predict_next_n_days(
@@ -211,17 +215,12 @@ def predict_next_n_days(
     """
     Given historical records for ONE commodity group, iteratively predict
     the next n_days prices starting from date.today() (or last_arrival_date + 1).
-
-    Uses the latest available historical records (at least 7) to construct
-    moving average, lag, and trend state features without NaN errors.
     """
-    # Ensure data is sorted by arrival date
     group_sorted = group_df.sort_values("arrival_date").reset_index(drop=True)
     if len(group_sorted) < MIN_RECORDS:
         raise ValueError(f"Group has only {len(group_sorted)} records (minimum required: {MIN_RECORDS}).")
 
     stats = compute_group_historical_stats(group_sorted)
-
     prices_history = list(group_sorted["model_price"].values)
     
     last_arrival = group_sorted["arrival_date"].iloc[-1].date()
@@ -232,17 +231,13 @@ def predict_next_n_days(
     else:
         base_start_date = last_arrival + timedelta(days=1)
 
-
     results = []
-
-    # Get constant categoricals for this group
     sample_row = group_sorted.iloc[-1]
     group_meta = {col: sample_row[col] for col in CATEGORICAL_FEATURES}
 
     for i in range(n_days):
         target_date = base_start_date + timedelta(days=i)
 
-        # 1. Date features
         dt_year = target_date.year
         dt_month = target_date.month
         dt_dow = target_date.weekday()
@@ -252,21 +247,17 @@ def predict_next_n_days(
         month_sin = np.sin(2 * np.pi * dt_month / 12.0)
         month_cos = np.cos(2 * np.pi * dt_month / 12.0)
 
-        # 2. Lag features from existing prices history
         lag_1 = float(prices_history[-1])
         lag_3 = float(prices_history[-3]) if len(prices_history) >= 3 else lag_1
         lag_7 = float(prices_history[-7]) if len(prices_history) >= 7 else lag_1
 
-        # 3. Moving averages (MA7, MA30) from existing prices history
         ma7 = float(np.mean(prices_history[-7:])) if len(prices_history) >= 7 else float(np.mean(prices_history))
         ma30 = float(np.mean(prices_history[-30:])) if len(prices_history) >= 30 else float(np.mean(prices_history))
 
-        # 4. Volatility & Seasonal Index
         alpha_vol = stats["alpha_volatility"]
         month_mean = stats["monthly_means"].get(dt_month, stats["overall_mean"])
         seasonal_index = month_mean / stats["overall_mean"] if stats["overall_mean"] > 0 else 1.0
 
-        # 5. Trend state calculation
         pct = ((lag_1 - ma30) / ma30) * 100 if ma30 > 0 else 0.0
         if (ma7 > ma30) and (lag_1 > ma7) and (pct > alpha_vol):
             trend_state = "Rising"
@@ -277,7 +268,6 @@ def predict_next_n_days(
 
         trend_state_encoded = TREND_MAPPING.get(trend_state, 1)
 
-        # Construct single feature dict
         row_dict = {
             "state_name": group_meta["state_name"],
             "district_name": group_meta["district_name"],
@@ -303,22 +293,202 @@ def predict_next_n_days(
         }
 
         row_df = pd.DataFrame([row_dict])
-
-        # Cast categorical features
         for col in CATEGORICAL_FEATURES:
             row_df[col] = row_df[col].astype("category")
 
         X = row_df[feature_cols]
-
         pred_price = float(model.predict(X, num_iteration=model.best_iteration)[0])
-        pred_price = max(pred_price, 0.0)  # Price lower bound
+        pred_price = max(pred_price, 0.0)
 
         results.append((target_date, round(pred_price, 2)))
-
-        # Append prediction back into prices history for subsequent day lags
         prices_history.append(pred_price)
 
     return results
+
+
+# ===========================================================================
+# Batched Multi-Group Prediction Engine (High-Performance Vectorized)
+# ===========================================================================
+
+def predict_all_groups_batched(
+    df_raw: pd.DataFrame,
+    id_map: dict,
+    model: lgb.Booster,
+    feature_cols: list[str],
+    n_days: int = 7,
+    start_from_today: bool = True
+) -> tuple[list[dict], int]:
+    """
+    High-Performance Batched Predictor across all active commodity groups.
+    Vectorizes feature creation and batch runs LightGBM model.predict() in
+    7 total batch calls instead of 50,000+ single-row calls.
+    """
+    start_time = time.time()
+    today_val = date.today()
+
+    log.info("Grouping raw data and preparing active group states...")
+    grouped = df_raw.groupby(GROUPING_COLS)
+    total_groups = len(grouped)
+
+    active_states = []
+    skipped = 0
+
+    for keys, group_df in grouped:
+        if len(group_df) < MIN_RECORDS:
+            skipped += 1
+            continue
+
+        state_name, district_name, market_name, cmdt_name, variety_name, grade_name = keys
+        id_key = (cmdt_name, market_name, variety_name, grade_name, state_name, district_name)
+        ids = id_map.get(id_key)
+
+        if ids is None:
+            skipped += 1
+            continue
+
+        commodity_id, market_id, variety_id, grade_id = ids
+
+        group_sorted = group_df.sort_values("arrival_date").reset_index(drop=True)
+        prices_history = list(group_sorted["model_price"].values)
+        
+        last_arrival = group_sorted["arrival_date"].iloc[-1].date()
+        if start_from_today and last_arrival < today_val:
+            base_start_date = today_val + timedelta(days=1)
+        else:
+            base_start_date = last_arrival + timedelta(days=1)
+
+        stats = compute_group_historical_stats(group_sorted)
+
+        active_states.append({
+            "group_meta": {
+                "state_name": state_name,
+                "district_name": district_name,
+                "market_name": market_name,
+                "cmdt_name": cmdt_name,
+                "grade_name": grade_name,
+                "variety_name": variety_name,
+            },
+            "ids": {
+                "commodity_id": commodity_id,
+                "market_id": market_id,
+                "variety_id": variety_id,
+                "grade_id": grade_id,
+            },
+            "prices_history": prices_history,
+            "stats": stats,
+            "base_start_date": base_start_date,
+        })
+
+    log.info(
+        "Prepared metadata and stats for %d active groups (%d / %d skipped) in %.2f seconds.",
+        len(active_states), skipped, total_groups, time.time() - start_time
+    )
+
+    if not active_states:
+        return [], skipped
+
+    all_prediction_rows = []
+
+    # Iterative Day-by-Day Batch Predictions
+    for day_idx in range(n_days):
+        t_day_start = time.time()
+        batch_rows = []
+
+        for state in active_states:
+            group_meta = state["group_meta"]
+            prices_history = state["prices_history"]
+            stats = state["stats"]
+            target_date = state["base_start_date"] + timedelta(days=day_idx)
+
+            dt_year = target_date.year
+            dt_month = target_date.month
+            dt_dow = target_date.weekday()
+            dt_doy = target_date.timetuple().tm_yday
+            dt_quarter = (dt_month - 1) // 3 + 1
+
+            month_sin = np.sin(2 * np.pi * dt_month / 12.0)
+            month_cos = np.cos(2 * np.pi * dt_month / 12.0)
+
+            lag_1 = float(prices_history[-1])
+            lag_3 = float(prices_history[-3]) if len(prices_history) >= 3 else lag_1
+            lag_7 = float(prices_history[-7]) if len(prices_history) >= 7 else lag_1
+
+            ma7 = float(np.mean(prices_history[-7:])) if len(prices_history) >= 7 else float(np.mean(prices_history))
+            ma30 = float(np.mean(prices_history[-30:])) if len(prices_history) >= 30 else float(np.mean(prices_history))
+
+            alpha_vol = stats["alpha_volatility"]
+            month_mean = stats["monthly_means"].get(dt_month, stats["overall_mean"])
+            seasonal_index = month_mean / stats["overall_mean"] if stats["overall_mean"] > 0 else 1.0
+
+            pct = ((lag_1 - ma30) / ma30) * 100 if ma30 > 0 else 0.0
+            if (ma7 > ma30) and (lag_1 > ma7) and (pct > alpha_vol):
+                trend_state = "Rising"
+            elif (ma7 < ma30) and (lag_1 < ma7) and (pct < -alpha_vol):
+                trend_state = "Falling"
+            else:
+                trend_state = "Stable"
+
+            trend_state_encoded = TREND_MAPPING.get(trend_state, 1)
+
+            batch_rows.append({
+                "state_name": group_meta["state_name"],
+                "district_name": group_meta["district_name"],
+                "market_name": group_meta["market_name"],
+                "cmdt_name": group_meta["cmdt_name"],
+                "grade_name": group_meta["grade_name"],
+                "variety_name": group_meta["variety_name"],
+                "year": dt_year,
+                "month": dt_month,
+                "day_of_week": dt_dow,
+                "day_of_year": dt_doy,
+                "quarter": dt_quarter,
+                "month_sin": month_sin,
+                "month_cos": month_cos,
+                "model_price_lag_1": lag_1,
+                "model_price_lag_3": lag_3,
+                "model_price_lag_7": lag_7,
+                "MA7": ma7,
+                "MA30": ma30,
+                "alpha_volatility": alpha_vol,
+                "seasonal_index": seasonal_index,
+                "trend_state_encoded": trend_state_encoded,
+                "target_date": target_date,
+            })
+
+        batch_df = pd.DataFrame(batch_rows)
+        for col in CATEGORICAL_FEATURES:
+            batch_df[col] = batch_df[col].astype("category")
+
+        X = batch_df[feature_cols]
+
+        preds = model.predict(X, num_iteration=model.best_iteration)
+        preds = np.maximum(preds, 0.0)
+
+        for state, target_date, pred_price in zip(active_states, batch_df["target_date"], preds):
+            rounded_price = round(float(pred_price), 2)
+            state["prices_history"].append(rounded_price)
+
+            all_prediction_rows.append({
+                "commodity_id": state["ids"]["commodity_id"],
+                "market_id": state["ids"]["market_id"],
+                "variety_id": state["ids"]["variety_id"],
+                "grade_id": state["ids"]["grade_id"],
+                "prediction_day": target_date,
+                "predicted_price": rounded_price,
+            })
+
+        log.info(
+            "Day %d/%d batch predictions completed (%d rows) in %.2f seconds.",
+            day_idx + 1, n_days, len(active_states), time.time() - t_day_start
+        )
+
+    total_elapsed = time.time() - start_time
+    log.info(
+        "Generated %d total prediction rows across %d active groups in %.2f seconds.",
+        len(all_prediction_rows), len(active_states), total_elapsed
+    )
+
+    return all_prediction_rows, skipped
 
 
 # ===========================================================================
@@ -370,31 +540,30 @@ def delete_todays_batches(engine):
     log.info("Deleted %d old batch(es) for today.", result.rowcount)
 
 
-def write_predictions(engine, batch_id: int, records: list[dict]):
-    """Bulk-insert prediction rows."""
+def write_predictions(engine, batch_id: int, records: list[dict], chunk_size: int = 3000):
+    """Bulk-insert prediction rows using high-speed multi-row inserts."""
     if not records:
         return
-    sql = text("""
-        INSERT INTO commodity_predictions
-            (batch_id, market_id, commodity_id, variety_id, grade_id,
-             prediction_day, predicted_price, created_at)
-        VALUES
-            (:batch_id, :market_id, :commodity_id, :variety_id, :grade_id,
-             :prediction_day, :predicted_price, :created_at)
-    """)
     now = datetime.now(timezone.utc).replace(tzinfo=None)
-    rows = [{**r, "batch_id": batch_id, "created_at": now} for r in records]
-    with engine.begin() as conn:
-        # Sync the sequence to avoid UniqueViolation if mock data was inserted manually
-        conn.execute(text("""
-            SELECT setval(
-              pg_get_serial_sequence('commodity_predictions', 'id'),
-              COALESCE((SELECT MAX(id) FROM commodity_predictions), 1),
-              true
-            )
-        """))
-        conn.execute(sql, rows)
-    log.info("Inserted %d prediction rows.", len(rows))
+    for r in records:
+        r["batch_id"] = batch_id
+        r["created_at"] = now
+
+    df_preds = pd.DataFrame(records)
+
+    log.info("Writing %d prediction rows to DB in multi-value chunks of %d...", len(df_preds), chunk_size)
+    t0 = time.time()
+    
+    df_preds.to_sql(
+        name="commodity_predictions",
+        con=engine,
+        if_exists="append",
+        index=False,
+        method="multi",
+        chunksize=chunk_size
+    )
+
+    log.info("Inserted %d prediction rows into DB in %.2f seconds.", len(df_preds), time.time() - t0)
 
 
 # ===========================================================================
@@ -404,6 +573,8 @@ def write_predictions(engine, batch_id: int, records: list[dict]):
 def run(n_days: int = 7, dry_run: bool = False, start_from_today: bool = True):
     log.info("=== Mandi Price Prediction Pipeline ===")
     log.info("Prediction horizon: %d days | dry_run=%s | start_from_today=%s", n_days, dry_run, start_from_today)
+
+    t_start = time.time()
 
     # 1. Load model & feature list
     feature_cols = get_feature_columns(FEATURES_PATH)
@@ -418,64 +589,21 @@ def run(n_days: int = 7, dry_run: bool = False, start_from_today: bool = True):
         log.warning("No historical data found. Exiting.")
         return
 
-    # 3. Identify valid groups (at least 7 records)
-    group_counts = df_raw.groupby(GROUPING_COLS).size()
-    valid_groups = set(group_counts[group_counts >= MIN_RECORDS].index)
-
-    log.info(
-        "Groups with >= %d records: %d / %d total groups",
-        MIN_RECORDS, len(valid_groups), len(group_counts)
+    # 3. High-Performance Batched Predictions
+    all_prediction_rows, skipped = predict_all_groups_batched(
+        df_raw=df_raw,
+        id_map=id_map,
+        model=model,
+        feature_cols=feature_cols,
+        n_days=n_days,
+        start_from_today=start_from_today
     )
 
-    # 4. Predict per valid group
-    all_prediction_rows = []
-    skipped = 0
-
-    for keys, group_df in df_raw.groupby(GROUPING_COLS):
-        if keys not in valid_groups:
-            skipped += 1
-            continue
-
-        state, district, market, cmdt, variety, grade = keys
-        id_key = (cmdt, market, variety, grade, state, district)
-        ids = id_map.get(id_key)
-
-        if ids is None:
-            log.debug("ID lookup miss for %s – skipping.", id_key)
-            skipped += 1
-            continue
-
-        commodity_id, market_id, variety_id, grade_id = ids
-
-        try:
-            forecasts = predict_next_n_days(
-                group_df, model, feature_cols,
-                n_days=n_days, start_from_today=start_from_today
-            )
-        except Exception as exc:
-            log.warning("Prediction failed for %s: %s", id_key, exc)
-            skipped += 1
-            continue
-
-        for pred_date, pred_price in forecasts:
-            all_prediction_rows.append({
-                "commodity_id":    commodity_id,
-                "market_id":       market_id,
-                "variety_id":      variety_id,
-                "grade_id":        grade_id,
-                "prediction_day":  pred_date,
-                "predicted_price": pred_price,
-            })
-
-    log.info(
-        "Generated %d prediction rows across %d active groups (%d groups skipped).",
-        len(all_prediction_rows), len(valid_groups), skipped
-    )
-
-    # 5. Write to DB (unless dry_run)
+    # 4. Write to DB (unless dry_run)
     if dry_run:
         sample_df = pd.DataFrame(all_prediction_rows).head(14)
         log.info("[DRY RUN] First 14 rows:\n%s", sample_df.to_string(index=False))
+        log.info("=== Pipeline dry run complete in %.2f seconds ===", time.time() - t_start)
         return
 
     if not all_prediction_rows:
@@ -486,7 +614,7 @@ def run(n_days: int = 7, dry_run: bool = False, start_from_today: bool = True):
     batch_id = create_prediction_batch(engine)
     write_predictions(engine, batch_id, all_prediction_rows)
 
-    log.info("=== Pipeline complete ===")
+    log.info("=== Pipeline complete in %.2f seconds ===", time.time() - t_start)
 
 
 # ===========================================================================
