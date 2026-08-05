@@ -42,56 +42,9 @@
       background-color: #0f172a;
       overflow: hidden;
     }
-
-    /* Desktop & Laptop displays (> 450px wide): Lock container to 390x884 mobile frame */
-    @media (min-width: 451px) {
-      html, body {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-      }
-      
-      flutter-view, flt-glass-pane, body > div {
-        position: relative !important;
-        width: 390px !important;
-        height: 884px !important;
-        max-height: 94vh !important;
-        border-radius: 32px !important;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.2) !important;
-        border: 8px solid #1e293b !important;
-        overflow: hidden !important;
-        background-color: #FFFBF7 !important;
-      }
-    }
-
-    /* Mobile screens (<= 450px wide): Fullscreen width & height */
-    @media (max-width: 450px) {
-      html, body, flutter-view, flt-glass-pane, body > div {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-      }
-    }
   </style>
 </head>
 <body>
-  <script>
-    // Automatically trigger window resize event during Flutter initialization to prevent blank startup screen
-    function triggerFlutterResize() {
-      window.dispatchEvent(new Event('resize'));
-    }
-    window.addEventListener('load', function() {
-      setTimeout(triggerFlutterResize, 100);
-      setTimeout(triggerFlutterResize, 300);
-      setTimeout(triggerFlutterResize, 600);
-      setTimeout(triggerFlutterResize, 1000);
-      setTimeout(triggerFlutterResize, 1500);
-    });
-  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

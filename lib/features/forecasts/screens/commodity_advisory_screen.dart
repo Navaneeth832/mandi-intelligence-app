@@ -35,6 +35,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
   bool _isLoadingMore = false;
   String? _errorMessage;
   int? _loadedDistrictId;
+  String? _loadedDistrictName;
 
   String? _tempMarket;
   String? _tempGrade;
@@ -62,7 +63,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
     }
   }
 
-  Future<void> _fetchInitialData(int? districtId) async {
+  Future<void> _fetchInitialData(int? districtId, String? districtName) async {
     setState(() {
       _isLoadingInitial = true;
       _errorMessage = null;
@@ -70,6 +71,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       _predictions.clear();
       _hasNext = true;
       _loadedDistrictId = districtId;
+      _loadedDistrictName = districtName;
     });
 
     try {
@@ -92,10 +94,21 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
         marketIds: districtMarketIds,
       );
 
-      // Also filter by district on client side to guarantee district scoping
       List<CommodityForecast> fetched = response.predictions;
-      if (districtId != null) {
-        fetched = fetched.where((p) => p.districtId == districtId || (districtMarketIds != null && districtMarketIds.contains(p.marketId))).toList();
+
+      // Filter predictions strictly by user's preferred district
+      if (districtId != null || (districtName != null && districtName.isNotEmpty)) {
+        final userDistNorm = (districtName ?? '').toLowerCase().trim();
+        fetched = fetched.where((p) {
+          final matchesId = districtId != null && p.districtId == districtId;
+          final matchesMarket = districtMarketIds != null && districtMarketIds.contains(p.marketId);
+          final matchesName = userDistNorm.isNotEmpty &&
+              (p.districtName.toLowerCase().trim() == userDistNorm ||
+               p.districtName.toLowerCase().trim().contains(userDistNorm) ||
+               userDistNorm.contains(p.districtName.toLowerCase().trim()));
+
+          return matchesId || matchesMarket || matchesName;
+        }).toList();
       }
 
       if (mounted) {
@@ -144,8 +157,20 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       );
 
       List<CommodityForecast> fetched = response.predictions;
-      if (_loadedDistrictId != null) {
-        fetched = fetched.where((p) => p.districtId == _loadedDistrictId || (districtMarketIds != null && districtMarketIds.contains(p.marketId))).toList();
+
+      // Filter predictions strictly by user's preferred district
+      if (_loadedDistrictId != null || (_loadedDistrictName != null && _loadedDistrictName!.isNotEmpty)) {
+        final userDistNorm = (_loadedDistrictName ?? '').toLowerCase().trim();
+        fetched = fetched.where((p) {
+          final matchesId = _loadedDistrictId != null && p.districtId == _loadedDistrictId;
+          final matchesMarket = districtMarketIds != null && districtMarketIds.contains(p.marketId);
+          final matchesName = userDistNorm.isNotEmpty &&
+              (p.districtName.toLowerCase().trim() == userDistNorm ||
+               p.districtName.toLowerCase().trim().contains(userDistNorm) ||
+               userDistNorm.contains(p.districtName.toLowerCase().trim()));
+
+          return matchesId || matchesMarket || matchesName;
+        }).toList();
       }
 
       if (mounted) {
@@ -192,13 +217,17 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
 
     // Watch user profile to get preferred district
     final profileAsync = ref.watch(profileNotifierProvider);
-    final districtId = profileAsync.value?.districtId;
+    final userProfile = profileAsync.value;
+    final districtId = userProfile?.districtId;
+    final districtName = userProfile?.districtName;
 
-    // Trigger initial fetch when district is available or changed
-    if (_isLoadingInitial && _errorMessage == null && _predictions.isEmpty) {
-      _fetchInitialData(districtId);
-    } else if (_loadedDistrictId != districtId) {
-      _fetchInitialData(districtId);
+    // Trigger initial fetch when profile is loaded or district changed
+    if (!profileAsync.isLoading) {
+      if (_isLoadingInitial && _errorMessage == null && _predictions.isEmpty) {
+        _fetchInitialData(districtId, districtName);
+      } else if (_loadedDistrictId != districtId || _loadedDistrictName != districtName) {
+        _fetchInitialData(districtId, districtName);
+      }
     }
 
     final marketsAsync = ref.watch(marketsProvider(districtId));
@@ -222,7 +251,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
     final varietyOptions = varietiesSet.toList()..sort();
     final marketOptions = marketsAsync.value ?? [];
 
-    // Apply active filters
+    // Apply active dropdown filters
     final filteredPredictions = _predictions.where((p) {
       if (_appliedMarket != null && _appliedMarket!.isNotEmpty) {
         if (p.marketName.toLowerCase() != _appliedMarket!.toLowerCase()) {
@@ -282,7 +311,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                     borderRadius: BorderRadius.circular(24), // 24px radius
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF97316).withOpacity(0.14), // Soft orange shadow
+                        color: const Color(0xFFF97316).withValues(alpha: 0.14), // Soft orange shadow
                         blurRadius: 18,
                         spreadRadius: 1,
                         offset: const Offset(0, 8),
@@ -352,7 +381,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
               const SizedBox(height: 12),
 
               // Filter Dropdowns Section
-              if (_isLoadingInitial)
+              if (_isLoadingInitial || profileAsync.isLoading)
                 _buildShimmerLoading()
               else if (_errorMessage != null)
                 Padding(
@@ -382,7 +411,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                             backgroundColor: const Color(0xFFF97316),
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: () => _fetchInitialData(districtId),
+                          onPressed: () => _fetchInitialData(districtId, districtName),
                           icon: const Icon(Icons.refresh),
                           label: Text(l10n.retryLabel),
                         ),

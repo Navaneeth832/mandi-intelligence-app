@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// A wrapper widget that enforces a 390x884 mobile viewport view
+/// A wrapper widget that enforces an exact 390x884 mobile viewport view
 /// when running on desktop / wide web browsers, while rendering full-screen
 /// on actual mobile devices.
 class MobileFrameWrapper extends StatelessWidget {
@@ -23,77 +23,61 @@ class MobileFrameWrapper extends StatelessWidget {
           const double targetWidth = 390.0;
           const double targetHeight = 884.0;
 
-          // Fit height dynamically if browser window height is smaller than targetHeight + padding
+          // Scale down proportionally if viewport height is smaller than targetHeight
           final double availableHeight = math.max(0.0, screenHeight - 32.0);
-          final double actualHeight = math.min(targetHeight, availableHeight);
-
-          // Calculate scale factor if screen height is very small
-          final double scale = actualHeight < targetHeight
-              ? actualHeight / targetHeight
+          final double scale = availableHeight < targetHeight
+              ? availableHeight / targetHeight
               : 1.0;
-          final double actualWidth = targetWidth * scale;
+
+          final double frameWidth = targetWidth * scale;
+          final double frameHeight = targetHeight * scale;
 
           return Scaffold(
             backgroundColor: const Color(0xFF0F172A), // Dark slate background for desktop
-            body: Stack(
-              children: [
-                // Subtle desktop background graphic / branding
-                Center(
-                  child: Container(
-                    width: actualWidth + 20,
-                    height: actualHeight + 20,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(36 * scale),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          blurRadius: 40,
-                          spreadRadius: 10,
-                          offset: const Offset(0, 20),
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                          blurRadius: 60,
-                          spreadRadius: 2,
-                        ),
-                      ],
+            body: Center(
+              child: Container(
+                width: frameWidth,
+                height: frameHeight,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBF7),
+                  borderRadius: BorderRadius.circular(32 * scale),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                      offset: const Offset(0, 20),
                     ),
+                    BoxShadow(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                      blurRadius: 60,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFF1E293B),
+                    width: math.max(2.0, 6.0 * scale),
                   ),
                 ),
-                Center(
-                  child: Container(
-                    width: actualWidth,
-                    height: actualHeight,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(32 * scale),
-                      border: Border.all(
-                        color: const Color(0xFF1E293B),
-                        width: math.max(2.0, 6.0 * scale),
-                      ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26 * scale),
+                  child: MediaQuery(
+                    // Provide target mobile screen dimensions (390x884) to child widgets
+                    data: MediaQuery.of(context).copyWith(
+                      size: const Size(targetWidth, targetHeight),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(26 * scale),
-                      child: MediaQuery(
-                        // Provide target mobile screen dimensions (390x884) to child widgets
-                        data: MediaQuery.of(context).copyWith(
-                          size: Size(targetWidth, targetHeight),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            width: targetWidth,
-                            height: targetHeight,
-                            child: child,
-                          ),
-                        ),
+                    child: Transform.scale(
+                      scale: scale,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: targetWidth,
+                        height: targetHeight,
+                        child: child,
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           );
         }
