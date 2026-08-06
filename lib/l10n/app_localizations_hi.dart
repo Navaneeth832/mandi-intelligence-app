@@ -484,4 +484,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get pleaseSelectCommodity => 'कृपया कम से कम एक फसल चुनें';
+
+  @override
+  String get noForecastsInDistrict => 'आपके जिले के लिए कोई पूर्वानुमान उपलब्ध नहीं है';
+
+  @override
+  String get noForecastsInDistrictSubtitle => 'आप भारत के अन्य जिलों और राज्यों में इस फसल के भाव देख सकते हैं।';
+
+  @override
+  String get exploreOtherMarketsButton => 'अन्य मंडियां देखें';
 }

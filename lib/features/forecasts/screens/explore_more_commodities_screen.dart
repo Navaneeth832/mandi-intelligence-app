@@ -166,16 +166,35 @@ class _ExploreMoreCommoditiesScreenState extends ConsumerState<ExploreMoreCommod
                         ),
                       ),
                       onPressed: canShowAdvisory
-                          ? () {
+                          ? () async {
                               final selectedCommoditiesList = allCommodities
                                   .where((c) => _selectedCommodityIds.contains(c.id))
                                   .toList();
+
+                              List<int> effectiveMarketIds = [];
+                              if (_selectedMarketIds.isNotEmpty) {
+                                effectiveMarketIds = _selectedMarketIds.toList();
+                              } else if (_selectedDistrictId != null) {
+                                final districtMarkets = await ref.read(marketsListProvider(_selectedDistrictId!).future);
+                                effectiveMarketIds = districtMarkets.map((m) => m.id).toList();
+                              } else if (_selectedStateId != null) {
+                                final districts = await ref.read(districtsProvider(_selectedStateId!).future);
+                                final List<int> stateMarketIds = [];
+                                for (final d in districts) {
+                                  final mList = await ref.read(marketsListProvider(d.id).future);
+                                  stateMarketIds.addAll(mList.map((m) => m.id));
+                                }
+                                effectiveMarketIds = stateMarketIds;
+                              }
+
+                              if (!context.mounted) return;
+
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ExploreAdvisoryResultsScreen(
                                     selectedCommodities: selectedCommoditiesList,
-                                    selectedMarketIds: _selectedMarketIds.toList(),
+                                    selectedMarketIds: effectiveMarketIds,
                                   ),
                                 ),
                               );

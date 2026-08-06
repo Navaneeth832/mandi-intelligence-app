@@ -210,6 +210,9 @@
   "selectMarkets": "Select Markets",
   "showAdvisory": "Show Advisory",
   "allActiveCommodities": "All Active Commodities",
-  "pleaseSelectCommodity": "Please select at least one commodity"
+  "pleaseSelectCommodity": "Please select at least one commodity",
+  "noForecastsInDistrict": "No forecasts available for your district",
+  "noForecastsInDistrictSubtitle": "You can explore market prices for this crop across other districts & states in India.",
+  "exploreOtherMarketsButton": "Explore Other Markets"
 }
 

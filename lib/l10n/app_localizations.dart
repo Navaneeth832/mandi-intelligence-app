@@ -1002,6 +1002,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select at least one commodity'**
   String get pleaseSelectCommodity;
+
+  /// No description provided for @noForecastsInDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'No forecasts available for your district'**
+  String get noForecastsInDistrict;
+
+  /// No description provided for @noForecastsInDistrictSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can explore market prices for this crop across other districts & states in India.'**
+  String get noForecastsInDistrictSubtitle;
+
+  /// No description provided for @exploreOtherMarketsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Other Markets'**
+  String get exploreOtherMarketsButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

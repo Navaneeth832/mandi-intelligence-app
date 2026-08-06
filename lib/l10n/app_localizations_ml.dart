@@ -484,4 +484,13 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get pleaseSelectCommodity => 'കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get noForecastsInDistrict => 'നിങ്ങളുടെ ജില്ലയിൽ പ്രവചനങ്ങൾ ലഭ്യമല്ല';
+
+  @override
+  String get noForecastsInDistrictSubtitle => 'ഇന്ത്യയിലുടനീളമുള്ള മറ്റ് ജില്ലകളിലെയും സംസ്ഥാനങ്ങളിലെയും വിപണി വിലകൾ നിങ്ങൾക്ക് പരിശോധിക്കാം.';
+
+  @override
+  String get exploreOtherMarketsButton => 'മറ്റ് വിപണികൾ പരിശോധിക്കുക';
 }

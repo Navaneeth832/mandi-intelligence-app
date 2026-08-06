@@ -210,5 +210,8 @@
   "selectMarkets": "बाज़ार चुनें",
   "showAdvisory": "सलाह देखें",
   "allActiveCommodities": "सभी सक्रिय फसलें",
-  "pleaseSelectCommodity": "कृपया कम से कम एक फसल चुनें"
+  "pleaseSelectCommodity": "कृपया कम से कम एक फसल चुनें",
+  "noForecastsInDistrict": "आपके जिले के लिए कोई पूर्वानुमान उपलब्ध नहीं है",
+  "noForecastsInDistrictSubtitle": "आप भारत के अन्य जिलों और राज्यों में इस फसल के भाव देख सकते हैं।",
+  "exploreOtherMarketsButton": "अन्य मंडियां देखें"
 }

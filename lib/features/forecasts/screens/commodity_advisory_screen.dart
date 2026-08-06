@@ -541,26 +541,38 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
                 // Advisory Cards Section
                 if (filteredPredictions.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(32.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                     child: Center(
                       child: Column(
                         children: [
                           const Icon(
                             Icons.storefront_outlined,
-                            size: 48,
+                            size: 52,
                             color: Color(0xFFFB923C), // Secondary Orange
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           Text(
                             _predictions.isEmpty
-                                ? l10n.noForecastsAvailable
+                                ? l10n.noForecastsInDistrict
                                 : l10n.noOptionsFound,
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 16,
-                              color: Color(0xFF6B7280), // Secondary Text
-                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1F2937), // Primary Text
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if (_predictions.isEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.noForecastsInDistrictSubtitle,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B7280), // Secondary Text
+                              ),
+                            ),
+                          ],
                           if (hasAppliedFilters) ...[
                             const SizedBox(height: 16),
                             TextButton.icon(

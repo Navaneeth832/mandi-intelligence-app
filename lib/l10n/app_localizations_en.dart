@@ -484,4 +484,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseSelectCommodity => 'Please select at least one commodity';
+
+  @override
+  String get noForecastsInDistrict => 'No forecasts available for your district';
+
+  @override
+  String get noForecastsInDistrictSubtitle => 'You can explore market prices for this crop across other districts & states in India.';
+
+  @override
+  String get exploreOtherMarketsButton => 'Explore Other Markets';
 }

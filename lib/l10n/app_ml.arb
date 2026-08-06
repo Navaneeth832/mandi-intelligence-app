@@ -210,5 +210,8 @@
   "selectMarkets": "വിപണികൾ തിരഞ്ഞെടുക്കുക",
   "showAdvisory": "ഉപദേശം കാണുക",
   "allActiveCommodities": "എല്ലാ സജീവ വിളകളും",
-  "pleaseSelectCommodity": "കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക"
+  "pleaseSelectCommodity": "കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക",
+  "noForecastsInDistrict": "നിങ്ങളുടെ ജില്ലയിൽ പ്രവചനങ്ങൾ ലഭ്യമല്ല",
+  "noForecastsInDistrictSubtitle": "ഇന്ത്യയിലുടനീളമുള്ള മറ്റ് ജില്ലകളിലെയും സംസ്ഥാനങ്ങളിലെയും വിപണി വിലകൾ നിങ്ങൾക്ക് പരിശോധിക്കാം.",
+  "exploreOtherMarketsButton": "മറ്റ് വിപണികൾ പരിശോധിക്കുക"
 }
