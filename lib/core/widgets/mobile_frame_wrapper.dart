@@ -22,15 +22,24 @@ class MobileFrameWrapper extends StatelessWidget {
         if (screenWidth > 450) {
           const double targetWidth = 390.0;
           const double targetHeight = 884.0;
+          const double targetAspect = targetWidth / targetHeight;
 
-          // Scale down proportionally if viewport height is smaller than targetHeight
-          final double availableHeight = math.max(0.0, screenHeight - 32.0);
-          final double scale = availableHeight < targetHeight
-              ? availableHeight / targetHeight
-              : 1.0;
+          // Max frame constraints based on available browser viewport space
+          final double maxFrameHeight = math.max(0.0, screenHeight - 32.0);
+          final double maxFrameWidth = math.max(0.0, screenWidth - 32.0);
 
-          final double frameWidth = targetWidth * scale;
-          final double frameHeight = targetHeight * scale;
+          // Calculate aspect-ratio-preserved frame dimensions
+          double frameHeight = math.min(targetHeight, maxFrameHeight);
+          double frameWidth = frameHeight * targetAspect;
+
+          if (frameWidth > maxFrameWidth) {
+            frameWidth = maxFrameWidth;
+            frameHeight = frameWidth / targetAspect;
+          }
+
+          final double scale = frameWidth / targetWidth;
+          final double borderRadius = math.max(16.0, 32.0 * scale);
+          final double borderWidth = math.max(2.0, 6.0 * scale);
 
           return Scaffold(
             backgroundColor: const Color(0xFF0F172A), // Dark slate background for desktop
@@ -40,7 +49,7 @@ class MobileFrameWrapper extends StatelessWidget {
                 height: frameHeight,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFBF7),
-                  borderRadius: BorderRadius.circular(32 * scale),
+                  borderRadius: BorderRadius.circular(borderRadius),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.6),
@@ -56,19 +65,19 @@ class MobileFrameWrapper extends StatelessWidget {
                   ],
                   border: Border.all(
                     color: const Color(0xFF1E293B),
-                    width: math.max(2.0, 6.0 * scale),
+                    width: borderWidth,
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(26 * scale),
+                  borderRadius: BorderRadius.circular(math.max(12.0, borderRadius - borderWidth)),
                   child: MediaQuery(
                     // Provide target mobile screen dimensions (390x884) to child widgets
                     data: MediaQuery.of(context).copyWith(
                       size: const Size(targetWidth, targetHeight),
                     ),
-                    child: Transform.scale(
-                      scale: scale,
-                      alignment: Alignment.topCenter,
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      alignment: Alignment.center,
                       child: SizedBox(
                         width: targetWidth,
                         height: targetHeight,

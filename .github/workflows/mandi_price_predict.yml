@@ -2,8 +2,8 @@ name: Mandi Price Prediction
 
 on:
   schedule:
-    # Run every 6 hours starting from 01:00 UTC (01:00, 07:00, 13:00, 19:00 UTC)
-    - cron: "0 1,7,13,19 * * *"
+    # Run every 2 hours starting from 01:00 UTC (01:00, ,3:00, 05:00, 7:00, 9:00....etc)
+    - cron: "0 1,3,5,7,9,11,13,15,17,19,21,23 * * *"
 
   workflow_dispatch:
 
