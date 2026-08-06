@@ -25,6 +25,7 @@ class ForecastDetailScreen extends ConsumerStatefulWidget {
 class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
   final bool _isLoading = false;
   final String? _errorMessage = null;
+  bool _loadAllBestMarkets = false;
 
   Future<void> _onTapMarket(BestMarket mkt) async {
     showDialog(
@@ -822,7 +823,10 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
   Widget _buildBestMarketsSection(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final bestMarketsAsync = ref.watch(bestMarketsProvider(widget.forecast.commodityId));
+    final bestMarketsAsync = ref.watch(bestMarketsProvider((
+      commodityId: widget.forecast.commodityId,
+      includeAll: _loadAllBestMarkets,
+    )));
 
     final currencyFormatter = NumberFormat.currency(
       locale: 'en_IN',
@@ -880,9 +884,37 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               if (markets.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text(
-                    l10n.noMarketsFound,
-                    style: const TextStyle(color: Color(0xFF6B7280)),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          _loadAllBestMarkets
+                              ? l10n.noMarketsFound
+                              : 'No markets available in your preferred district.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                        ),
+                        if (!_loadAllBestMarkets) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFF97316),
+                              side: const BorderSide(color: Color(0xFFF97316), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _loadAllBestMarkets = true;
+                              });
+                            },
+                            icon: const Icon(Icons.public, size: 18),
+                            label: const Text('Load Other Markets'),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 );
               }

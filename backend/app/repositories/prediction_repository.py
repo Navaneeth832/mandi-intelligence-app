@@ -11,21 +11,31 @@ from app.models.variety import Variety
 from app.models.grade import Grade
 from app.models.mandi_price import MandiPrice
 
+from sqlalchemy import tuple_
+
 def get_latest_batch(db: Session) -> PredictionBatch | None:
-    """Find today's latest prediction batch."""
+    """Find the most recent available prediction batch."""
     return (
         db.query(PredictionBatch)
-        .filter(PredictionBatch.prediction_date == date.today())
-        .order_by(PredictionBatch.prediction_time.desc())
+        .order_by(
+            PredictionBatch.prediction_date.desc(),
+            PredictionBatch.prediction_time.desc()
+        )
         .first()
     )
 
-def get_predictions_with_details(db: Session, batch_id: int, commodity_ids: list[int]) -> list[CommodityPrediction]:
+def get_predictions_with_details(
+    db: Session,
+    batch_id: int,
+    commodity_ids: list[int],
+    district_id: int | None = None
+) -> list[CommodityPrediction]:
     """
     Load every prediction row belonging to that batch for specified commodity_ids.
     Eagerly loads commodities, markets, districts, states, varieties, grades, and translations.
+    If district_id is provided, filters directly in SQL to markets in that district.
     """
-    return (
+    query = (
         db.query(CommodityPrediction)
         .options(
             joinedload(CommodityPrediction.commodity).selectinload(Commodity.translations),
@@ -43,6 +53,15 @@ def get_predictions_with_details(db: Session, batch_id: int, commodity_ids: list
             CommodityPrediction.batch_id == batch_id,
             CommodityPrediction.commodity_id.in_(commodity_ids)
         )
+    )
+
+    if district_id is not None:
+        query = query.filter(
+            CommodityPrediction.market.has(Market.district_id == district_id)
+        )
+
+    return (
+        query
         .order_by(
             CommodityPrediction.commodity_id,
             CommodityPrediction.market_id,
@@ -56,26 +75,69 @@ def get_predictions_with_details(db: Session, batch_id: int, commodity_ids: list
 def get_latest_mandi_prices_for_combinations(db: Session, combinations: list[tuple[int, int, int, int]]) -> dict[tuple[int, int, int, int], float]:
     """
     For a list of (commodity_id, market_id, variety_id, grade_id) tuples,
-    find the latest modal_price for each from mandi_prices.
+    find the latest modal_price for each from mandi_prices in 1 single batched SQL query.
     """
     if not combinations:
         return {}
-        
+
     price_map = {}
-    for key in combinations:
-        comm_id, mkt_id, var_id, grd_id = key
-        latest_price = (
-            db.query(MandiPrice.modal_price)
-            .filter(
-                MandiPrice.commodity_id == comm_id,
-                MandiPrice.market_id == mkt_id,
-                MandiPrice.variety_id == var_id,
-                MandiPrice.grade_id == grd_id
+    keys_tuples = [
+        (comm_id, mkt_id, var_id, grd_id)
+        for (comm_id, mkt_id, var_id, grd_id) in combinations
+    ]
+
+    try:
+        results = (
+            db.query(
+                MandiPrice.commodity_id,
+                MandiPrice.market_id,
+                MandiPrice.variety_id,
+                MandiPrice.grade_id,
+                MandiPrice.modal_price
             )
-            .order_by(MandiPrice.arrival_date.desc())
-            .first()
+            .filter(
+                tuple_(
+                    MandiPrice.commodity_id,
+                    MandiPrice.market_id,
+                    MandiPrice.variety_id,
+                    MandiPrice.grade_id
+                ).in_(keys_tuples)
+            )
+            .order_by(
+                MandiPrice.commodity_id,
+                MandiPrice.market_id,
+                MandiPrice.variety_id,
+                MandiPrice.grade_id,
+                MandiPrice.arrival_date.desc()
+            )
+            .distinct(
+                MandiPrice.commodity_id,
+                MandiPrice.market_id,
+                MandiPrice.variety_id,
+                MandiPrice.grade_id
+            )
+            .all()
         )
-        price_map[key] = float(latest_price.modal_price) if latest_price else 0.0
+        for r in results:
+            key = (r.commodity_id, r.market_id, r.variety_id, r.grade_id)
+            price_map[key] = float(r.modal_price)
+    except Exception:
+        # Fallback to loop query if dialect does not support DISTINCT ON
+        for key in combinations:
+            comm_id, mkt_id, var_id, grd_id = key
+            latest_price = (
+                db.query(MandiPrice.modal_price)
+                .filter(
+                    MandiPrice.commodity_id == comm_id,
+                    MandiPrice.market_id == mkt_id,
+                    MandiPrice.variety_id == var_id,
+                    MandiPrice.grade_id == grd_id
+                )
+                .order_by(MandiPrice.arrival_date.desc())
+                .first()
+            )
+            price_map[key] = float(latest_price.modal_price) if latest_price else 0.0
+
     return price_map
 
 def get_predictions_with_details_paginated(

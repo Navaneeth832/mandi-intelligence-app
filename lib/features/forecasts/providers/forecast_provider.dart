@@ -94,12 +94,13 @@ final commodityPredictionsProvider = FutureProvider.family<PaginatedForecastResp
   );
 });
 
-final bestMarketsProvider = FutureProvider.family<List<BestMarket>, int>((ref, commodityId) async {
+final bestMarketsProvider = FutureProvider.family<List<BestMarket>, ({int commodityId, bool includeAll})>((ref, arg) async {
   final locale = ref.watch(localeProvider);
   final repository = ref.watch(forecastRepositoryProvider);
   return repository.getBestMarkets(
-    commodityId: commodityId,
+    commodityId: arg.commodityId,
     language: locale.languageCode,
+    includeAll: arg.includeAll,
   );
 });
 

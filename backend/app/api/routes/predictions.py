@@ -41,6 +41,7 @@ def get_predictions(
 def get_best_markets(
     commodity_id: int,
     language: str | None = None,
+    include_all: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -49,7 +50,8 @@ def get_best_markets(
         db,
         current_user,
         commodity_id=commodity_id,
-        language=lang
+        language=lang,
+        include_all=include_all
     )
 
 @router.post("/trigger")

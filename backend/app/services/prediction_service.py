@@ -212,21 +212,22 @@ def get_best_markets_for_commodity(
     db: Session,
     current_user: User,
     commodity_id: int,
-    language: str
+    language: str,
+    include_all: bool = False
 ) -> list[dict]:
     """
-    Get best markets for a commodity. Filters to markets in the user's selected district,
-    sorted in descending order of predicted selling price (highest predicted selling price first).
-    If no markets exist in the user's selected district, falls back to all markets for this commodity.
+    Get best markets for a commodity. By default filters strictly in SQL to markets
+    in the user's selected district (sorted in descending order of predicted selling price).
+    If include_all is True, fetches all markets across India for this commodity.
     """
     batch = get_latest_batch(db)
     if not batch:
         return []
 
-    district_id = current_user.district_id
+    district_id = current_user.district_id if not include_all else None
 
     from app.repositories.prediction_repository import get_predictions_with_details
-    prediction_rows = get_predictions_with_details(db, batch.id, [commodity_id])
+    prediction_rows = get_predictions_with_details(db, batch.id, [commodity_id], district_id=district_id)
     if not prediction_rows:
         return []
 
@@ -240,8 +241,7 @@ def get_best_markets_for_commodity(
     price_map = get_latest_mandi_prices_for_combinations(db, list(grouped_predictions.keys()))
     today_val = date.today()
 
-    all_markets = []
-    district_markets = []
+    best_markets_list = []
 
     for key, pred_list in grouped_predictions.items():
         if not pred_list:
@@ -266,7 +266,7 @@ def get_best_markets_for_commodity(
         best_sell_date_obj = pred_list[peak_index].prediction_day
         recommendation_raw = compute_recommendation(best_sell_date_obj, trend_raw, today_val)
 
-        item = {
+        best_markets_list.append({
             "market_id": mkt.id,
             "market_name": market_name,
             "district_id": mkt.district_id,
@@ -281,12 +281,7 @@ def get_best_markets_for_commodity(
             "current_price": price_map.get(key, 0.0),
             "trend": translate_trend(trend_raw, language),
             "recommendation": translate_recommendation(recommendation_raw, language)
-        }
+        })
 
-        all_markets.append(item)
-        if district_id and mkt.district_id == district_id:
-            district_markets.append(item)
-
-    target_list = district_markets if district_markets else all_markets
-    target_list.sort(key=lambda x: x["predicted_price"], reverse=True)
-    return target_list
+    best_markets_list.sort(key=lambda x: x["predicted_price"], reverse=True)
+    return best_markets_list

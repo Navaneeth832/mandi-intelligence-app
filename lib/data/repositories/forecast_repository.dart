@@ -96,6 +96,7 @@ class ForecastRepository {
   Future<List<BestMarket>> getBestMarkets({
     required int commodityId,
     String language = 'en',
+    bool includeAll = false,
   }) async {
     final token = await _authRepository.getToken();
     if (token == null) {
@@ -105,6 +106,7 @@ class ForecastRepository {
     final queryParams = <String, String>{
       'commodity_id': commodityId.toString(),
       'language': language,
+      if (includeAll) 'include_all': 'true',
     };
 
     final uri = Uri.parse('$baseUrl/predictions/best-markets').replace(queryParameters: queryParams);
