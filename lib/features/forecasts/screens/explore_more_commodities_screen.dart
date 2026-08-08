@@ -8,7 +8,9 @@ import '../../../data/models/market_model.dart';
 import '../../../data/models/state_model.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import '../../mandi_prices/providers/mandi_prices_provider.dart';
+import '../../mandi_prices/widgets/filter_dropdown.dart';
 import 'explore_advisory_results_screen.dart';
+
 
 class ExploreMoreCommoditiesScreen extends ConsumerStatefulWidget {
   const ExploreMoreCommoditiesScreen({super.key});
@@ -35,7 +37,9 @@ class _ExploreMoreCommoditiesScreenState extends ConsumerState<ExploreMoreCommod
     final districtsAsync = _selectedStateId != null ? ref.watch(districtsProvider(_selectedStateId)) : null;
     final marketsAsync = _selectedDistrictId != null ? ref.watch(marketsListProvider(_selectedDistrictId)) : null;
 
-    final canShowAdvisory = _selectedCommodityIds.isNotEmpty;
+    final canShowAdvisory = _selectedStateId != null &&
+        _selectedDistrictId != null &&
+        _selectedCommodityIds.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFBF7), // Cream background
@@ -166,47 +170,33 @@ class _ExploreMoreCommoditiesScreenState extends ConsumerState<ExploreMoreCommod
                         ),
                       ),
                       onPressed: canShowAdvisory
-                          ? () async {
+                          ? () {
                               final selectedCommoditiesList = allCommodities
                                   .where((c) => _selectedCommodityIds.contains(c.id))
                                   .toList();
 
-                              List<int> effectiveMarketIds = [];
-                              if (_selectedMarketIds.isNotEmpty) {
-                                effectiveMarketIds = _selectedMarketIds.toList();
-                              } else if (_selectedDistrictId != null) {
-                                final districtMarkets = await ref.read(marketsListProvider(_selectedDistrictId!).future);
-                                effectiveMarketIds = districtMarkets.map((m) => m.id).toList();
-                              } else if (_selectedStateId != null) {
-                                final districts = await ref.read(districtsProvider(_selectedStateId!).future);
-                                final List<int> stateMarketIds = [];
-                                for (final d in districts) {
-                                  final mList = await ref.read(marketsListProvider(d.id).future);
-                                  stateMarketIds.addAll(mList.map((m) => m.id));
-                                }
-                                effectiveMarketIds = stateMarketIds;
-                              }
+                              List<int>? explicitMarketIds;
+                              int? targetDistrictId;
 
-                              if (!context.mounted) return;
+                              if (_selectedMarketIds.isNotEmpty) {
+                                explicitMarketIds = _selectedMarketIds.toList();
+                              } else if (_selectedDistrictId != null) {
+                                targetDistrictId = _selectedDistrictId;
+                              }
 
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ExploreAdvisoryResultsScreen(
                                     selectedCommodities: selectedCommoditiesList,
-                                    selectedMarketIds: effectiveMarketIds,
+                                    selectedMarketIds: explicitMarketIds,
+                                    districtId: targetDistrictId,
                                   ),
                                 ),
                               );
                             }
-                          : () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.pleaseSelectCommodity),
-                                  backgroundColor: const Color(0xFFF97316),
-                                ),
-                              );
-                            },
+                          : null,
+
                       child: Text(
                         l10n.showAdvisory,
                         style: const TextStyle(
@@ -263,79 +253,52 @@ class _ExploreMoreCommoditiesScreenState extends ConsumerState<ExploreMoreCommod
   }
 
   Widget _buildStateDropdown(List<StateModel> states, String languageCode) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFE0CC)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          isExpanded: true,
-          hint: Text(
-            AppLocalizations.of(context)!.selectState,
-            style: const TextStyle(color: Color(0xFF9CA3AF)),
-          ),
-          value: _selectedStateId,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFF97316)),
-          items: states.map((state) {
-            return DropdownMenuItem<int>(
-              value: state.id,
-              child: Text(
-                state.getDisplayName(languageCode),
-                style: const TextStyle(color: Color(0xFF1F2937), fontSize: 15),
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedStateId = value;
-              _selectedDistrictId = null;
-              _selectedMarketIds.clear();
-            });
-          },
-        ),
-      ),
+    StateModel? selectedStateObj;
+    if (_selectedStateId != null) {
+      try {
+        selectedStateObj = states.firstWhere((s) => s.id == _selectedStateId);
+      } catch (_) {}
+    }
+
+    return FilterDropdownButton<StateModel>(
+      hintText: AppLocalizations.of(context)!.selectState,
+      items: states,
+      value: selectedStateObj,
+      itemToString: (state) => state.getDisplayName(languageCode),
+      width: double.infinity,
+      onChanged: (value) {
+        setState(() {
+          _selectedStateId = value?.id;
+          _selectedDistrictId = null;
+          _selectedMarketIds.clear();
+        });
+      },
     );
   }
 
   Widget _buildDistrictDropdown(List<District> districts, String languageCode) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFE0CC)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          isExpanded: true,
-          hint: Text(
-            AppLocalizations.of(context)!.selectDistrict,
-            style: const TextStyle(color: Color(0xFF9CA3AF)),
-          ),
-          value: _selectedDistrictId,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFF97316)),
-          items: districts.map((district) {
-            return DropdownMenuItem<int>(
-              value: district.id,
-              child: Text(
-                district.getDisplayName(languageCode),
-                style: const TextStyle(color: Color(0xFF1F2937), fontSize: 15),
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedDistrictId = value;
-              _selectedMarketIds.clear();
-            });
-          },
-        ),
-      ),
+    District? selectedDistrictObj;
+    if (_selectedDistrictId != null) {
+      try {
+        selectedDistrictObj = districts.firstWhere((d) => d.id == _selectedDistrictId);
+      } catch (_) {}
+    }
+
+    return FilterDropdownButton<District>(
+      hintText: AppLocalizations.of(context)!.selectDistrict,
+      items: districts,
+      value: selectedDistrictObj,
+      itemToString: (district) => district.getDisplayName(languageCode),
+      width: double.infinity,
+      onChanged: (value) {
+        setState(() {
+          _selectedDistrictId = value?.id;
+          _selectedMarketIds.clear();
+        });
+      },
     );
   }
+
 
   Widget _buildMarketsSelector(List<Market> markets, String languageCode) {
     final filteredMarkets = markets.where((m) {

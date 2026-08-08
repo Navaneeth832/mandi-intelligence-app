@@ -7,6 +7,7 @@ class FilterDropdownButton<T> extends StatefulWidget {
   final T? value;
   final ValueChanged<T?> onChanged;
   final String Function(T)? itemToString;
+  final double? width;
 
   const FilterDropdownButton({
     super.key,
@@ -15,7 +16,9 @@ class FilterDropdownButton<T> extends StatefulWidget {
     this.value,
     required this.onChanged,
     this.itemToString,
+    this.width = 160,
   });
+
 
   @override
   State<FilterDropdownButton<T>> createState() => _FilterDropdownButtonState<T>();
@@ -215,7 +218,7 @@ class _FilterDropdownButtonState<T> extends State<FilterDropdownButton<T>> {
         key: _key,
         onTap: _toggleDropdown,
         child: Container(
-          width: 160, // Kept your exact requested width 📏
+          width: widget.width,
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
           decoration: BoxDecoration(
             color: const Color(0xFFE2E5E8),

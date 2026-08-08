@@ -1047,11 +1047,12 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 - **Repository**: Updated `ForecastRepository.getForecastsForPreferredCrops` ([forecast_repository.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/data/repositories/forecast_repository.dart)) to support `List<int>? commodityIds` and `List<int>? marketIds`.
 - **Riverpod Provider**: Added `explorePredictionsProvider` family in [forecast_provider.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/providers/forecast_provider.dart) to fetch predictions on demand when viewing results.
 - **Screens**:
-  - Created [explore_more_commodities_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/explore_more_commodities_screen.dart) for cascading filters and active commodity selection.
+  - Created [explore_more_commodities_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/explore_more_commodities_screen.dart) for cascading filters and active commodity selection. Replaced raw dropdowns with standard `FilterDropdownButton` matching the Home Page design. Button is disabled (`onPressed: null`, greyed out) until user selects minimum State, District, and at least one Commodity.
   - Created [explore_advisory_results_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/explore_advisory_results_screen.dart) for commodity chips and forecast cards.
   - Updated [forecasts_screen.dart](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/lib/features/forecasts/screens/forecasts_screen.dart) to navigate to `ExploreMoreCommoditiesScreen`.
   - Removed outdated placeholder `explore_placeholder_screen.dart`.
 - **Localization**: Added multi-language keys (`exploreMoreCommodities`, `exploreAdvisoryResults`, `selectCommodities`, `selectMarkets`, `showAdvisory`, `allActiveCommodities`, `pleaseSelectCommodity`) in `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
+
 
 
 

@@ -104,7 +104,7 @@ final bestMarketsProvider = FutureProvider.family<List<BestMarket>, ({int commod
   );
 });
 
-final explorePredictionsProvider = FutureProvider.family<PaginatedForecastResponse, ({int commodityId, List<int>? marketIds})>((ref, arg) async {
+final explorePredictionsProvider = FutureProvider.family<PaginatedForecastResponse, ({int commodityId, List<int>? marketIds, int? districtId})>((ref, arg) async {
   final locale = ref.watch(localeProvider);
   final repository = ref.watch(forecastRepositoryProvider);
   return repository.getForecastsForPreferredCrops(
@@ -113,5 +113,7 @@ final explorePredictionsProvider = FutureProvider.family<PaginatedForecastRespon
     pageSize: 50,
     commodityId: arg.commodityId,
     marketIds: arg.marketIds,
+    districtId: arg.districtId,
   );
 });
+

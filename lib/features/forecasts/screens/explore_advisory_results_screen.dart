@@ -10,12 +10,14 @@ import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class ExploreAdvisoryResultsScreen extends ConsumerStatefulWidget {
   final List<Commodity> selectedCommodities;
-  final List<int> selectedMarketIds;
+  final List<int>? selectedMarketIds;
+  final int? districtId;
 
   const ExploreAdvisoryResultsScreen({
     super.key,
     required this.selectedCommodities,
-    required this.selectedMarketIds,
+    this.selectedMarketIds,
+    this.districtId,
   });
 
   @override
@@ -39,7 +41,8 @@ class _ExploreAdvisoryResultsScreenState extends ConsumerState<ExploreAdvisoryRe
     final predictionsAsync = ref.watch(
       explorePredictionsProvider((
         commodityId: _activeCommodity.id,
-        marketIds: widget.selectedMarketIds.isNotEmpty ? widget.selectedMarketIds : null,
+        marketIds: widget.selectedMarketIds != null && widget.selectedMarketIds!.isNotEmpty ? widget.selectedMarketIds : null,
+        districtId: widget.districtId,
       )),
     );
 
@@ -154,7 +157,8 @@ class _ExploreAdvisoryResultsScreenState extends ConsumerState<ExploreAdvisoryRe
                       ref.invalidate(
                         explorePredictionsProvider((
                           commodityId: _activeCommodity.id,
-                          marketIds: widget.selectedMarketIds.isNotEmpty ? widget.selectedMarketIds : null,
+                          marketIds: widget.selectedMarketIds != null && widget.selectedMarketIds!.isNotEmpty ? widget.selectedMarketIds : null,
+                          districtId: widget.districtId,
                         )),
                       );
                     },
@@ -279,7 +283,8 @@ class _ExploreAdvisoryResultsScreenState extends ConsumerState<ExploreAdvisoryRe
                 ref.invalidate(
                   explorePredictionsProvider((
                     commodityId: _activeCommodity.id,
-                    marketIds: widget.selectedMarketIds.isNotEmpty ? widget.selectedMarketIds : null,
+                    marketIds: widget.selectedMarketIds != null && widget.selectedMarketIds!.isNotEmpty ? widget.selectedMarketIds : null,
+                    districtId: widget.districtId,
                   )),
                 );
               },
