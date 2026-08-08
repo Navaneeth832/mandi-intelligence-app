@@ -6,6 +6,7 @@ import 'package:mandi_intelligence_app/features/auth/providers/auth_provider.dar
 import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
 import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
 import 'package:mandi_intelligence_app/features/auth/screens/onboarding_screen.dart';
+import 'package:mandi_intelligence_app/features/auth/screens/notification_settings_screen.dart';
 import 'package:mandi_intelligence_app/features/auth/screens/login_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
@@ -110,6 +111,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildPreferredCropsCard(context, prefsAsync, cropsAsync, locale),
+                const SizedBox(height: 16),
+                _buildNotificationSettingsCard(context),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -335,6 +338,75 @@ Widget _buildPreferredCropsCard(
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationSettingsCard(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade300, width: 1),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const NotificationSettingsScreen(),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF2F4F2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.notifications_active_outlined,
+                  color: _primaryGreen,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.notificationSettings,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      AppLocalizations.of(context)!.notificationSettingsSubtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

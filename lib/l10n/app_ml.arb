@@ -213,5 +213,33 @@
   "pleaseSelectCommodity": "കുറഞ്ഞത് ഒരു വിളയെങ്കിലും തിരഞ്ഞെടുക്കുക",
   "noForecastsInDistrict": "നിങ്ങളുടെ ജില്ലയിൽ പ്രവചനങ്ങൾ ലഭ്യമല്ല",
   "noForecastsInDistrictSubtitle": "ഇന്ത്യയിലുടനീളമുള്ള മറ്റ് ജില്ലകളിലെയും സംസ്ഥാനങ്ങളിലെയും വിപണി വിലകൾ നിങ്ങൾക്ക് പരിശോധിക്കാം.",
-  "exploreOtherMarketsButton": "മറ്റ് വിപണികൾ പരിശോധിക്കുക"
-}
+  "exploreOtherMarketsButton": "മറ്റ് വിപണികൾ പരിശോധിക്കുക",
+  "notificationSettings": "അറിയിപ്പ് മുൻഗണനകൾ",
+  "notificationSettingsSubtitle": "അലേർട്ട് മുൻഗണനകളും അറിയിപ്പ് ചാനലുകളും ക്രമീകരിക്കുക",
+  "alertTypes": "അലേർട്ട് തരങ്ങൾ",
+  "priceIncrease": "വില വർദ്ധനവ്",
+  "priceDrop": "വിലക്കുറവ്",
+  "betterMarket": "മെച്ചപ്പെട്ട വിപണി",
+  "marketGlut": "വിപണിയിലെ ഉയർന്ന വരവ്",
+  "aiRecommendation": "എഐ ശുപാർശ",
+  "delivery": "അറിയിപ്പ് ചാനലുകൾ",
+  "inAppNotifications": "ഇൻ-ആപ്പ് അറിയിപ്പുകൾ",
+  "smsNotifications": "എസ്എംഎസ് അറിയിപ്പുകൾ",
+  "pushNotifications": "പുഷ് അറിയിപ്പുകൾ",
+  "comingSoon": "ഉടൻ വരുന്നു",
+  "notificationFrequency": "അറിയിപ്പ് ആവൃത്തി",
+  "instant": "ഉടനടി",
+  "dailySummary": "ദൈനംദിന സംഗ്രഹം",
+  "saving": "സേവ് ചെയ്യുന്നു...",
+  "savedSuccessfully": "അറിയിപ്പ് മുൻഗണനകൾ വിജയകരമായി സേവ് ചെയ്തു!",
+  "failedToSave": "ക്രമീകരണങ്ങൾ സേവ് ചെയ്യാൻ കഴിഞ്ഞില്ല: {error}",
+  "@failedToSave": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noChangesToSave": "സേവ് ചെയ്യാൻ മാറ്റങ്ങളൊന്നുമില്ല.",
+  "unsavedChanges": "സേവ് ചെയ്യാത്ത മാറ്റങ്ങൾ",
+  "unsavedChangesMessage": "നിങ്ങൾക്ക് സേവ് ചെയ്യാത്ത മാറ്റങ്ങളുണ്ട്. അവ ഒഴിവാക്കണോ?",
+  "discard": "ഒഴിവാക്കുക"
+}

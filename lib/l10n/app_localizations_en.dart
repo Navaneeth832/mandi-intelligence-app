@@ -493,4 +493,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exploreOtherMarketsButton => 'Explore Other Markets';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get notificationSettingsSubtitle => 'Manage alert preferences and delivery channels';
+
+  @override
+  String get alertTypes => 'Alert Types';
+
+  @override
+  String get priceIncrease => 'Price Increase';
+
+  @override
+  String get priceDrop => 'Price Drop';
+
+  @override
+  String get betterMarket => 'Better Market';
+
+  @override
+  String get marketGlut => 'Market Glut';
+
+  @override
+  String get aiRecommendation => 'AI Recommendation';
+
+  @override
+  String get delivery => 'Delivery';
+
+  @override
+  String get inAppNotifications => 'In-App Notifications';
+
+  @override
+  String get smsNotifications => 'SMS Notifications';
+
+  @override
+  String get pushNotifications => 'Push Notifications';
+
+  @override
+  String get comingSoon => 'Coming Soon';
+
+  @override
+  String get notificationFrequency => 'Notification Frequency';
+
+  @override
+  String get instant => 'Instant';
+
+  @override
+  String get dailySummary => 'Daily Summary';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get savedSuccessfully => 'Notification settings saved successfully!';
+
+  @override
+  String failedToSave(Object error) {
+    return 'Failed to save settings: $error';
+  }
+
+  @override
+  String get noChangesToSave => 'No changes to save.';
+
+  @override
+  String get unsavedChanges => 'Unsaved Changes';
+
+  @override
+  String get unsavedChangesMessage => 'You have unsaved changes. Do you want to discard them?';
+
+  @override
+  String get discard => 'Discard';
 }

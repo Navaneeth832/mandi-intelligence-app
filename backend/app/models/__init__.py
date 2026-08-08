@@ -18,3 +18,4 @@ from app.models.otp_verification import OTPVerification
 from app.models.verification_token import VerificationToken
 from .prediction_batch import PredictionBatch
 from .commodity_prediction import CommodityPrediction
+from app.models.notification_preference import NotificationPreference

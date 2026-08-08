@@ -1020,6 +1020,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Explore Other Markets'**
   String get exploreOtherMarketsButton;
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @notificationSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage alert preferences and delivery channels'**
+  String get notificationSettingsSubtitle;
+
+  /// No description provided for @alertTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Types'**
+  String get alertTypes;
+
+  /// No description provided for @priceIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Increase'**
+  String get priceIncrease;
+
+  /// No description provided for @priceDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Drop'**
+  String get priceDrop;
+
+  /// No description provided for @betterMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Better Market'**
+  String get betterMarket;
+
+  /// No description provided for @marketGlut.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Glut'**
+  String get marketGlut;
+
+  /// No description provided for @aiRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Recommendation'**
+  String get aiRecommendation;
+
+  /// No description provided for @delivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery'**
+  String get delivery;
+
+  /// No description provided for @inAppNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'In-App Notifications'**
+  String get inAppNotifications;
+
+  /// No description provided for @smsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS Notifications'**
+  String get smsNotifications;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get pushNotifications;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoon;
+
+  /// No description provided for @notificationFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Frequency'**
+  String get notificationFrequency;
+
+  /// No description provided for @instant.
+  ///
+  /// In en, this message translates to:
+  /// **'Instant'**
+  String get instant;
+
+  /// No description provided for @dailySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Summary'**
+  String get dailySummary;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @savedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification settings saved successfully!'**
+  String get savedSuccessfully;
+
+  /// No description provided for @failedToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save settings: {error}'**
+  String failedToSave(Object error);
+
+  /// No description provided for @noChangesToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes to save.'**
+  String get noChangesToSave;
+
+  /// No description provided for @unsavedChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved Changes'**
+  String get unsavedChanges;
+
+  /// No description provided for @unsavedChangesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Do you want to discard them?'**
+  String get unsavedChangesMessage;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

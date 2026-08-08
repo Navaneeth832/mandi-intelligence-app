@@ -493,4 +493,75 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get exploreOtherMarketsButton => 'अन्य मंडियां देखें';
+
+  @override
+  String get notificationSettings => 'अधिसूचना प्राथमिकताएं';
+
+  @override
+  String get notificationSettingsSubtitle => 'अलर्ट प्राथमिकताएं और डिलीवरी माध्यम प्रबंधित करें';
+
+  @override
+  String get alertTypes => 'अलर्ट के प्रकार';
+
+  @override
+  String get priceIncrease => 'मूल्य वृद्धि';
+
+  @override
+  String get priceDrop => 'मूल्य में गिरावट';
+
+  @override
+  String get betterMarket => 'बेहतर बाज़ार';
+
+  @override
+  String get marketGlut => 'बाज़ार में अधिक आवक';
+
+  @override
+  String get aiRecommendation => 'एआई सिफ़ारिश';
+
+  @override
+  String get delivery => 'डिलीवरी माध्यम';
+
+  @override
+  String get inAppNotifications => 'इन-ऐप सूचनाएं';
+
+  @override
+  String get smsNotifications => 'एसएमएस सूचनाएं';
+
+  @override
+  String get pushNotifications => 'पुश सूचनाएं';
+
+  @override
+  String get comingSoon => 'जल्द आ रहा है';
+
+  @override
+  String get notificationFrequency => 'अधिसूचना आवृत्ति';
+
+  @override
+  String get instant => 'तुरंत';
+
+  @override
+  String get dailySummary => 'दैनिक सारांश';
+
+  @override
+  String get saving => 'सहेजा जा रहा है...';
+
+  @override
+  String get savedSuccessfully => 'अधिसूचना प्राथमिकताएं सफलतापूर्वक सहेजी गईं!';
+
+  @override
+  String failedToSave(Object error) {
+    return 'सेटिंग्स सहेजने में विफल: $error';
+  }
+
+  @override
+  String get noChangesToSave => 'सहेजने के लिए कोई बदलाव नहीं।';
+
+  @override
+  String get unsavedChanges => 'अनसहेजे गए बदलाव';
+
+  @override
+  String get unsavedChangesMessage => 'आपके पास अनसहेजे गए बदलाव हैं। क्या आप उन्हें छोड़ना चाहते हैं?';
+
+  @override
+  String get discard => 'छोड़ें';
 }

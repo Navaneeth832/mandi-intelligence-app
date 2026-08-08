@@ -493,4 +493,75 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get exploreOtherMarketsButton => 'മറ്റ് വിപണികൾ പരിശോധിക്കുക';
+
+  @override
+  String get notificationSettings => 'അറിയിപ്പ് മുൻഗണനകൾ';
+
+  @override
+  String get notificationSettingsSubtitle => 'അലേർട്ട് മുൻഗണനകളും അറിയിപ്പ് ചാനലുകളും ക്രമീകരിക്കുക';
+
+  @override
+  String get alertTypes => 'അലേർട്ട് തരങ്ങൾ';
+
+  @override
+  String get priceIncrease => 'വില വർദ്ധനവ്';
+
+  @override
+  String get priceDrop => 'വിലക്കുറവ്';
+
+  @override
+  String get betterMarket => 'മെച്ചപ്പെട്ട വിപണി';
+
+  @override
+  String get marketGlut => 'വിപണിയിലെ ഉയർന്ന വരവ്';
+
+  @override
+  String get aiRecommendation => 'എഐ ശുപാർശ';
+
+  @override
+  String get delivery => 'അറിയിപ്പ് ചാനലുകൾ';
+
+  @override
+  String get inAppNotifications => 'ഇൻ-ആപ്പ് അറിയിപ്പുകൾ';
+
+  @override
+  String get smsNotifications => 'എസ്എംഎസ് അറിയിപ്പുകൾ';
+
+  @override
+  String get pushNotifications => 'പുഷ് അറിയിപ്പുകൾ';
+
+  @override
+  String get comingSoon => 'ഉടൻ വരുന്നു';
+
+  @override
+  String get notificationFrequency => 'അറിയിപ്പ് ആവൃത്തി';
+
+  @override
+  String get instant => 'ഉടനടി';
+
+  @override
+  String get dailySummary => 'ദൈനംദിന സംഗ്രഹം';
+
+  @override
+  String get saving => 'സേവ് ചെയ്യുന്നു...';
+
+  @override
+  String get savedSuccessfully => 'അറിയിപ്പ് മുൻഗണനകൾ വിജയകരമായി സേവ് ചെയ്തു!';
+
+  @override
+  String failedToSave(Object error) {
+    return 'ക്രമീകരണങ്ങൾ സേവ് ചെയ്യാൻ കഴിഞ്ഞില്ല: $error';
+  }
+
+  @override
+  String get noChangesToSave => 'സേവ് ചെയ്യാൻ മാറ്റങ്ങളൊന്നുമില്ല.';
+
+  @override
+  String get unsavedChanges => 'സേവ് ചെയ്യാത്ത മാറ്റങ്ങൾ';
+
+  @override
+  String get unsavedChangesMessage => 'നിങ്ങൾക്ക് സേവ് ചെയ്യാത്ത മാറ്റങ്ങളുണ്ട്. അവ ഒഴിവാക്കണോ?';
+
+  @override
+  String get discard => 'ഒഴിവാക്കുക';
 }

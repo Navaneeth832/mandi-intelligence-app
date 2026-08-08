@@ -74,6 +74,13 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    notification_preferences = relationship(
+        "NotificationPreference",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
     __table_args__ = (
         CheckConstraint(
             "(email IS NOT NULL AND phone_number IS NULL) OR "

@@ -213,6 +213,34 @@
   "pleaseSelectCommodity": "Please select at least one commodity",
   "noForecastsInDistrict": "No forecasts available for your district",
   "noForecastsInDistrictSubtitle": "You can explore market prices for this crop across other districts & states in India.",
-  "exploreOtherMarketsButton": "Explore Other Markets"
+  "exploreOtherMarketsButton": "Explore Other Markets",
+  "notificationSettings": "Notification Settings",
+  "notificationSettingsSubtitle": "Manage alert preferences and delivery channels",
+  "alertTypes": "Alert Types",
+  "priceIncrease": "Price Increase",
+  "priceDrop": "Price Drop",
+  "betterMarket": "Better Market",
+  "marketGlut": "Market Glut",
+  "aiRecommendation": "AI Recommendation",
+  "delivery": "Delivery",
+  "inAppNotifications": "In-App Notifications",
+  "smsNotifications": "SMS Notifications",
+  "pushNotifications": "Push Notifications",
+  "comingSoon": "Coming Soon",
+  "notificationFrequency": "Notification Frequency",
+  "instant": "Instant",
+  "dailySummary": "Daily Summary",
+  "saving": "Saving...",
+  "savedSuccessfully": "Notification settings saved successfully!",
+  "failedToSave": "Failed to save settings: {error}",
+  "@failedToSave": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noChangesToSave": "No changes to save.",
+  "unsavedChanges": "Unsaved Changes",
+  "unsavedChangesMessage": "You have unsaved changes. Do you want to discard them?",
+  "discard": "Discard"
 }
 

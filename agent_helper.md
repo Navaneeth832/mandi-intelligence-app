@@ -16,11 +16,12 @@ This document serves as the persistent memory and architectural blueprint of the
   5. **Market Directory**: A dedicated tab lists available markets in a selected state/district, allowing users to drill down by market.
   6. **Profile Management**: Users can edit preferred crops, change languages (English, Malayalam, Hindi), or update location profiles.
 - **Current implementation status**:
-  - **Backend**: Complete and deployed to Railway. Includes database migrations, price fetching scheduler (disabled/commented out in `main.py` lifespan but running via cron/scripts), fuzzy-matching normalization algorithms, and Resend-based verification mailers.
+  - **Backend**: Complete and deployed to Railway. Includes database migrations, price fetching scheduler (disabled/commented out in `main.py` lifespan but running via cron/scripts), fuzzy-matching normalization algorithms, Resend-based verification mailers, and Notification Preferences management APIs.
   - **Frontend**: Full-featured Flutter mobile application with complete translations, riverpod caching, and fl_chart integrations.
 - **Major completed features**:
   - OTP verification flow with temporary verification tokens.
   - Forgot Password OTP verification and password reset flow.
+  - Notification Preferences management backend (auto-default creation, frequency validation, instant/daily_summary alerts).
   - Dual price ingestion (Agmarknet V2 Private API + Data.gov.in V1 Fallback API).
   - Advanced fuzzy matching normalization for Markets, Commodities, and Varieties.
   - Multi-language localization (English, Hindi, Malayalam) for both App UI and DB-driven entity names.
@@ -74,14 +75,16 @@ This document serves as the persistent memory and architectural blueprint of the
       - `states.py`: Returns states having active markets.
     - `auth.py`: Direct authentication endpoints (OTP send, verify, login, register, forgot-password send-otp, verify-otp, reset-password).
     - `crop_preferences.py`: Editing/fetching user crop preferences.
+    - `notification_preferences.py`: Endpoints for fetching and updating user notification settings.
     - `profile.py`: Profile details retrieval and updates.
   - `core/`: Config (`config.py`), DB Engine (`database.py`), Dependencies (`dependencies.py`), Security utilities (`security.py`).
-  - `models/`: SQLAlchemy models mapping directly to PostgreSQL tables.
+  - `models/`: SQLAlchemy models mapping directly to PostgreSQL tables (includes `notification_preference.py`).
   - `repositories/`: Custom SQL queries, currently houses `mandi_price_repository.py`.
-  - `schemas/`: Pydantic validation schemas.
+  - `schemas/`: Pydantic validation schemas (includes `notification_preference.py`).
   - `services/`: Core logic:
     - `auth_service.py`: Verification logic, user creation, password reset, JWT issuance.
     - `crop_preference_service.py`: Mapping user crops preferences.
+    - `notification_preference_service.py`: Managing user notification settings & auto-default initialization.
     - `email_service.py`: Resend email wrapper.
     - `otp_service.py`: Generates and verifies transient OTPs.
     - `profile_service.py`: Accesses/modifies user profiles.
@@ -100,13 +103,13 @@ This document serves as the persistent memory and architectural blueprint of the
   - `providers/`: Global providers (`locale_provider.dart`, `providers.dart` for storage, authentication api, repo).
   - `theme/`: Global styles (`app_theme.dart`).
 - `lib/data/`
-  - `models/`: Models for auth response, profile, commodity, district, mandi price, market directory, price history, state.
-  - `repositories/`: Repos bridging services and UI (`auth_repository.dart`, `mandi_repository.dart`).
-  - `services/`: API communication wrappers (`auth_api_service.dart`, `mandi_api_service.dart`).
+  - `models/`: Models for auth response, profile, commodity, district, mandi price, market directory, price history, state, and `notification_preferences.dart`.
+  - `repositories/`: Repos bridging services and UI (`auth_repository.dart`, `mandi_repository.dart`, `notification_repository.dart`).
+  - `services/`: API communication wrappers (`auth_api_service.dart`, `mandi_api_service.dart`, `notification_api_service.dart`).
 - `lib/features/`
-  - `auth/`: Login/signup/forgot-password screens, widgets, onboarding screens, and providers (`auth_provider.dart`, `profile_notifier.dart`).
+  - `auth/`: Login/signup/forgot-password screens, widgets, onboarding screens, profile screen, notification settings screen (`notification_settings_screen.dart`), and providers (`auth_provider.dart`, `profile_notifier.dart`, `notification_preferences_provider.dart`).
   - `mandi_prices/`: Home Screen, Market Directory Screen, Detailed Charts, and filters (`mandi_prices_provider.dart`, `filter_selection_provider.dart`).
-- `lib/l10n/`: Multi-language ARB definitions (en, hi, ml).
+- `lib/l10n/`: Multi-language ARB definitions (en, hi, ml) including notification settings keys.
 
 ---
 
@@ -158,6 +161,8 @@ graph TD
 | `/profile` | `PUT` | Edit user profile (name, state, district, language) | `UserProfileUpdate` | `UserResponse` | `profile.py`, `profile_service.py` | `users` |
 | `/profile/preferences` | `GET` | List user tracked crop preferences | Bearer Auth Header | `List[CropPreferenceResponse]` | `crop_preferences.py`, `crop_preference_service.py` | `user_crop_preferences`, `commodities` |
 | `/profile/preferences` | `PUT` | Bulk update user crop preferences | `CropPreferenceUpdate` | `List[CropPreferenceResponse]` | `crop_preferences.py`, `crop_preference_service.py` | `user_crop_preferences` |
+| `/profile/notification-preferences` | `GET` | Retrieve logged-in user notification preferences (creates defaults if missing) | Bearer Auth Header | `NotificationPreferenceResponse` | `notification_preferences.py`, `notification_preference_service.py` | `notification_preferences` |
+| `/profile/notification-preferences` | `PUT` | Update user notification preferences | `NotificationPreferenceUpdate` | `NotificationPreferenceResponse` | `notification_preferences.py`, `notification_preference_service.py` | `notification_preferences` |
 | `/states/` | `GET` | Get states containing active markets | Query Param: `language` | `List[StateSchema]` | `states.py` | `states`, `state_translations` |
 | `/districts/` | `GET` | Fetch districts inside a state | Query Params: `state`, `state_id`, `language` | `List[DistrictSchema]` | `districts.py` | `districts`, `district_translations` |
 | `/markets/` | `GET` | List markets inside a district having prices today | Query Params: `district_id`, `language` | `List[MarketSchema]` | `markets.py` | `markets`, `market_translations`, `mandi_prices` |
@@ -276,6 +281,20 @@ All primary schema definitions exist in `backend/app/models/`.
     - Columns: `id` (UUID, PK), `identifier` (VARCHAR(255)), `otp_hash` (VARCHAR), `purpose` (VARCHAR(50)), `expires_at` (TIMESTAMP WITH TIMEZONE), `used` (BOOLEAN), `created_at` (TIMESTAMP WITH TIMEZONE)
 18. **`verification_tokens`**
     - Columns: `id` (UUID, PK), `identifier` (VARCHAR(255)), `token_hash` (VARCHAR), `purpose` (VARCHAR(50)), `expires_at` (TIMESTAMP WITH TIMEZONE), `used` (BOOLEAN), `created_at` (TIMESTAMP WITH TIMEZONE)
+19. **`notification_preferences`**
+    - Columns:
+      - `user_id` (UUID, PK, FK -> `users.id`)
+      - `price_increase` (BOOLEAN, default=True)
+      - `price_drop` (BOOLEAN, default=True)
+      - `better_market` (BOOLEAN, default=True)
+      - `market_glut` (BOOLEAN, default=True)
+      - `ai_recommendation` (BOOLEAN, default=True)
+      - `delivery_in_app` (BOOLEAN, default=True)
+      - `delivery_sms` (BOOLEAN, default=False)
+      - `delivery_push` (BOOLEAN, default=False)
+      - `frequency` (VARCHAR(20), default='instant')
+      - `created_at` (TIMESTAMPTZ, default=now())
+      - `updated_at` (TIMESTAMPTZ, default=now(), onupdate=now())
 
 ---
 
@@ -405,7 +424,9 @@ flowchart TB
 16. **`ForecastDetailScreen`** (`forecast_detail_screen.dart`): Detailed price prediction analytics page.
     - **Key Widgets**: Hero Summary Card (Commodity, Variety • Grade, Location, Recommendation & Trend Badges), Price Overview Card (Current vs Peak Price, Best Selling Day), 7-Day Prediction Trajectory Line Chart (`fl_chart` `LineChart`), Daily Forecast Price List with "BEST DAY" highlight badge.
 17. **`ProfileScreen`** (`profile_screen.dart`): User profile and settings dashboard (Tab 3).
-    - **Key Widgets**: User Info Card (Avatar, Name, Email/Phone, Location, Language), Tracked Crops Grid (`FilterChipWidget`), Edit Profile Action Button (pushes `OnboardingScreen(isEditMode: true)`), Logout Action Button.
+    - **Key Widgets**: User Info Card (Avatar, Name, Email/Phone, Location, Language), Tracked Crops Grid (`FilterChipWidget`), Notification Settings Card (navigates to `NotificationSettingsScreen`), Edit Profile Action Button (pushes `OnboardingScreen(isEditMode: true)`), Logout Action Button.
+18. **`NotificationSettingsScreen`** (`notification_settings_screen.dart`): Notification preferences configuration dashboard.
+    - **Key Widgets**: Alert Types Card (Price Increase, Price Drop, Better Market, Market Glut, AI Recommendation switches), Delivery Channels Card (In-App switch; SMS & Push disabled with "Coming Soon" badges), Notification Frequency Card (Instant vs Daily Summary radios), Save Changes Button (loading indicator, duplicate prevention, success/error feedback, unsaved changes confirmation dialog).
 
 
 ---
@@ -446,6 +467,9 @@ The application is built using **Riverpod**.
 - **`marketsProvider`** (`mandi_prices_provider.dart`)
   - **Type**: `FutureProvider.family<List<String>, int?>`
   - **Responsibility**: Fetches market names inside a district ID. Reactive to `localeProvider`.
+- **`notificationPreferencesNotifierProvider`** (`notification_preferences_provider.dart`)
+  - **Type**: `AutoDisposeAsyncNotifierProvider<NotificationPreferencesNotifier, NotificationPreferences>`
+  - **Responsibility**: Manages loading, state caching, and updating of notification preferences via `NotificationRepository`.
 
 ---
 
@@ -464,6 +488,7 @@ The application is built using **Riverpod**.
 - **`SendOTPRequest` / `VerifyOTPRequest` / `UserRegister` / `UserLogin`** (`user.py`): Validation containers mapping input keys for authentication pipelines.
 - **`StateSchema` / `DistrictSchema` / `MarketSchema`** (`location.py`): Localized location containers carrying translation properties.
 - **`MandiPriceSchema`** (`mandi_price.py`): Maps attributes to model values during DB transactions.
+- **`NotificationPreferenceResponse` / `NotificationPreferenceUpdate` / `NotificationFrequency`** (`notification_preference.py`): Pydantic schemas validating user notification delivery, alert toggles, and frequency selection (`instant` vs `daily_summary`).
 
 ---
 
@@ -485,6 +510,9 @@ The application is built using **Riverpod**.
    - Generates URL-safe verification tokens (32 characters).
    - BCrypts verification tokens before DB storage.
    - 10-minute expiry validation logic. Must be provided to register.
+5. **`NotificationPreferenceService`** (`notification_preference_service.py`)
+   - Manages retrieval and updates for user notification settings.
+   - Automatically initializes default preferences (`price_increase=True`, `price_drop=True`, `better_market=True`, `market_glut=True`, `ai_recommendation=True`, `delivery_in_app=True`, `delivery_sms=False`, `delivery_push=False`, `frequency='instant'`) if none exist for a user.
 
 ### Normalization Logic (`backend/`)
 During price updates, raw market, commodity, and variety strings inside inputs vary dramatically in spelling, spacing, and suffixes. The pipeline uses fuzzy normalization:

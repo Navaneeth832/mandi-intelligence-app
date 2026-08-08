@@ -15,6 +15,7 @@ from app.api.routes import predictions
 from app.api.auth import router as auth_router
 from app.api.profile import router as profile_router
 from app.api.crop_preferences import router as crop_preferences_router
+from app.api.notification_preferences import router as notification_preferences_router
 from fastapi.staticfiles import StaticFiles
 
 '''
@@ -140,3 +141,5 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 
 app.include_router(crop_preferences_router)
+
+app.include_router(notification_preferences_router)
