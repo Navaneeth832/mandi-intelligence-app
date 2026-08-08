@@ -51,7 +51,8 @@ def get_predictions_for_user(
     commodity_id: int | None = None,
     market_id: int | None = None,
     commodity_ids: list[int] | None = None,
-    market_ids: list[int] | None = None
+    market_ids: list[int] | None = None,
+    district_id: int | None = None
 ) -> dict:
     """
     Retrieve and process predictions, paginated and sorted.
@@ -95,7 +96,8 @@ def get_predictions_for_user(
         page_size=page_size,
         commodity_id=commodity_id,
         market_id=market_id,
-        market_ids=market_ids
+        market_ids=market_ids,
+        district_id=district_id
     )
     if not prediction_rows:
         return {

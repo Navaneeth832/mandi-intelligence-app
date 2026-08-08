@@ -21,6 +21,7 @@ class ForecastRepository {
     int pageSize = 15,
     int? commodityId,
     int? marketId,
+    int? districtId,
     List<int>? commodityIds,
     List<int>? marketIds,
   }) async {
@@ -64,6 +65,9 @@ class ForecastRepository {
     }
     if (marketId != null) {
       queryParams['market_id'] = marketId.toString();
+    }
+    if (districtId != null) {
+      queryParams['district_id'] = districtId.toString();
     }
     if (commodityIds != null && commodityIds.isNotEmpty) {
       queryParams['commodity_ids'] = commodityIds.map((e) => e.toString()).toList();

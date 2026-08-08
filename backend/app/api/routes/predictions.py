@@ -18,6 +18,7 @@ def get_predictions(
     language: str | None = None,
     commodity_id: int | None = None,
     market_id: int | None = None,
+    district_id: int | None = None,
     commodity_ids: List[int] | None = Query(None),
     market_ids: List[int] | None = Query(None),
     db: Session = Depends(get_db),
@@ -34,7 +35,8 @@ def get_predictions(
         commodity_id=commodity_id,
         market_id=market_id,
         commodity_ids=commodity_ids,
-        market_ids=market_ids
+        market_ids=market_ids,
+        district_id=district_id
     )
 
 @router.get("/best-markets", response_model=List[BestMarketResponse])

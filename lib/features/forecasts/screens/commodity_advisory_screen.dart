@@ -78,42 +78,17 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       final repository = ref.read(forecastRepositoryProvider);
       final locale = ref.read(localeProvider);
 
-      List<int>? districtMarketIds;
-      if (districtId != null) {
-        final districtMarkets = await ref.read(marketsListProvider(districtId).future);
-        if (districtMarkets.isNotEmpty) {
-          districtMarketIds = districtMarkets.map((m) => m.id).toList();
-        }
-      }
-
       final response = await repository.getForecastsForPreferredCrops(
         language: locale.languageCode,
         page: 1,
         pageSize: 30,
         commodityId: widget.commodity.id,
-        marketIds: districtMarketIds,
+        districtId: districtId,
       );
-
-      List<CommodityForecast> fetched = response.predictions;
-
-      // Filter predictions strictly by user's preferred district
-      if (districtId != null || (districtName != null && districtName.isNotEmpty)) {
-        final userDistNorm = (districtName ?? '').toLowerCase().trim();
-        fetched = fetched.where((p) {
-          final matchesId = districtId != null && p.districtId == districtId;
-          final matchesMarket = districtMarketIds != null && districtMarketIds.contains(p.marketId);
-          final matchesName = userDistNorm.isNotEmpty &&
-              (p.districtName.toLowerCase().trim() == userDistNorm ||
-               p.districtName.toLowerCase().trim().contains(userDistNorm) ||
-               userDistNorm.contains(p.districtName.toLowerCase().trim()));
-
-          return matchesId || matchesMarket || matchesName;
-        }).toList();
-      }
 
       if (mounted) {
         setState(() {
-          _predictions.addAll(fetched);
+          _predictions.addAll(response.predictions);
           _hasNext = response.hasNext;
           _isLoadingInitial = false;
         });
@@ -140,43 +115,18 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       final locale = ref.read(localeProvider);
       final nextPage = _currentPage + 1;
 
-      List<int>? districtMarketIds;
-      if (_loadedDistrictId != null) {
-        final districtMarkets = await ref.read(marketsListProvider(_loadedDistrictId).future);
-        if (districtMarkets.isNotEmpty) {
-          districtMarketIds = districtMarkets.map((m) => m.id).toList();
-        }
-      }
-
       final response = await repository.getForecastsForPreferredCrops(
         language: locale.languageCode,
         page: nextPage,
         pageSize: 30,
         commodityId: widget.commodity.id,
-        marketIds: districtMarketIds,
+        districtId: _loadedDistrictId,
       );
-
-      List<CommodityForecast> fetched = response.predictions;
-
-      // Filter predictions strictly by user's preferred district
-      if (_loadedDistrictId != null || (_loadedDistrictName != null && _loadedDistrictName!.isNotEmpty)) {
-        final userDistNorm = (_loadedDistrictName ?? '').toLowerCase().trim();
-        fetched = fetched.where((p) {
-          final matchesId = _loadedDistrictId != null && p.districtId == _loadedDistrictId;
-          final matchesMarket = districtMarketIds != null && districtMarketIds.contains(p.marketId);
-          final matchesName = userDistNorm.isNotEmpty &&
-              (p.districtName.toLowerCase().trim() == userDistNorm ||
-               p.districtName.toLowerCase().trim().contains(userDistNorm) ||
-               userDistNorm.contains(p.districtName.toLowerCase().trim()));
-
-          return matchesId || matchesMarket || matchesName;
-        }).toList();
-      }
 
       if (mounted) {
         setState(() {
           _currentPage = nextPage;
-          _predictions.addAll(fetched);
+          _predictions.addAll(response.predictions);
           _hasNext = response.hasNext;
           _isLoadingMore = false;
         });
@@ -189,6 +139,7 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       }
     }
   }
+
 
   void _applyFilters() {
     setState(() {
