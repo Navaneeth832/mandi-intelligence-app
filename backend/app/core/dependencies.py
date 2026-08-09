@@ -9,6 +9,8 @@ from app.models.user import User
 security = HTTPBearer()
 
 
+import uuid
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
@@ -17,13 +19,20 @@ def get_current_user(
 
     payload = decode_access_token(token)
 
-    if payload is None:
+    if payload is None or "sub" not in payload:
         raise HTTPException(
             status_code=401,
             detail="Invalid token"
         )
 
-    user = db.get(User, payload["sub"])
+    user_id = payload["sub"]
+    if isinstance(user_id, str):
+        try:
+            user_id = uuid.UUID(user_id)
+        except ValueError:
+            pass
+
+    user = db.get(User, user_id)
 
     if user is None:
         raise HTTPException(

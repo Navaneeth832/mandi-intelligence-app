@@ -1097,6 +1097,41 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
   - Removed outdated placeholder `explore_placeholder_screen.dart`.
 - **Localization**: Added multi-language keys (`exploreMoreCommodities`, `exploreAdvisoryResults`, `selectCommodities`, `selectMarkets`, `showAdvisory`, `allActiveCommodities`, `pleaseSelectCommodity`) in `app_en.arb`, `app_hi.arb`, and `app_ml.arb`.
 
+---
+
+# 25. Backend Alerts Foundation & Integration Layer (August 2026)
+
+### Feature Overview & API Contract Conformance
+- **Frozen Contract Conformance**: Implemented backend routes, models, schemas, repositories, and services matching the frozen **"Alerts API — v1 Contract"**.
+- **Endpoints**:
+  - `GET /alerts`: Returns current/recent actionable alerts for authenticated user (`page`, `page_size`, `type`).
+  - `GET /alerts/history`: Returns historical alerts supporting full-text search across title/message/commodity/market, date range bounds (`date_from`, `date_to`), type filter (`type`), and pagination.
+- **Alert Types**: `BETTER_MARKET`, `PRICE_INCREASE`, `PRICE_DROP`, `AI_RECOMMENDATION`.
+- **Market Glut Exclusion**: `MARKET_GLUT` is explicitly **OUT OF SCOPE**. Queries with `type=MARKET_GLUT` or invalid types are rejected with HTTP 400 Bad Request.
+- **Authentication**: Endpoints enforce JWT authentication via `get_current_user` dependency.
+
+### Backend Infrastructure (`backend/app/`)
+- **Database Model** ([alert.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/models/alert.py)):
+  - SQLAlchemy model mapping to the `alerts` table.
+  - Foreign keys to `users.id` (UUID), `commodities.id` (Integer), and `markets.id` (Integer).
+  - Column schema: `id`, `user_id`, `type`, `severity`, `title`, `message`, `commodity_id`, `market_id`, `current_price` (nullable), `previous_price` (nullable), `change_percent` (nullable), `created_at`.
+- **Pydantic Schemas** ([alert.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/schemas/alert.py)):
+  - `AlertType`, `AlertSeverity`, `AlertCommoditySchema`, `AlertMarketSchema`, `AlertPriceSchema` (nullable), `AlertSchema`, `PaginatedAlertsResponse`, `AlertCreateSchema`.
+- **Repository Layer** ([alert_repository.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/repositories/alert_repository.py)):
+  - Encapsulates database queries for `get_user_alerts`, `get_user_alert_history`, full-text SQL search, date filtering, pagination, and `create_alert`.
+  - Sorts deterministically by `created_at desc, id desc`.
+- **Service Layer** ([alert_service.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/services/alert_service.py)):
+  - Maps SQLAlchemy models to contract-compliant Pydantic response schemas (handling nullable price metadata).
+- **Raihan's Integration Boundary** ([alert_generation_service.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/app/services/alert_generation_service.py)):
+  - Abstract interface `AlertProcessorInterface` and `AlertGenerationService` provided so Raihan can implement AI/ML alert generation logic and persist generated alerts without embedding fake rules into the API.
+- **Router Registration**:
+  - Registered `alerts.router` under prefix `/alerts` with `tags=["Alerts"]` in `main.py`.
+
+### Verification & Testing
+- **Automated Tests** ([test_alerts_api.py](file:///c:/Users/HP/Desktop/Projects/2026%20summer%20projects/mandi-intelligence-app/backend/test_alerts_api.py)):
+  - Tests OpenAPI route registration, authentication, pagination limits (`page_size > 50` -> HTTP 400), invalid type rejection (`MARKET_GLUT` -> HTTP 400), invalid date formatting rejection, empty state responses, alert persistence, nullable price schema validation, search queries, type filtering, and date range querying. Passed 8/8 tests.
+
+
 
 
 
