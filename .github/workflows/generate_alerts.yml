@@ -1,0 +1,41 @@
+name: Generate Alerts
+
+on:
+  workflow_run:
+    workflows: 
+      - "Hourly Mandi Price Fetch"
+      - "Mandi Price Prediction"
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  generate_alerts:
+    runs-on: ubuntu-latest
+    # Only run if the triggering workflow succeeded (applicable only for workflow_run event)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgomp1
+
+      - name: Install python dependencies
+        working-directory: backend
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Run Alert Generation
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        working-directory: backend
+        run: |
+          python scripts/run_alert_generation.py
