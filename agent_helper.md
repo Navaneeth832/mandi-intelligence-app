@@ -801,6 +801,50 @@ The repository method `getForecastsForPreferredCrops` can be replaced with an HT
 
 ---
 
+# 24. Alerts Module Implementation (August 2026)
+
+### Feature Overview
+- **Complete Frontend Alerts Feature**: Full integration of actionable alerts and historical alert archives according to "Alerts API — v1 Contract".
+- **API Endpoints**:
+  - `GET /alerts` (Query params: `type`, `page`, `page_size`)
+  - `GET /alerts/history` (Query params: `type`, `search`, `date_from`, `date_to`, `page`, `page_size`)
+- **Supported Alert Types**: `PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`.
+- **OUT OF SCOPE**: `MARKET_GLUT` is explicitly excluded from API filters, UI cards, fallback data source, and state management.
+
+### Real API & Local Fallback Data Source Architecture
+- **`AlertApiService`** (`lib/data/services/alert_api_service.dart`): Handles HTTP communication with `/alerts` and `/alerts/history`, including Bearer JWT token headers and error extraction.
+- **`AlertFallbackDataSource`** (`lib/data/datasources/alert_fallback_data_source.dart`): Standalone fallback data source with realistic mock alerts (Tomato in Thrissur Mandi, Coconut in Kozhikode Mandi, Potato in Palakkad Mandi, etc.). Implements local type filtering, full-text content search across titles/messages/commodities/markets, date bounds, and pagination.
+- **`AlertRepository`** (`lib/data/repositories/alert_repository.dart`): Transparently attempts the real API first. If network failures, timeouts, host lookup errors, or 5xx server errors occur, it seamlessly falls back to `AlertFallbackDataSource`. 401 Unauthorized errors are passed through to the auth system.
+
+### New Models (`lib/data/models/alert_model.dart`)
+- **`Alert`**: Fields: `id`, `type`, `severity`, `title`, `message`, `commodity` (`AlertCommodity`), `market` (`AlertMarket`), `price` (`AlertPrice?`), `createdAt` (`DateTime`).
+- **`AlertCommodity`**: `id`, `name`.
+- **`AlertMarket`**: `id`, `name`.
+- **`AlertPrice`**: `current`, `previous`, `changePercent`.
+- **`PaginatedAlertsResponse`**: `items`, `page`, `pageSize`, `total`, `hasNextPage`. Defensively filters out any `MARKET_GLUT` items.
+
+### Riverpod State Management (`lib/features/alerts/providers/alert_providers.dart`)
+- **`alertRepositoryProvider`**: Injects `AlertRepository` with `AlertApiService` and `FlutterSecureStorage`.
+- **`alertsNotifierProvider`**: Manages `AlertsState` for `AlertsScreen` (filters, active alerts list, initial loading, error retry state, pull-to-refresh, pagination).
+- **`alertHistoryNotifierProvider`**: Manages `AlertHistoryState` for `AlertHistoryScreen` (search query, filter, date range, pagination, date grouping).
+
+### Navigation Flow
+- **Header Navigation**: Tapping `Icons.notifications_none` in `HomeScreen` App Bar opens `AlertsScreen`.
+- **History Navigation**: Tapping "Alert History" button in `AlertsScreen` App Bar pushes `AlertHistoryScreen`.
+
+### UI Components (`lib/features/alerts/`)
+- **`AlertsScreen`** (`screens/alerts_screen.dart`): Displays AppBar, `AlertFilterChips`, "Today's Alerts" section, paginated list with `RefreshIndicator`, shimmer loading, empty state, and error retry state.
+- **`AlertHistoryScreen`** (`screens/alert_history_screen.dart`): Features search TextField, `AlertFilterChips`, presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc. in user's local timezone), paginated list, shimmer loading, empty state, and error retry state.
+- **`AlertCard`** (`widgets/alert_card.dart`): Reusable Material 3 card with distinct color themes & icons per alert type, severity tags, commodity/market metadata, direct un-translated backend title/message, and optional price change box (omitted when price is null).
+- **`AlertFilterChips`** (`widgets/alert_filter_chips.dart`): Horizontal scrollable filter chips (`All`, `Better Market`, `Price Increase`, `Price Drop`, `AI Recommendation`).
+
+### Localization & Automated Testing
+- **Localization**: Added strings to `app_en.arb`, `app_hi.arb`, `app_ml.arb`, and `app_localizations*.dart`. Backend title & message are rendered directly without re-translation per backend contract.
+- **Automated Tests** (`test/alerts_feature_test.dart`): Tests JSON parsing, nullable price parsing, alert type parsing, local search/filtering, pagination, date grouping logic, API failure -> fallback behavior, and `MARKET_GLUT` exclusion.
+
+
+---
+
 # 24. Backend Predictions & Localization Endpoint (Updated July 2026)
 
 ### Feature Overview

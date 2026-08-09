@@ -14,6 +14,8 @@ import '../providers/mandi_prices_provider.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
+import '../../alerts/screens/alerts_screen.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -111,7 +113,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AlertsScreen()),
+              );
+            },
             icon: const Icon(Icons.notifications_none, color: Color.fromARGB(255, 39, 163, 45), size: 28),
           ),
           const SizedBox(width: 8),

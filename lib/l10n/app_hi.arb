@@ -241,5 +241,16 @@
   "noChangesToSave": "सहेजने के लिए कोई बदलाव नहीं।",
   "unsavedChanges": "अनसहेजे गए बदलाव",
   "unsavedChangesMessage": "आपके पास अनसहेजे गए बदलाव हैं। क्या आप उन्हें छोड़ना चाहते हैं?",
-  "discard": "छोड़ें"
+  "discard": "छोड़ें",
+  "alertHistory": "अलर्ट इतिहास",
+  "todaysAlerts": "आज के अलर्ट",
+  "allAlerts": "सभी",
+  "noAlerts": "कोई अलर्ट उपलब्ध नहीं है",
+  "noAlertsFound": "कोई अलर्ट नहीं मिला",
+  "searchAlerts": "अलर्ट खोजें...",
+  "failedToLoadAlerts": "अलर्ट लोड करने में विफल",
+  "failedToLoadAlertHistory": "अलर्ट इतिहास लोड करने में विफल",
+  "previousAlerts": "पिछले अलर्ट",
+  "today": "आज",
+  "retry": "पुनः प्रयास करें"
 }

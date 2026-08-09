@@ -1158,6 +1158,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard'**
   String get discard;
+
+  String get alertHistory;
+  String get todaysAlerts;
+  String get allAlerts;
+  String get noAlerts;
+  String get noAlertsFound;
+  String get searchAlerts;
+  String get failedToLoadAlerts;
+  String get failedToLoadAlertHistory;
+  String get previousAlerts;
+  String get today;
+  String get retry;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

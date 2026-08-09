@@ -241,6 +241,17 @@
   "noChangesToSave": "No changes to save.",
   "unsavedChanges": "Unsaved Changes",
   "unsavedChangesMessage": "You have unsaved changes. Do you want to discard them?",
-  "discard": "Discard"
+  "discard": "Discard",
+  "alertHistory": "Alert History",
+  "todaysAlerts": "Today's Alerts",
+  "allAlerts": "All",
+  "noAlerts": "No alerts available",
+  "noAlertsFound": "No alerts found",
+  "searchAlerts": "Search alerts...",
+  "failedToLoadAlerts": "Failed to load alerts",
+  "failedToLoadAlertHistory": "Failed to load alert history",
+  "previousAlerts": "Previous Alerts",
+  "today": "Today",
+  "retry": "Retry"
 }
 

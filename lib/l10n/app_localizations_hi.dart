@@ -564,4 +564,37 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get discard => 'छोड़ें';
+
+  @override
+  String get alertHistory => 'अलर्ट इतिहास';
+
+  @override
+  String get todaysAlerts => 'आज के अलर्ट';
+
+  @override
+  String get allAlerts => 'सभी';
+
+  @override
+  String get noAlerts => 'कोई अलर्ट उपलब्ध नहीं है';
+
+  @override
+  String get noAlertsFound => 'कोई अलर्ट नहीं मिला';
+
+  @override
+  String get searchAlerts => 'अलर्ट खोजें...';
+
+  @override
+  String get failedToLoadAlerts => 'अलर्ट लोड करने में विफल';
+
+  @override
+  String get failedToLoadAlertHistory => 'अलर्ट इतिहास लोड करने में विफल';
+
+  @override
+  String get previousAlerts => 'पिछले अलर्ट';
+
+  @override
+  String get today => 'आज';
+
+  @override
+  String get retry => 'पुनः प्रयास करें';
 }

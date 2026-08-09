@@ -564,4 +564,37 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get discard => 'ഒഴിവാക്കുക';
+
+  @override
+  String get alertHistory => 'അലർട്ട് ഹിസ്റ്ററി';
+
+  @override
+  String get todaysAlerts => 'ഇന്നത്തെ അലർട്ടുകൾ';
+
+  @override
+  String get allAlerts => 'എല്ലാം';
+
+  @override
+  String get noAlerts => 'അലർട്ടുകളൊന്നും ലഭ്യമല്ല';
+
+  @override
+  String get noAlertsFound => 'അലർട്ടുകളൊന്നും കണ്ടില്ല';
+
+  @override
+  String get searchAlerts => 'അലർട്ടുകൾ തിരയുക...';
+
+  @override
+  String get failedToLoadAlerts => 'അലർട്ടുകൾ ലഭ്യമാക്കുന്നതിൽ പരാജയപ്പെട്ടു';
+
+  @override
+  String get failedToLoadAlertHistory => 'അലർട്ട് ഹിസ്റ്ററി ലഭ്യമാക്കുന്നതിൽ പരാജയപ്പെട്ടു';
+
+  @override
+  String get previousAlerts => 'മുൻപത്തെ അലർട്ടുകൾ';
+
+  @override
+  String get today => 'ഇന്ന്';
+
+  @override
+  String get retry => 'വീണ്ടും ശ്രമിക്കുക';
 }

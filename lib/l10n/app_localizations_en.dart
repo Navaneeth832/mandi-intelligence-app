@@ -564,4 +564,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discard => 'Discard';
+
+  @override
+  String get alertHistory => 'Alert History';
+
+  @override
+  String get todaysAlerts => 'Today\'s Alerts';
+
+  @override
+  String get allAlerts => 'All';
+
+  @override
+  String get noAlerts => 'No alerts available';
+
+  @override
+  String get noAlertsFound => 'No alerts found';
+
+  @override
+  String get searchAlerts => 'Search alerts...';
+
+  @override
+  String get failedToLoadAlerts => 'Failed to load alerts';
+
+  @override
+  String get failedToLoadAlertHistory => 'Failed to load alert history';
+
+  @override
+  String get previousAlerts => 'Previous Alerts';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get retry => 'Retry';
 }
