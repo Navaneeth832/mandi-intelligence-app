@@ -3,7 +3,7 @@ name: Generate Alerts
 on:
   push:
     branches:
-      - test-alert-workflow # This forces the action to run immediately when you push to this branch
+      - feature/alert-logic # This forces the action to run immediately when you push to this branch
 
 # Temporarily comment out your original triggers until you are ready to merge into main:
 #   workflow_run:
