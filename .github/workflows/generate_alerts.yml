@@ -1,24 +1,19 @@
 name: Generate Alerts
 
 on:
-  push:
-    branches:
-      - feature/alert-logic # This forces the action to run immediately when you push to this branch
-
-# Temporarily comment out your original triggers until you are ready to merge into main:
-#   workflow_run:
-#     workflows: 
-#       - "Hourly Mandi Price Fetch"
-#       - "Mandi Price Prediction"
-#     types:
-#       - completed
-#   workflow_dispatch:
+  workflow_run:
+    workflows: 
+      - "Hourly Mandi Price Fetch"
+      - "Mandi Price Prediction"
+    types:
+      - completed
+  workflow_dispatch:
 
 jobs:
   generate_alerts:
     runs-on: ubuntu-latest
-    # Only run if the triggering workflow succeeded, or if we are manually testing via push/dispatch
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    # Only run if the triggering workflow succeeded (applicable only for workflow_run event)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v4
