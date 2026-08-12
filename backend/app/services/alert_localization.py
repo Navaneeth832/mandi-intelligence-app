@@ -44,10 +44,19 @@ class AlertLocalizationService:
     _market_cache = {}
 
     @classmethod
+    def clear_cache(cls):
+        """Reset translation caches."""
+        cls._commodity_cache.clear()
+        cls._market_cache.clear()
+
+    @classmethod
     def get_translated_commodity(cls, db: Session, commodity_id: int, lang: str) -> str:
         cache_key = (commodity_id, lang)
         if cache_key in cls._commodity_cache:
             return cls._commodity_cache[cache_key]
+
+        if len(cls._commodity_cache) > 1000:
+            cls._commodity_cache.clear()
 
         if lang != "en":
             translation = db.query(CommodityTranslation).filter(
@@ -68,6 +77,9 @@ class AlertLocalizationService:
         cache_key = (market_id, lang)
         if cache_key in cls._market_cache:
             return cls._market_cache[cache_key]
+
+        if len(cls._market_cache) > 1000:
+            cls._market_cache.clear()
 
         if lang != "en":
             translation = db.query(MarketTranslation).filter(
