@@ -4,33 +4,17 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from app.schemas.alert import AlertCreateSchema
 from app.services.alert_service import AlertService
-
-class AlertProcessorInterface(ABC):
-    """
-    Integration boundary interface for Raihan's AI/ML alert generation pipeline.
-    Raihan will implement specific rules or ML decision trees to generate alerts.
-    """
-
-    @abstractmethod
-    def evaluate_and_generate_alerts(
-        self,
-        db: Session,
-        user_id: Optional[UUID] = None,
-    ) -> List[AlertCreateSchema]:
-        """
-        Evaluate market conditions, price movements, or AI prediction trajectories
-        and return a list of AlertCreateSchema objects ready for persistence.
-        """
-        pass
-
+from app.services.alert_processors.price_shift_processor import PriceShiftProcessor
+from app.services.alert_processor_interface import AlertProcessorInterface
 class AlertGenerationService:
     """
     Service coordinating alert generation processors and saving generated alerts to the database.
-    Raihan can register processors here and trigger scheduled or event-driven alert creation runs.
     """
 
     def __init__(self):
         self._processors: List[AlertProcessorInterface] = []
+        # Register core processors
+        self.register_processor(PriceShiftProcessor())
 
     def register_processor(self, processor: AlertProcessorInterface) -> None:
         """Register an alert processor (e.g. PriceIncreaseProcessor, BetterMarketProcessor, AIRecommendationProcessor)."""
