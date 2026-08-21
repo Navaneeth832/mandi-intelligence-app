@@ -55,12 +55,14 @@ class AlertRepository {
 
   Future<PaginatedAlertsResponse> getAlerts({
     String? type,
+    String? language,
     int page = 1,
     int pageSize = 20,
   }) async {
     if (forceFallback) {
       return await _fallbackDataSource.getAlerts(
         type: type,
+        language: language,
         page: page,
         pageSize: pageSize,
       );
@@ -70,6 +72,7 @@ class AlertRepository {
       final token = await _getToken();
       return await _apiService.getAlerts(
         type: type,
+        language: language,
         page: page,
         pageSize: pageSize,
         token: token,
@@ -78,6 +81,7 @@ class AlertRepository {
       if (_shouldFallback(e)) {
         return await _fallbackDataSource.getAlerts(
           type: type,
+          language: language,
           page: page,
           pageSize: pageSize,
         );
@@ -91,6 +95,7 @@ class AlertRepository {
     String? search,
     String? dateFrom,
     String? dateTo,
+    String? language,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -100,6 +105,7 @@ class AlertRepository {
         search: search,
         dateFrom: dateFrom,
         dateTo: dateTo,
+        language: language,
         page: page,
         pageSize: pageSize,
       );
@@ -112,6 +118,7 @@ class AlertRepository {
         search: search,
         dateFrom: dateFrom,
         dateTo: dateTo,
+        language: language,
         page: page,
         pageSize: pageSize,
         token: token,
@@ -123,6 +130,7 @@ class AlertRepository {
           search: search,
           dateFrom: dateFrom,
           dateTo: dateTo,
+          language: language,
           page: page,
           pageSize: pageSize,
         );

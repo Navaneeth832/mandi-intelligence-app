@@ -57,6 +57,7 @@ class AlertApiService {
 
   Future<PaginatedAlertsResponse> getAlerts({
     String? type,
+    String? language,
     int page = 1,
     int pageSize = 20,
     String? token,
@@ -68,6 +69,9 @@ class AlertApiService {
 
     if (type != null && type.isNotEmpty && type != 'ALL') {
       queryParams['type'] = type;
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
     }
 
     final uri = Uri.parse('$baseUrl/alerts').replace(queryParameters: queryParams);
@@ -92,6 +96,7 @@ class AlertApiService {
     String? search,
     String? dateFrom,
     String? dateTo,
+    String? language,
     int page = 1,
     int pageSize = 20,
     String? token,
@@ -112,6 +117,9 @@ class AlertApiService {
     }
     if (dateTo != null && dateTo.isNotEmpty) {
       queryParams['date_to'] = dateTo;
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
     }
 
     final uri = Uri.parse('$baseUrl/alerts/history').replace(queryParameters: queryParams);

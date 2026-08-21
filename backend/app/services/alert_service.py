@@ -15,11 +15,13 @@ from app.schemas.alert import (
     AlertCreateSchema,
 )
 
+from app.services.alert_localization import AlertLocalizationService
+
 class AlertService:
     """Service layer for fetching user alerts and managing integration boundaries."""
 
     @staticmethod
-    def _map_to_schema(alert: Alert) -> AlertSchema:
+    def _map_to_schema(alert: Alert, db: Session, lang: str = "en") -> AlertSchema:
         price_schema: Optional[AlertPriceSchema] = None
         if alert.current_price is not None:
             price_schema = AlertPriceSchema(
@@ -28,19 +30,38 @@ class AlertService:
                 change_percent=float(alert.change_percent) if alert.change_percent is not None else None,
             )
 
+        # Dynamically localize title and message if possible
+        try:
+            alert_type_obj = AlertType(alert.type) if isinstance(alert.type, str) else alert.type
+            title, message = AlertLocalizationService.build_localized_alert(
+                db=db,
+                user_lang=lang,
+                alert_type=alert_type_obj,
+                commodity_id=alert.commodity_id,
+                market_id=alert.market_id,
+                price_change=float(alert.change_percent) if alert.change_percent is not None else None
+            )
+        except Exception:
+            title = alert.title
+            message = alert.message
+
+        # Dynamically localize commodity and market names
+        commodity_name = AlertLocalizationService.get_translated_commodity(db, alert.commodity_id, lang)
+        market_name = AlertLocalizationService.get_translated_market(db, alert.market_id, lang)
+
         return AlertSchema(
             id=alert.id,
             type=alert.type,
             severity=alert.severity,
-            title=alert.title,
-            message=alert.message,
+            title=title,
+            message=message,
             commodity=AlertCommoditySchema(
                 id=alert.commodity.id,
-                name=alert.commodity.name,
+                name=commodity_name,
             ),
             market=AlertMarketSchema(
                 id=alert.market.id,
-                name=alert.market.name,
+                name=market_name,
             ),
             price=price_schema,
             created_at=alert.created_at,
@@ -52,6 +73,7 @@ class AlertService:
         db: Session,
         user: User,
         type: Optional[str] = None,
+        language: str = "en",
         page: int = 1,
         page_size: int = 20,
     ) -> PaginatedAlertsResponse:
@@ -63,7 +85,7 @@ class AlertService:
             page_size=page_size,
         )
 
-        schema_items = [cls._map_to_schema(item) for item in items]
+        schema_items = [cls._map_to_schema(item, db=db, lang=language) for item in items]
         return PaginatedAlertsResponse(
             items=schema_items,
             page=page,
@@ -80,6 +102,7 @@ class AlertService:
         search: Optional[str] = None,
         date_from: Optional[datetime] = None,
         date_to: Optional[datetime] = None,
+        language: str = "en",
         page: int = 1,
         page_size: int = 20,
     ) -> PaginatedAlertsResponse:
@@ -94,7 +117,7 @@ class AlertService:
             page_size=page_size,
         )
 
-        schema_items = [cls._map_to_schema(item) for item in items]
+        schema_items = [cls._map_to_schema(item, db=db, lang=language) for item in items]
         return PaginatedAlertsResponse(
             items=schema_items,
             page=page,

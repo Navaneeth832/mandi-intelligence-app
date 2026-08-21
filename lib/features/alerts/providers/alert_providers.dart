@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../data/models/alert_model.dart';
 import '../../../data/repositories/alert_repository.dart';
@@ -54,8 +55,9 @@ class AlertsState {
 
 class AlertsNotifier extends StateNotifier<AlertsState> {
   final AlertRepository _repository;
+  final String _languageCode;
 
-  AlertsNotifier(this._repository) : super(const AlertsState()) {
+  AlertsNotifier(this._repository, this._languageCode) : super(const AlertsState()) {
     loadAlerts();
   }
 
@@ -71,6 +73,7 @@ class AlertsNotifier extends StateNotifier<AlertsState> {
     try {
       final res = await _repository.getAlerts(
         type: activeFilter,
+        language: _languageCode,
         page: 1,
         pageSize: state.pageSize,
       );
@@ -99,6 +102,7 @@ class AlertsNotifier extends StateNotifier<AlertsState> {
     try {
       final res = await _repository.getAlerts(
         type: state.selectedFilter,
+        language: _languageCode,
         page: nextPage,
         pageSize: state.pageSize,
       );
@@ -190,8 +194,9 @@ class AlertHistoryState {
 
 class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
   final AlertRepository _repository;
+  final String _languageCode;
 
-  AlertHistoryNotifier(this._repository) : super(const AlertHistoryState()) {
+  AlertHistoryNotifier(this._repository, this._languageCode) : super(const AlertHistoryState()) {
     loadHistory();
   }
 
@@ -222,6 +227,7 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
         search: activeSearch,
         dateFrom: activeFrom,
         dateTo: activeTo,
+        language: _languageCode,
         page: 1,
         pageSize: state.pageSize,
       );
@@ -253,6 +259,7 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
         search: state.searchQuery,
         dateFrom: state.dateFrom,
         dateTo: state.dateTo,
+        language: _languageCode,
         page: nextPage,
         pageSize: state.pageSize,
       );
@@ -293,11 +300,13 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
 final alertsNotifierProvider =
     StateNotifierProvider<AlertsNotifier, AlertsState>((ref) {
   final repo = ref.watch(alertRepositoryProvider);
-  return AlertsNotifier(repo);
+  final locale = ref.watch(localeProvider);
+  return AlertsNotifier(repo, locale.languageCode);
 });
 
 final alertHistoryNotifierProvider =
     StateNotifierProvider<AlertHistoryNotifier, AlertHistoryState>((ref) {
   final repo = ref.watch(alertRepositoryProvider);
-  return AlertHistoryNotifier(repo);
+  final locale = ref.watch(localeProvider);
+  return AlertHistoryNotifier(repo, locale.languageCode);
 });

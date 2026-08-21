@@ -51,6 +51,7 @@ def _parse_date_bound(date_str: Optional[str], is_end_of_day: bool = False) -> O
 @router.get("/", response_model=PaginatedAlertsResponse, include_in_schema=False)
 def get_alerts(
     type: Optional[str] = Query(None, description="Alert type filter: BETTER_MARKET, PRICE_INCREASE, PRICE_DROP, AI_RECOMMENDATION"),
+    language: Optional[str] = Query(None, description="Target language code: en, hi, ml"),
     page: int = Query(1, ge=1, description="Page number starting at 1"),
     page_size: int = Query(20, ge=1, description="Items per page (max 50)"),
     db: Session = Depends(get_db),
@@ -63,11 +64,13 @@ def get_alerts(
         raise HTTPException(status_code=400, detail="page_size cannot exceed 50")
 
     validated_type = _validate_alert_type(type)
+    target_lang = language or current_user.preferred_language or "en"
 
     return AlertService.get_alerts(
         db=db,
         user=current_user,
         type=validated_type,
+        language=target_lang,
         page=page,
         page_size=page_size,
     )
@@ -78,6 +81,7 @@ def get_alert_history(
     search: Optional[str] = Query(None, description="Search query matching title, message, commodity, or market"),
     date_from: Optional[str] = Query(None, description="Filter alerts created on or after date (YYYY-MM-DD)"),
     date_to: Optional[str] = Query(None, description="Filter alerts created on or before date (YYYY-MM-DD)"),
+    language: Optional[str] = Query(None, description="Target language code: en, hi, ml"),
     page: int = Query(1, ge=1, description="Page number starting at 1"),
     page_size: int = Query(20, ge=1, description="Items per page (max 50)"),
     db: Session = Depends(get_db),
@@ -92,6 +96,7 @@ def get_alert_history(
     validated_type = _validate_alert_type(type)
     from_dt = _parse_date_bound(date_from, is_end_of_day=False)
     to_dt = _parse_date_bound(date_to, is_end_of_day=True)
+    target_lang = language or current_user.preferred_language or "en"
 
     return AlertService.get_alert_history(
         db=db,
@@ -100,6 +105,7 @@ def get_alert_history(
         search=search,
         date_from=from_dt,
         date_to=to_dt,
+        language=target_lang,
         page=page,
         page_size=page_size,
     )
