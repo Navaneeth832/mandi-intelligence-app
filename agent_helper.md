@@ -13,7 +13,7 @@ This document serves as the single authoritative persistent memory and comprehen
   2. **Onboarding & Profile Setup**: New users select their State, District, preferred UI Language (English, Hindi, Malayalam), and trackable crops (crop preferences).
   3. **Real-Time Price Tracking (Home Tab)**: Displays current daily mandi prices filtered by location and preferred crops, formatted with Variety and Grade tags.
   4. **Detailed Analysis & Market Directory (Markets Tab)**: Users can inspect 7-day historical price movement charts (`fl_chart`) or browse a paginated directory of active markets in a state/district.
-  5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions, best selling day highlights ("BEST DAY"), trend indicators (RISING/FALLING/STABLE), and sales recommendations (SELL TODAY/WAIT/HOLD). Includes an "Explore More Commodities" portal to search predictions across non-preferred crops.
+  5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee & expected profit breakdown, and Forecast Section with daily timeline). Features a "Compare Nearby Mandis" portal (`MarketComparisonScreen` placeholder) and an "Explore More Commodities" portal to search predictions across non-preferred crops.
   6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`) and searchable historical alert archives.
   7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).
 - **Current implementation status**:
@@ -322,7 +322,8 @@ flowchart TB
         CommodityAdvisoryScreen["CommodityAdvisoryScreen \n Commodity Predictions Breakdown"]
         ExploreMoreCommoditiesScreen["ExploreMoreCommoditiesScreen \n Search Portal for Non-Preferred Crops"]
         ExploreAdvisoryResultsScreen["ExploreAdvisoryResultsScreen \n Multi-Crop Prediction Results"]
-        ForecastDetailScreen["ForecastDetailScreen \n 7-Day Prediction Chart and BEST DAY Badge"]
+        ForecastDetailScreen["ForecastDetailScreen \n 3 Sections: Prediction, AI Advisory & Forecast"]
+        MarketComparisonScreen["MarketComparisonScreen \n Placeholder for Nearby Mandi Distance & Net Profit Comparison"]
     end
 
     subgraph AlertsHeader ["Alerts Header Navigation"]
@@ -359,6 +360,7 @@ flowchart TB
     ForecastsScreen --> ForecastDetailScreen
     ExploreMoreCommoditiesScreen --> ExploreAdvisoryResultsScreen
     ExploreAdvisoryResultsScreen --> ForecastDetailScreen
+    ForecastDetailScreen --> MarketComparisonScreen
     ProfileScreen --> OnboardingScreen
     ProfileScreen --> NotificationSettingsScreen
 ```
@@ -399,7 +401,7 @@ The frontend utilizes **Riverpod** (`flutter_riverpod`) for reactive state manag
 ### Frontend Data Models (`lib/data/models/`)
 - `UserProfile` (`user_profile.dart`): User details model (`hasCompletedProfile` check).
 - `MandiPrice` (`mandi_price.dart`): Price record with `grade`, `variety`, `minPrice`, `maxPrice`, `modalPrice`, `arrivalDate`, and `getDisplayCommodity()`.
-- `CommodityForecast` (`forecast_model.dart`): 7-day ML prediction containing `commodityId`, `commodityName`, `varietyName`, `gradeName`, `marketName`, `districtName`, `stateName`, `currentPrice`, `forecast` (`List<ForecastDay>`), `trend` (`Rising`/`Falling`/`Stable`), `bestSellDate`, `expectedPeakPrice`, `recommendation` (`Sell Today`/`Wait`/`Hold`).
+- `CommodityForecast` (`forecast_model.dart`): 7-day ML prediction containing `commodityId`, `commodityName`, `varietyName`, `gradeName`, `marketName`, `districtName`, `stateName`, `currentPrice`, `forecast` (`List<ForecastDay>`), `trend` (`Rising`/`Falling`/`Stable`), `bestSellDate`, `expectedPeakPrice`, `recommendation` (`Sell Today`/`Wait`/`Hold`), `transportCost`, `marketFee`, `expectedProfit`, `recommendationReason`, `aiRecommendationTitle`.
 - `PaginatedForecastResponse` (`forecast_model.dart`): Container for paginated predictions.
 - `Alert` (`alert_model.dart`): Actionable alert object containing `id`, `type`, `severity`, `title`, `message`, `commodity`, `market`, `price` (`current`, `previous`, `changePercent`), `createdAt`.
 - `PaginatedAlertsResponse` (`alert_model.dart`): Container for paginated alerts. Defensively filters out any `MARKET_GLUT` entries.
@@ -409,7 +411,7 @@ The frontend utilizes **Riverpod** (`flutter_riverpod`) for reactive state manag
 - `UserResponse`, `UserRegister`, `UserLogin`, `SendOTPRequest`, `VerifyOTPRequest`, `ResetPasswordRequest` (`user.py`).
 - `StateSchema`, `DistrictSchema`, `MarketSchema` (`location.py`).
 - `MandiPriceSchema`, `PaginatedMandiResponse` (`mandi_price.py`).
-- `ForecastResponse`, `PaginatedForecastResponse` (`prediction.py`).
+- `ForecastResponse` (includes `transport_cost`, `market_fee`, `expected_profit`, `recommendation_reason`, `ai_recommendation_title`), `PaginatedForecastResponse` (`prediction.py`).
 - `AlertSchema`, `PaginatedAlertsResponse`, `AlertCreateSchema`, `AlertType`, `AlertSeverity` (`alert.py`).
 - `NotificationPreferenceResponse`, `NotificationPreferenceUpdate` (`notification_preference.py`).
 
