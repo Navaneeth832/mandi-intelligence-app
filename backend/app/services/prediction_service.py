@@ -175,6 +175,23 @@ def get_predictions_for_user(
             for p in pred_list
         ]
 
+        # Mock advisory and logistics calculations
+        transport_cost = 150.0
+        market_fee = 45.0
+        curr_price_val = price_map.get(key, 0.0)
+        base_diff = expected_peak - curr_price_val - transport_cost - market_fee if curr_price_val > 0 else expected_peak * 0.15
+        expected_profit = round(max(120.0, base_diff), 2)
+
+        if recommendation_raw == "SELL TODAY":
+            ai_title = "Maximum Price Window Active"
+            rec_reason = f"Peak price of ₹{int(expected_peak)} is reached today in {market_name}. Selling now maximizes net profit before expected market correction."
+        elif recommendation_raw == "WAIT":
+            ai_title = "Price Appreciation Expected"
+            rec_reason = f"Prices in {market_name} are trending upward towards a peak of ₹{int(expected_peak)} on {best_sell_date_str}. Holding for a few days yields higher returns."
+        else:
+            ai_title = "Stable Market Outlook"
+            rec_reason = f"Prices remain steady near ₹{int(expected_peak)}. Monitor local demand before scheduling bulk logistics."
+
         predictions_list.append({
             "commodity_id": first_row.commodity_id,
             "commodity_name": commodity_name,
@@ -191,12 +208,17 @@ def get_predictions_for_user(
             "grade_name": grade_name,
             "prediction_date": batch_date_str,
             "prediction_time": batch_time_str,
-            "current_price": price_map.get(key, 0.0),
+            "current_price": curr_price_val,
             "forecast": forecast_list,
             "trend": localized_trend,
             "recommendation": localized_recommendation,
             "best_sell_date": best_sell_date_str,
-            "expected_peak_price": expected_peak
+            "expected_peak_price": expected_peak,
+            "transport_cost": transport_cost,
+            "market_fee": market_fee,
+            "expected_profit": expected_profit,
+            "recommendation_reason": rec_reason,
+            "ai_recommendation_title": ai_title,
         })
 
     has_next = (page * page_size) < total

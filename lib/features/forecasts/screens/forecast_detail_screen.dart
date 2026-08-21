@@ -9,6 +9,7 @@ import '../../../data/models/forecast_model.dart';
 import '../../../core/widgets/commodity_image_widget.dart';
 import '../providers/forecast_provider.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
+import 'market_comparison_screen.dart';
 
 class ForecastDetailScreen extends ConsumerStatefulWidget {
   final CommodityForecast forecast;
@@ -164,7 +165,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 60),
               const SizedBox(height: 16),
               Text(
-                _errorMessage!,
+                _errorMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
               ),
@@ -192,14 +193,20 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Commodity Image Header
+          // -----------------------------------------------------------
+          // SECTION 1: PREDICTION SECTION
+          // -----------------------------------------------------------
+          _buildSectionHeader('PREDICTION SECTION', Icons.analytics_rounded),
+          const SizedBox(height: 12),
+
+          // Commodity Image Header
           Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24), // 24px radius
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFF97316).withOpacity(0.14), // Soft orange shadow
+                  color: const Color(0xFFF97316).withOpacity(0.14),
                   blurRadius: 18,
                   spreadRadius: 1,
                   offset: const Offset(0, 8),
@@ -219,23 +226,35 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 2. Redesigned Premium Header Hierarchy (Commodity Name, Variety, Grade, Selected Market)
+          // Redesigned Header Hierarchy
           _buildHeaderHierarchy(context),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // 3. Recommendation & Trend Group Card
+          // Recommendation & Trend Group Card
           _buildRecommendationTrendCard(context),
           const SizedBox(height: 16),
 
-          // 4. Price metrics Overview Card (Peak Price, Current Price, Best Sell Date)
+          // Price Overview Card (Current vs Peak Price & Best Sell Date)
           _buildPriceOverviewCard(context),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
 
-          // 5. 7-Day Forecast Graph Section
+          // -----------------------------------------------------------
+          // SECTION 2: AI ADVISORY SECTION
+          // -----------------------------------------------------------
+          _buildSectionHeader('AI ADVISORY SECTION', Icons.psychology_rounded),
+          const SizedBox(height: 12),
+          _buildAiAdvisoryCard(context),
+          const SizedBox(height: 28),
+
+          // -----------------------------------------------------------
+          // SECTION 3: FORECAST SECTION
+          // -----------------------------------------------------------
+          _buildSectionHeader('FORECAST SECTION', Icons.show_chart_rounded),
+          const SizedBox(height: 12),
           _buildChartSection(context),
+          const SizedBox(height: 16),
+          _buildDailyForecastTimeline(context),
           const SizedBox(height: 24),
-
-          // 6. Best Markets Section (Replaces date list)
           _buildBestMarketsSection(context),
         ],
       ),
@@ -598,6 +617,357 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF2E7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFE0CC)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFFF97316)),
+          const SizedBox(width: 6),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFF97316),
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiAdvisoryCard(BuildContext context) {
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // AI Title Banner
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF2E7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: Color(0xFFF97316),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AI Recommendation Card',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.forecast.aiRecommendationTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Recommendation Reason
+          Text(
+            widget.forecast.recommendationReason,
+            style: const TextStyle(
+              fontSize: 13.5,
+              color: Color(0xFF4B5563),
+              height: 1.45,
+            ),
+          ),
+          const Divider(height: 28, color: Color(0xFFFFE0CC)),
+
+          // Financial Breakdown
+          const Text(
+            'Financial Estimates',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFinancialMetricTile(
+                  label: 'Expected Profit',
+                  value: currencyFormatter.format(widget.forecast.expectedProfit),
+                  isPrimary: true,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFinancialMetricTile(
+                  label: 'Transport Cost',
+                  value: currencyFormatter.format(widget.forecast.transportCost),
+                  isPrimary: false,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFinancialMetricTile(
+                  label: 'Market Fee',
+                  value: currencyFormatter.format(widget.forecast.marketFee),
+                  isPrimary: false,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Compare Nearby Mandis Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFF97316),
+                side: const BorderSide(color: Color(0xFFF97316), width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                backgroundColor: const Color(0xFFFFFBF7),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MarketComparisonScreen(
+                      commodityName: widget.forecast.commodityName,
+                      currentMarketName: widget.forecast.marketName,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.compare_arrows_rounded, size: 20),
+              label: const Text(
+                'Compare Nearby Mandis',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialMetricTile({
+    required String label,
+    required String value,
+    required bool isPrimary,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: isPrimary ? const Color(0xFFFFF2E7) : const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isPrimary ? const Color(0xFFFFE0CC) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.bold,
+              color: isPrimary ? const Color(0xFFEA580C) : const Color(0xFF6B7280),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isPrimary ? const Color(0xFFEA580C) : const Color(0xFF1F2937),
+            ),
+            maxLines: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyForecastTimeline(BuildContext context) {
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
+    if (widget.forecast.forecast.isEmpty) {
+      return const SizedBox();
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFE0CC)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Daily Forecast Timeline',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Detailed 7-day modal price predictions',
+            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+          ),
+          const SizedBox(height: 16),
+          Column(
+            children: widget.forecast.forecast.map((f) {
+              String displayDate = f.date;
+              try {
+                final parsed = DateTime.parse(f.date);
+                displayDate = DateFormat('EEE, dd MMM').format(parsed);
+              } catch (_) {}
+
+              final isBestDate = f.date == widget.forecast.bestSellDate;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isBestDate ? const Color(0xFFFFF2E7) : const Color(0xFFFFFBF7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isBestDate ? const Color(0xFFF97316) : const Color(0xFFFFE0CC),
+                    width: isBestDate ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          isBestDate ? Icons.star_rounded : Icons.calendar_today_rounded,
+                          size: 16,
+                          color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF9CA3AF),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          displayDate,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: isBestDate ? FontWeight.bold : FontWeight.w500,
+                            color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF1F2937),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        if (isBestDate) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF97316),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'BEST DAY',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Text(
+                          currencyFormatter.format(f.price),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF1F2937),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

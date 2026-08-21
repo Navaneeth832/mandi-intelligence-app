@@ -30,6 +30,11 @@ class ForecastResponse(BaseModel):
     recommendation: str
     best_sell_date: str
     expected_peak_price: float
+    transport_cost: float = 150.0
+    market_fee: float = 45.0
+    expected_profit: float = 480.0
+    recommendation_reason: str = "Peak mandi prices expected in 3 days with strong market demand."
+    ai_recommendation_title: str = "Optimal Profit Window"
 
     class Config:
         from_attributes = True

@@ -20,6 +20,11 @@ class CommodityForecast {
   final String bestSellDate;
   final double expectedPeakPrice;
   final String recommendation; // e.g., "WAIT", "SELL TODAY", "HOLD"
+  final double transportCost;
+  final double marketFee;
+  final double expectedProfit;
+  final String recommendationReason;
+  final String aiRecommendationTitle;
 
   CommodityForecast({
     required this.commodityId,
@@ -43,6 +48,11 @@ class CommodityForecast {
     required this.bestSellDate,
     required this.expectedPeakPrice,
     required this.recommendation,
+    this.transportCost = 150.0,
+    this.marketFee = 45.0,
+    this.expectedProfit = 480.0,
+    this.recommendationReason = 'Peak mandi prices expected in 3 days with strong market demand.',
+    this.aiRecommendationTitle = 'Optimal Profit Window',
   });
 
   CommodityForecast copyWith({
@@ -67,6 +77,11 @@ class CommodityForecast {
     String? bestSellDate,
     double? expectedPeakPrice,
     String? recommendation,
+    double? transportCost,
+    double? marketFee,
+    double? expectedProfit,
+    String? recommendationReason,
+    String? aiRecommendationTitle,
   }) {
     return CommodityForecast(
       commodityId: commodityId ?? this.commodityId,
@@ -90,6 +105,11 @@ class CommodityForecast {
       bestSellDate: bestSellDate ?? this.bestSellDate,
       expectedPeakPrice: expectedPeakPrice ?? this.expectedPeakPrice,
       recommendation: recommendation ?? this.recommendation,
+      transportCost: transportCost ?? this.transportCost,
+      marketFee: marketFee ?? this.marketFee,
+      expectedProfit: expectedProfit ?? this.expectedProfit,
+      recommendationReason: recommendationReason ?? this.recommendationReason,
+      aiRecommendationTitle: aiRecommendationTitle ?? this.aiRecommendationTitle,
     );
   }
 
@@ -119,6 +139,13 @@ class CommodityForecast {
       bestSellDate: (json['best_sell_date'] as String?) ?? '',
       expectedPeakPrice: (json['expected_peak_price'] as num).toDouble(),
       recommendation: (json['recommendation'] as String?) ?? 'HOLD',
+      transportCost: (json['transport_cost'] as num?)?.toDouble() ?? 150.0,
+      marketFee: (json['market_fee'] as num?)?.toDouble() ?? 45.0,
+      expectedProfit: (json['expected_profit'] as num?)?.toDouble() ?? 480.0,
+      recommendationReason: (json['recommendation_reason'] as String?) ??
+          'Peak mandi prices expected in 3 days with strong market demand.',
+      aiRecommendationTitle: (json['ai_recommendation_title'] as String?) ??
+          'Optimal Profit Window',
     );
   }
 
@@ -145,6 +172,11 @@ class CommodityForecast {
       'best_sell_date': bestSellDate,
       'expected_peak_price': expectedPeakPrice,
       'recommendation': recommendation,
+      'transport_cost': transportCost,
+      'market_fee': marketFee,
+      'expected_profit': expectedProfit,
+      'recommendation_reason': recommendationReason,
+      'ai_recommendation_title': aiRecommendationTitle,
     };
   }
 }
