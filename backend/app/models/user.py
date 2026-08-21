@@ -24,6 +24,8 @@ class User(Base):
 
     district_id = Column(Integer, ForeignKey("districts.id"))
 
+    preferred_market_id = Column(Integer, ForeignKey("markets.id"), nullable=True)
+
     preferred_language = Column(String(20), default="en")
 
     registration_method = Column(String(20), nullable=False)
@@ -40,6 +42,7 @@ class User(Base):
 
     state = relationship("State")
     district = relationship("District")
+    preferred_market = relationship("Market")
     
     @property
     def state_name(self):
@@ -61,6 +64,16 @@ class User(Base):
                 if translation.language_code == self.preferred_language:
                     return translation.translated_name
         return self.district.name
+
+    @property
+    def preferred_market_name(self):
+        if not self.preferred_market:
+            return None
+        if hasattr(self.preferred_market, "translations") and self.preferred_market.translations:
+            for translation in self.preferred_market.translations:
+                if translation.language_code == self.preferred_language:
+                    return translation.translated_name
+        return self.preferred_market.name
 
     crop_preferences = relationship(
         "UserCropPreference",

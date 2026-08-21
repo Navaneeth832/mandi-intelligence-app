@@ -65,6 +65,7 @@ class ProfileScreen extends ConsumerWidget {
 
           final String stateName = user?.stateName ?? '-';
           final String districtName = user?.districtName ?? '-';
+          final String marketName = user?.preferredMarketName ?? '-';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -107,6 +108,7 @@ class ProfileScreen extends ConsumerWidget {
                   context,
                   stateName,
                   districtName,
+                  marketName,
                   language,
                 ),
                 const SizedBox(height: 16),
@@ -176,6 +178,7 @@ class ProfileScreen extends ConsumerWidget {
   BuildContext context,
   String state,
   String district,
+  String market,
   String language,
 ) {
     return Card(
@@ -213,6 +216,8 @@ class ProfileScreen extends ConsumerWidget {
             _buildInfoRow(context,Icons.public, AppLocalizations.of(context)!.state, state),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
             _buildInfoRow(context,Icons.location_city, AppLocalizations.of(context)!.district, district),
+            const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
+            _buildInfoRow(context,Icons.store_mall_directory_outlined, "Preferred Market", market),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
             _buildInfoRow(context,Icons.translate, AppLocalizations.of(context)!.language, language),
           ],

@@ -280,7 +280,7 @@ erDiagram
 15. **`commodity_predictions`**: `id` (PK, INT), `batch_id` (FK -> `prediction_batches.id`), `market_id` (FK -> `markets.id`), `commodity_id` (FK -> `commodities.id`), `variety_id` (FK -> `varieties.id`), `grade_id` (FK -> `grade.id`), `prediction_day` (DATE), `predicted_price` (NUMERIC), `created_at` (TIMESTAMPTZ).
 
 ### Users & Session Tables
-16. **`users`**: `id` (PK, UUID), `name` (VARCHAR), `email` (VARCHAR, Unique, Nullable), `phone_number` (VARCHAR, Unique, Nullable), `password_hash` (VARCHAR), `state_id` (FK -> `states.id`), `district_id` (FK -> `districts.id`), `preferred_language` (VARCHAR(20), Default='en'), `registration_method` (VARCHAR(20)), `is_verified` (BOOL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Constraint: Exactly one of email or phone set.
+16. **`users`**: `id` (PK, UUID), `name` (VARCHAR), `email` (VARCHAR, Unique, Nullable), `phone_number` (VARCHAR, Unique, Nullable), `password_hash` (VARCHAR), `state_id` (FK -> `states.id`), `district_id` (FK -> `districts.id`), `preferred_market_id` (FK -> `markets.id`, Nullable), `preferred_language` (VARCHAR(20), Default='en'), `registration_method` (VARCHAR(20)), `is_verified` (BOOL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Constraint: Exactly one of email or phone set.
 17. **`user_crop_preferences`**: `user_id` (PK, FK -> `users.id`), `commodity_id` (PK, FK -> `commodities.id`).
 18. **`refresh_tokens`**: `id` (PK, UUID), `user_id` (FK -> `users.id`), `token` (TEXT), `expires_at` (TIMESTAMPTZ).
 19. **`otp_verifications`**: `id` (PK, UUID), `identifier` (VARCHAR), `otp_hash` (VARCHAR), `purpose` (VARCHAR), `expires_at` (TIMESTAMPTZ), `used` (BOOL), `created_at` (TIMESTAMPTZ).

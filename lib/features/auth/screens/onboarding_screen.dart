@@ -5,6 +5,7 @@ import 'package:mandi_intelligence_app/core/providers/providers.dart';
 import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
 import 'package:mandi_intelligence_app/data/models/district_model.dart';
 import 'package:mandi_intelligence_app/data/models/state_model.dart';
+import 'package:mandi_intelligence_app/data/models/market_model.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/edit_profile_data_provider.dart';
 import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
@@ -26,6 +27,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   StateModel? _selectedState;
   District? _selectedDistrict;
+  Market? _selectedMarket;
   String? _selectedLanguage;
   final List<Commodity> _selectedCrops = [];
   bool _isDataPopulated = false;
@@ -55,15 +57,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       
       StateModel? selectedState;
       District? selectedDistrict;
+      Market? selectedMarket;
 
       if (foundState != null) {
         selectedState = foundState;
         final foundDistrict = data.districts?.cast<District?>().firstWhere((d) => d!.id == user.districtId, orElse: () => null);
         selectedDistrict = foundDistrict;
+        if (selectedDistrict != null && user.preferredMarketId != null) {
+          selectedMarket = data.markets?.cast<Market?>().firstWhere((m) => m!.id == user.preferredMarketId, orElse: () => null);
+        }
       }
 
       _selectedState = selectedState;
       _selectedDistrict = selectedDistrict;
+      _selectedMarket = selectedMarket;
       
       switch (user.preferredLanguage) {
         case 'en':
@@ -147,6 +154,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildForm() {
     final statesAsync = ref.watch(statesProvider);
     final districtsAsync = ref.watch(districtsProvider(_selectedState?.id));
+    final marketsAsync = ref.watch(marketsListProvider(_selectedDistrict?.id));
     final cropsAsync = ref.watch(activeCommoditiesProvider);
     
     return Scaffold(
@@ -180,7 +188,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 16),
             
-            _buildPersonalInfoCard(statesAsync, districtsAsync),
+            _buildPersonalInfoCard(statesAsync, districtsAsync, marketsAsync),
             const SizedBox(height: 12),
             
             _buildPreferredCropsCard(cropsAsync),
@@ -209,6 +217,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           "name": user?.name ?? 'User',
                           "state_id": _selectedState!.id,
                           "district_id": _selectedDistrict!.id,
+                          "preferred_market_id": _selectedMarket?.id,
                           "preferred_language": languageCode,
                         });
                         ref.read(localeProvider.notifier).setLocale(languageCode);
@@ -245,7 +254,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildPersonalInfoCard(AsyncValue statesAsync, AsyncValue districtsAsync) {
+  Widget _buildPersonalInfoCard(AsyncValue statesAsync, AsyncValue districtsAsync, AsyncValue marketsAsync) {
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -289,6 +298,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             setState(() {
                               _selectedState = val;
                               _selectedDistrict = null;
+                              _selectedMarket = null;
                             });
                           },
                         );
@@ -333,7 +343,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 items: districts,
                                 value: _selectedDistrict,
                                 itemToString: (district) => district.getDisplayName(locale.languageCode),
-                                onChanged: (val) => setState(() => _selectedDistrict = val),
+                                onChanged: (val) {
+                                  setState(() {
+                                    _selectedDistrict = val;
+                                    _selectedMarket = null;
+                                  });
+                                },
                               );
                             },
                           ),
@@ -341,6 +356,45 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            _buildLabel("🏪 Preferred Mandi Market (Optional)"),
+            _selectedDistrict == null
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: const Text('Select District First', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  )
+                : marketsAsync.when(
+                    loading: () => Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Text('Loading markets...', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    ),
+                    error: (err, stack) => Text(AppLocalizations.of(context)!.errorWithDetails(err.toString())),
+                    data: (markets) => Consumer(
+                      builder: (context, ref, _) {
+                        final locale = ref.watch(localeProvider);
+                        return FilterDropdownButton<Market>(
+                          hintText: "Select Preferred Market (Optional)",
+                          items: markets,
+                          value: _selectedMarket,
+                          itemToString: (market) => market.getDisplayName(locale.languageCode),
+                          onChanged: (val) => setState(() => _selectedMarket = val),
+                        );
+                      },
+                    ),
+                  ),
             const SizedBox(height: 12),
             
             _buildLabel(AppLocalizations.of(context)!.preferredLanguage),

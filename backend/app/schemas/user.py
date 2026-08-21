@@ -19,6 +19,7 @@ class UserRegister(BaseModel):
     verification_token: str
     state_id: int | None = None
     district_id: int | None = None
+    preferred_market_id: int | None = None
     preferred_language: str = "en"
 
 
@@ -38,6 +39,7 @@ class UserProfileUpdate(BaseModel):
     name: str
     state_id: int | None = None
     district_id: int | None = None
+    preferred_market_id: int | None = None
     preferred_language: str
 
 
@@ -49,11 +51,13 @@ class UserResponse(BaseModel):
     registration_method: str
     is_verified: bool
 
-    state_id: int | None
-    district_id: int |None
+    state_id: int | None = None
+    district_id: int | None = None
+    preferred_market_id: int | None = None
 
     state_name: str | None = None
     district_name: str | None = None
+    preferred_market_name: str | None = None
 
     preferred_language: str
 

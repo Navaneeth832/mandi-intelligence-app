@@ -7,10 +7,12 @@ class UserProfile {
   final bool isVerified;
   final int? stateId;
   final int? districtId;
+  final int? preferredMarketId;
   final String preferredLanguage;
   final bool? profileComplete;
   final String? stateName;
   final String? districtName;
+  final String? preferredMarketName;
 
   UserProfile({
     required this.id,
@@ -21,10 +23,12 @@ class UserProfile {
     required this.isVerified,
     this.stateId,
     this.districtId,
+    this.preferredMarketId,
     required this.preferredLanguage,
     this.profileComplete,
     this.stateName,
-    this.districtName
+    this.districtName,
+    this.preferredMarketName,
   });
 
   static String _normalizeLanguageCode(String? value) {
@@ -56,10 +60,12 @@ class UserProfile {
       isVerified: json['is_verified'] == true,
       stateId: json['state_id'],
       districtId: json['district_id'],
+      preferredMarketId: json['preferred_market_id'],
       preferredLanguage: _normalizeLanguageCode(json['preferred_language']),
       profileComplete: json['is_profile_complete'],
       stateName: json['state_name'],
-      districtName: json['district_name']
+      districtName: json['district_name'],
+      preferredMarketName: json['preferred_market_name'],
     );
   }
 
@@ -84,8 +90,10 @@ class UserProfile {
       'is_verified': isVerified,
       'state_id': stateId,
       'district_id': districtId,
+      'preferred_market_id': preferredMarketId,
       'state_name': stateName,
       'district_name': districtName,
+      'preferred_market_name': preferredMarketName,
       'preferred_language': preferredLanguage,
       'is_profile_complete': profileComplete,
     };

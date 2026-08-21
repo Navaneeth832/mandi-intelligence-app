@@ -107,6 +107,7 @@ class AuthService:
             password_hash=hash_password(user_data.password),
             state_id=user_data.state_id,
             district_id=user_data.district_id,
+            preferred_market_id=user_data.preferred_market_id,
             preferred_language=user_data.preferred_language,
             registration_method=identifier_type.value,
             is_verified=True,
