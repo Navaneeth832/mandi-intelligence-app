@@ -4,8 +4,14 @@ import '../../../data/models/notification_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/notification_preferences_provider.dart';
 
-const Color _primaryGreen = Color.fromARGB(255, 26, 152, 9);
-const Color _backgroundColor = Color(0xFFF8F9FA);
+const Color _bgColor = Color(0xFFFAF7EC);
+const Color _appBarBgColor = Color(0xFFFFF0C3);
+const Color _yellowAccent = Color(0xFFFFC814);
+const Color _iconBgColor = Color(0xFFFFF3C4);
+const Color _headerBannerBg = Color(0xFFFFF7DB);
+const Color _goldHeaderTextColor = Color(0xFFB78103);
+const Color _darkTextColor = Color(0xFF1E1E1E);
+const Color _cardBorderColor = Color(0xFFF3E7C4);
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -70,12 +76,12 @@ class _NotificationSettingsScreenState
         }
       },
       child: Scaffold(
-        backgroundColor: _backgroundColor,
+        backgroundColor: _bgColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: _appBarBgColor,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black87),
+            icon: const Icon(Icons.arrow_back, color: _darkTextColor),
             onPressed: () async {
               if (_hasChanges && !_isSaving) {
                 final shouldPop = await _onWillPop();
@@ -87,10 +93,11 @@ class _NotificationSettingsScreenState
               }
             },
           ),
+          centerTitle: true,
           title: Text(
             l10n.notificationSettings,
             style: const TextStyle(
-              color: Colors.black87,
+              color: _darkTextColor,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
@@ -98,7 +105,7 @@ class _NotificationSettingsScreenState
         ),
         body: prefsAsync.when(
           loading: () => const Center(
-            child: CircularProgressIndicator(color: _primaryGreen),
+            child: CircularProgressIndicator(color: _yellowAccent),
           ),
           error: (err, stack) => Center(
             child: Padding(
@@ -111,13 +118,13 @@ class _NotificationSettingsScreenState
                   Text(
                     l10n.errorWithDetails(err.toString().replaceAll('Exception: ', '')),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    style: const TextStyle(fontSize: 16, color: _darkTextColor),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _primaryGreen,
-                      foregroundColor: Colors.white,
+                      backgroundColor: _yellowAccent,
+                      foregroundColor: _darkTextColor,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -145,47 +152,17 @@ class _NotificationSettingsScreenState
             final current = _localPreferences!;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildAlertTypesCard(context, current, l10n),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   _buildDeliveryCard(context, current, l10n),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   _buildFrequencyCard(context, current, l10n),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _hasChanges ? _primaryGreen : Colors.grey.shade400,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 54),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(27),
-                      ),
-                    ),
-                    onPressed: (_hasChanges && !_isSaving)
-                        ? () => _savePreferences(context)
-                        : null,
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : Text(
-                            l10n.saveChanges,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
+                  const SizedBox(height: 36),
+                  _buildSaveButton(context, l10n),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -201,103 +178,54 @@ class _NotificationSettingsScreenState
     NotificationPreferences current,
     AppLocalizations l10n,
   ) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _cardBorderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.notifications_active_outlined, color: _primaryGreen),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.alertTypes,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _primaryGreen,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F0F0)),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.priceIncrease,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.priceIncrease,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(priceIncrease: val);
-                });
-              },
-            ),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.priceDrop,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.priceDrop,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(priceDrop: val);
-                });
-              },
-            ),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.betterMarket,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.betterMarket,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(betterMarket: val);
-                });
-              },
-            ),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.marketGlut,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.marketGlut,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(marketGlut: val);
-                });
-              },
-            ),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.aiRecommendation,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.aiRecommendation,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(aiRecommendation: val);
-                });
-              },
-            ),
-          ],
-        ),
+      child: Column(
+        children: [
+          _buildToggleRow(
+            icon: Icons.trending_down,
+            title: l10n.priceDrop,
+            value: current.priceDrop,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(priceDrop: val);
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
+            icon: Icons.trending_up,
+            title: l10n.betterMarket,
+            value: current.betterMarket,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(betterMarket: val);
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
+            icon: Icons.auto_awesome,
+            title: l10n.aiRecommendation,
+            value: current.aiRecommendation,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(aiRecommendation: val);
+              });
+            },
+          ),
+        ],
       ),
     );
   }
@@ -307,85 +235,49 @@ class _NotificationSettingsScreenState
     NotificationPreferences current,
     AppLocalizations l10n,
   ) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _cardBorderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.send_outlined, color: _primaryGreen),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.delivery,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _primaryGreen,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F0F0)),
-            SwitchListTile(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.inAppNotifications,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: current.deliveryInApp,
-              onChanged: (val) {
-                setState(() {
-                  _localPreferences = current.copyWith(deliveryInApp: val);
-                });
-              },
-            ),
-            SwitchListTile(
-              title: Row(
-                children: [
-                  Text(
-                    l10n.smsNotifications,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildBadge(l10n.comingSoon),
-                ],
-              ),
-              value: false,
-              onChanged: null,
-            ),
-            SwitchListTile(
-              title: Row(
-                children: [
-                  Text(
-                    l10n.pushNotifications,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildBadge(l10n.comingSoon),
-                ],
-              ),
-              value: false,
-              onChanged: null,
-            ),
-          ],
-        ),
+      child: Column(
+        children: [
+          _buildCardHeader(
+            icon: Icons.near_me_outlined,
+            title: l10n.delivery,
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
+            icon: Icons.notifications_none_outlined,
+            title: l10n.inAppNotifications,
+            value: current.deliveryInApp,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(deliveryInApp: val);
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
+            icon: Icons.smartphone_outlined,
+            title: l10n.pushNotifications,
+            value: current.deliveryPush,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(deliveryPush: val);
+              });
+            },
+          ),
+        ],
       ),
     );
   }
@@ -395,67 +287,154 @@ class _NotificationSettingsScreenState
     NotificationPreferences current,
     AppLocalizations l10n,
   ) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _cardBorderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
+      child: Column(
+        children: [
+          _buildCardHeader(
+            icon: Icons.access_time_outlined,
+            title: l10n.notificationFrequency,
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildRadioRow(
+            title: l10n.instant,
+            isSelected: current.frequency == 'instant',
+            onTap: () {
+              setState(() {
+                _localPreferences = current.copyWith(frequency: 'instant');
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildRadioRow(
+            title: l10n.dailySummary,
+            isSelected: current.frequency == 'daily_summary',
+            onTap: () {
+              setState(() {
+                _localPreferences = current.copyWith(frequency: 'daily_summary');
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardHeader({
+    required IconData icon,
+    required String title,
+  }) {
+    return Container(
+      width: double.infinity,
+      color: _headerBannerBg,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+      child: Row(
+        children: [
+          Icon(icon, color: _goldHeaderTextColor, size: 22),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: _goldHeaderTextColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: _iconBgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: _darkTextColor, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: _darkTextColor,
+              ),
+            ),
+          ),
+          Transform.scale(
+            scale: 0.9,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: Colors.white,
+              activeTrackColor: _yellowAccent,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey.shade300,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioRow({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        child: Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.access_time_outlined, color: _primaryGreen),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.notificationFrequency,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _primaryGreen,
-                    ),
-                  ),
-                ],
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? _yellowAccent : Colors.grey.shade400,
+                  width: isSelected ? 7 : 2,
+                ),
+                color: Colors.white,
               ),
             ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F0F0)),
-            RadioListTile<String>(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.instant,
-                style: const TextStyle(fontWeight: FontWeight.w500),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: _darkTextColor,
               ),
-              value: 'instant',
-              groupValue: current.frequency,
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    _localPreferences = current.copyWith(frequency: val);
-                  });
-                }
-              },
-            ),
-            RadioListTile<String>(
-              activeColor: _primaryGreen,
-              title: Text(
-                l10n.dailySummary,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              value: 'daily_summary',
-              groupValue: current.frequency,
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    _localPreferences = current.copyWith(frequency: val);
-                  });
-                }
-              },
             ),
           ],
         ),
@@ -463,21 +442,59 @@ class _NotificationSettingsScreenState
     );
   }
 
-  Widget _buildBadge(String text) {
+  Widget _buildSaveButton(BuildContext context, AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      height: 54,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade400, width: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: _hasChanges && !_isSaving
+            ? [
+                BoxShadow(
+                  color: _yellowAccent.withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade700,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _yellowAccent,
+          disabledBackgroundColor: Colors.grey.shade300,
+          foregroundColor: _darkTextColor,
+          disabledForegroundColor: Colors.grey.shade600,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
+        onPressed: (_hasChanges && !_isSaving)
+            ? () => _savePreferences(context)
+            : null,
+        child: _isSaving
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: _darkTextColor,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.notifications_outlined, color: _darkTextColor, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.saveChanges,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _darkTextColor,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -506,7 +523,7 @@ class _NotificationSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.savedSuccessfully),
-            backgroundColor: _primaryGreen,
+            backgroundColor: _yellowAccent,
             behavior: SnackBarBehavior.floating,
           ),
         );
