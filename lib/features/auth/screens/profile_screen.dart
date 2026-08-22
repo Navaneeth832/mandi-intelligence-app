@@ -217,7 +217,13 @@ class ProfileScreen extends ConsumerWidget {
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
             _buildInfoRow(context,Icons.location_city, AppLocalizations.of(context)!.district, district),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
-            _buildInfoRow(context,Icons.store_mall_directory_outlined, "Preferred Market", market),
+            _buildInfoRow(
+              context,
+              Icons.store_mall_directory_outlined,
+              "Preferred Market",
+              market,
+              isTappable: true,
+            ),
             const Divider(height: 32, thickness: 1, color: Color(0xFFF0F0F0)),
             _buildInfoRow(context,Icons.translate, AppLocalizations.of(context)!.language, language),
           ],
@@ -226,12 +232,56 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
- Widget _buildInfoRow(
-  BuildContext context,
-  IconData icon,
-  String label,
-  String value,
-){
+  void _showMarketNameDialog(BuildContext context, String title, String fullName) {
+    if (fullName.trim().isEmpty || fullName == '-') return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.black87,
+          ),
+        ),
+        content: Text(
+          fullName,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'Close',
+              style: TextStyle(
+                color: _primaryGreen,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    bool isTappable = false,
+  }) {
+    final bool canTap = isTappable && value.trim().isNotEmpty && value != '-';
+
     return Row(
       children: [
         Container(
@@ -247,14 +297,35 @@ class ProfileScreen extends ConsumerWidget {
           label,
           style: TextStyle(fontSize: 14, color: Colors.grey[700]),
         ),
-        const Spacer(),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: canTap
+              ? InkWell(
+                  onTap: () => _showMarketNameDialog(context, label, value),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                )
+              : Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
         ),
       ],
     );
@@ -321,9 +392,9 @@ Widget _buildPreferredCropsCard(
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: _primaryGreen.withOpacity(0.1),
+        color: _primaryGreen.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _primaryGreen.withOpacity(0.3)),
+        border: Border.all(color: _primaryGreen.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
