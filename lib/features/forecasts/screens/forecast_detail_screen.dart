@@ -206,7 +206,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFF97316).withOpacity(0.14),
+                  color: const Color(0xFFF97316).withValues(alpha: 0.14),
                   blurRadius: 18,
                   spreadRadius: 1,
                   offset: const Offset(0, 8),
@@ -252,8 +252,6 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           _buildSectionHeader('FORECAST SECTION', Icons.show_chart_rounded),
           const SizedBox(height: 12),
           _buildChartSection(context),
-          const SizedBox(height: 16),
-          _buildDailyForecastTimeline(context),
           const SizedBox(height: 24),
           _buildBestMarketsSection(context),
         ],
@@ -403,7 +401,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0), // Orange-tinted border
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.14),
+            color: const Color(0xFFF97316).withValues(alpha: 0.14),
             blurRadius: 18,
             spreadRadius: 1,
             offset: const Offset(0, 8),
@@ -516,7 +514,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.14),
+            color: const Color(0xFFF97316).withValues(alpha: 0.14),
             blurRadius: 18,
             spreadRadius: 1,
             offset: const Offset(0, 8),
@@ -663,7 +661,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.14),
+            color: const Color(0xFFF97316).withValues(alpha: 0.14),
             blurRadius: 18,
             spreadRadius: 1,
             offset: const Offset(0, 8),
@@ -848,130 +846,6 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
     );
   }
 
-  Widget _buildDailyForecastTimeline(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-
-    if (widget.forecast.forecast.isEmpty) {
-      return const SizedBox();
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFFFE0CC)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Daily Forecast Timeline',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Detailed 7-day modal price predictions',
-            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-          ),
-          const SizedBox(height: 16),
-          Column(
-            children: widget.forecast.forecast.map((f) {
-              String displayDate = f.date;
-              try {
-                final parsed = DateTime.parse(f.date);
-                displayDate = DateFormat('EEE, dd MMM').format(parsed);
-              } catch (_) {}
-
-              final isBestDate = f.date == widget.forecast.bestSellDate;
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isBestDate ? const Color(0xFFFFF2E7) : const Color(0xFFFFFBF7),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isBestDate ? const Color(0xFFF97316) : const Color(0xFFFFE0CC),
-                    width: isBestDate ? 1.5 : 1.0,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          isBestDate ? Icons.star_rounded : Icons.calendar_today_rounded,
-                          size: 16,
-                          color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF9CA3AF),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          displayDate,
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: isBestDate ? FontWeight.bold : FontWeight.w500,
-                            color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF1F2937),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        if (isBestDate) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF97316),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'BEST DAY',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                        ],
-                        Text(
-                          currencyFormatter.format(f.price),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isBestDate ? const Color(0xFFF97316) : const Color(0xFF1F2937),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildChartSection(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
@@ -1003,7 +877,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.14),
+            color: const Color(0xFFF97316).withValues(alpha: 0.14),
             blurRadius: 18,
             spreadRadius: 1,
             offset: const Offset(0, 8),
@@ -1174,7 +1048,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                       gradient: LinearGradient(
                         colors: [
                           const Color(0xFFFFF2E7), // Light Orange gradient
-                          const Color(0xFFFFF2E7).withOpacity(0.0),
+                          const Color(0xFFFFF2E7).withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -1212,7 +1086,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
         border: Border.all(color: const Color(0xFFFFE0CC), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.14),
+            color: const Color(0xFFF97316).withValues(alpha: 0.14),
             blurRadius: 18,
             spreadRadius: 1,
             offset: const Offset(0, 8),
