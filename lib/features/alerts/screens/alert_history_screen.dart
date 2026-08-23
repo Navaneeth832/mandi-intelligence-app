@@ -42,6 +42,43 @@ class _AlertHistoryScreenState extends ConsumerState<AlertHistoryScreen> {
     }
   }
 
+  Future<void> _pickDateRange(AlertHistoryState state) async {
+    final now = DateTime.now();
+    DateTimeRange? initialRange;
+    if (state.dateFrom != null && state.dateTo != null) {
+      final start = DateTime.tryParse(state.dateFrom!);
+      final end = DateTime.tryParse(state.dateTo!);
+      if (start != null && end != null) {
+        initialRange = DateTimeRange(start: start, end: end);
+      }
+    }
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: now,
+      initialDateRange: initialRange,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF27A32D),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF1F2937),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final fromStr = DateFormat('yyyy-MM-dd').format(picked.start);
+      final toStr = DateFormat('yyyy-MM-dd').format(picked.end);
+      ref.read(alertHistoryNotifierProvider.notifier).setDateRange(fromStr, toStr);
+    }
+  }
+
   Map<String, List<Alert>> _groupAlertsByDate(List<Alert> alerts, AppLocalizations l10n) {
     final Map<String, List<Alert>> groups = {};
     final now = DateTime.now();
@@ -190,46 +227,101 @@ class _AlertHistoryScreenState extends ConsumerState<AlertHistoryScreen> {
         },
         child: Column(
           children: [
-            // Search Input
+            // Search Input & Date Range Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) {
-                  ref.read(alertHistoryNotifierProvider.notifier).setSearch(val);
-                },
-                decoration: InputDecoration(
-                  hintText: l10n.searchAlerts,
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF27A32D)),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 20),
-                          onPressed: () {
-                            _searchController.clear();
-                            ref
-                                .read(alertHistoryNotifierProvider.notifier)
-                                .setSearch('');
-                          },
-                        )
-                      : null,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        ref.read(alertHistoryNotifierProvider.notifier).setSearch(val);
+                      },
+                      decoration: InputDecoration(
+                        hintText: l10n.searchAlerts,
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFF27A32D)),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 20),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  ref
+                                      .read(alertHistoryNotifierProvider.notifier)
+                                      .setSearch('');
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: const BorderSide(color: Color(0xFF27A32D), width: 1.5),
+                        ),
+                      ),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  const SizedBox(width: 8.0),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: (state.dateFrom != null || state.dateTo != null)
+                          ? const Color(0xFFE8F5E9)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: (state.dateFrom != null || state.dateTo != null)
+                            ? const Color(0xFF27A32D)
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.calendar_month,
+                        color: (state.dateFrom != null || state.dateTo != null)
+                            ? const Color(0xFF27A32D)
+                            : Colors.grey.shade700,
+                      ),
+                      tooltip: 'Select Date Range',
+                      onPressed: () => _pickDateRange(state),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Color(0xFF27A32D), width: 1.5),
-                  ),
-                ),
+                ],
               ),
             ),
+
+            if (state.dateFrom != null || state.dateTo != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                child: Row(
+                  children: [
+                    Chip(
+                      avatar: const Icon(Icons.date_range, size: 16, color: Color(0xFF27A32D)),
+                      label: Text(
+                        '${state.dateFrom ?? ''} to ${state.dateTo ?? ''}',
+                        style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w600),
+                      ),
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      onDeleted: () {
+                        ref.read(alertHistoryNotifierProvider.notifier).setDateRange(null, null);
+                      },
+                      backgroundColor: const Color(0xFFE8F5E9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: const BorderSide(color: Color(0xFF81C784)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             // Filter Chips
             AlertFilterChips(

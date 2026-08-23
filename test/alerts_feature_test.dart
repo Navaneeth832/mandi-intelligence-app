@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mandi_intelligence_app/data/models/alert_model.dart';
-import 'package:mandi_intelligence_app/data/datasources/alert_fallback_data_source.dart';
 import 'package:mandi_intelligence_app/data/services/alert_api_service.dart';
 import 'package:mandi_intelligence_app/data/repositories/alert_repository.dart';
 
@@ -29,13 +28,59 @@ class FailingApiService extends AlertApiService {
   FailingApiService({required this.statusCode, required this.errorMessage});
 
   @override
-  Future<PaginatedAlertsResponse> getAlerts({String? type, int page = 1, int pageSize = 20, String? token}) async {
+  Future<PaginatedAlertsResponse> getAlerts({String? type, String? language, int page = 1, int pageSize = 20, String? token}) async {
     throw AlertApiException(errorMessage, statusCode: statusCode);
   }
 
   @override
-  Future<PaginatedAlertsResponse> getAlertHistory({String? type, String? search, String? dateFrom, String? dateTo, int page = 1, int pageSize = 20, String? token}) async {
+  Future<PaginatedAlertsResponse> getAlertHistory({String? type, String? search, String? dateFrom, String? dateTo, String? language, int page = 1, int pageSize = 20, String? token}) async {
     throw AlertApiException(errorMessage, statusCode: statusCode);
+  }
+}
+
+class SuccessApiService extends AlertApiService {
+  @override
+  Future<PaginatedAlertsResponse> getAlerts({String? type, String? language, int page = 1, int pageSize = 20, String? token}) async {
+    return PaginatedAlertsResponse(
+      items: [
+        Alert(
+          id: 1,
+          type: AlertTypes.priceIncrease,
+          severity: 'HIGH',
+          title: 'Tomato price increased',
+          message: 'Tomato prices increased by 14%',
+          commodity: const AlertCommodity(id: 19, name: 'Tomato'),
+          market: const AlertMarket(id: 52, name: 'Thrissur Mandi'),
+          price: const AlertPrice(current: 2800.0, previous: 2450.0, changePercent: 14.29),
+          createdAt: DateTime.now(),
+        )
+      ],
+      page: page,
+      pageSize: pageSize,
+      total: 1,
+    );
+  }
+
+  @override
+  Future<PaginatedAlertsResponse> getAlertHistory({String? type, String? search, String? dateFrom, String? dateTo, String? language, int page = 1, int pageSize = 20, String? token}) async {
+    return PaginatedAlertsResponse(
+      items: [
+        Alert(
+          id: 2,
+          type: AlertTypes.betterMarket,
+          severity: 'MEDIUM',
+          title: 'Better price available',
+          message: 'Better price for Coconut',
+          commodity: const AlertCommodity(id: 42, name: 'Coconut'),
+          market: const AlertMarket(id: 88, name: 'Kozhikode Mandi'),
+          price: const AlertPrice(current: 3150.0, previous: 2800.0, changePercent: 12.5),
+          createdAt: DateTime.now(),
+        )
+      ],
+      page: page,
+      pageSize: pageSize,
+      total: 1,
+    );
   }
 }
 
@@ -134,66 +179,30 @@ void main() {
     });
   });
 
-  group('Alert Fallback Data Source Tests', () {
-    final fallback = AlertFallbackDataSource();
-
-    test('Returns default alerts without MARKET_GLUT', () async {
-      final res = await fallback.getAlerts(page: 1, pageSize: 20);
-      expect(res.items, isNotEmpty);
-      expect(res.items.any((a) => a.type == 'MARKET_GLUT'), isFalse);
-    });
-
-    test('Filters alerts by category correctly', () async {
-      final res = await fallback.getAlerts(type: AlertTypes.priceIncrease);
-      expect(res.items.every((a) => a.type == AlertTypes.priceIncrease), isTrue);
-    });
-
-    test('Performs local search across title, message, commodity, market', () async {
-      final res = await fallback.getAlertHistory(search: 'tomato');
-      expect(res.items, isNotEmpty);
-      for (final alert in res.items) {
-        final matches = alert.title.toLowerCase().contains('tomato') ||
-            alert.message.toLowerCase().contains('tomato') ||
-            alert.commodity.name.toLowerCase().contains('tomato') ||
-            alert.market.name.toLowerCase().contains('tomato');
-        expect(matches, isTrue);
-      }
-    });
-
-    test('Handles fallback pagination correctly', () async {
-      final page1 = await fallback.getAlerts(page: 1, pageSize: 2);
-      expect(page1.items.length, 2);
-      expect(page1.page, 1);
-
-      final page2 = await fallback.getAlerts(page: 2, pageSize: 2);
-      expect(page2.items.length, 2);
-      expect(page2.page, 2);
-      expect(page1.items.first.id != page2.items.first.id, isTrue);
-    });
-  });
-
-  group('Alert Repository Fallback Behavior Tests', () {
-    test('Triggers fallback on server error (500)', () async {
-      final failingService = FailingApiService(statusCode: 500, errorMessage: 'Internal Server Error');
-      final repo = AlertRepository(failingService, const MockSecureStorage());
+  group('Alert Repository API Integration Tests', () {
+    test('Fetches alerts successfully via AlertApiService', () async {
+      final service = SuccessApiService();
+      final repo = AlertRepository(service, const MockSecureStorage());
 
       final result = await repo.getAlerts();
-      expect(result.items, isNotEmpty); // Gracefully returned fallback data!
+      expect(result.items.length, 1);
+      expect(result.items.first.title, 'Tomato price increased');
     });
 
-    test('Rethrows authentication error (401) without fallback', () async {
-      final failingService = FailingApiService(statusCode: 401, errorMessage: 'Unauthorized');
+    test('Fetches alert history successfully via AlertApiService', () async {
+      final service = SuccessApiService();
+      final repo = AlertRepository(service, const MockSecureStorage());
+
+      final result = await repo.getAlertHistory(dateFrom: '2026-08-01', dateTo: '2026-08-23');
+      expect(result.items.length, 1);
+      expect(result.items.first.type, AlertTypes.betterMarket);
+    });
+
+    test('Rethrows API exceptions on failure', () async {
+      final failingService = FailingApiService(statusCode: 500, errorMessage: 'Server Error');
       final repo = AlertRepository(failingService, const MockSecureStorage());
 
       expect(() => repo.getAlerts(), throwsA(isA<AlertApiException>()));
-    });
-
-    test('Direct forceFallback flag uses fallback immediately', () async {
-      final failingService = FailingApiService(statusCode: 400, errorMessage: 'Bad Request');
-      final repo = AlertRepository(failingService, const MockSecureStorage(), forceFallback: true);
-
-      final result = await repo.getAlerts();
-      expect(result.items, isNotEmpty);
     });
   });
 }

@@ -1,5 +1,5 @@
 from typing import Optional, List, Tuple
-from datetime import datetime
+from datetime import datetime, timezone, time
 from uuid import UUID
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
@@ -20,10 +20,12 @@ class AlertRepository:
         page: int = 1,
         page_size: int = 20,
     ) -> Tuple[List[Alert], int]:
+        today_start = datetime.combine(datetime.now(timezone.utc).date(), time.min)
         query = (
             db.query(Alert)
             .options(joinedload(Alert.commodity), joinedload(Alert.market))
             .filter(Alert.user_id == user_id)
+            .filter(Alert.created_at >= today_start)
         )
 
         if alert_type and alert_type.upper() != "ALL":
