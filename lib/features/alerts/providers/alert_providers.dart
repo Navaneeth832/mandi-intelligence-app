@@ -205,11 +205,12 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
     String? search,
     String? dateFrom,
     String? dateTo,
+    bool clearDateRange = false,
   }) async {
     final activeFilter = filter ?? state.selectedFilter;
     final activeSearch = search ?? state.searchQuery;
-    final activeFrom = dateFrom ?? state.dateFrom;
-    final activeTo = dateTo ?? state.dateTo;
+    final activeFrom = clearDateRange ? null : (dateFrom ?? state.dateFrom);
+    final activeTo = clearDateRange ? null : (dateTo ?? state.dateTo);
 
     state = state.copyWith(
       isLoading: true,
@@ -218,6 +219,7 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
       dateFrom: activeFrom,
       dateTo: activeTo,
       clearError: true,
+      clearDateRange: clearDateRange,
       page: 1,
     );
 
@@ -288,8 +290,17 @@ class AlertHistoryNotifier extends StateNotifier<AlertHistoryState> {
   }
 
   Future<void> setDateRange(String? from, String? to) async {
-    state = state.copyWith(dateFrom: from, dateTo: to);
-    await loadHistory(dateFrom: from, dateTo: to);
+    final isClearing = (from == null && to == null);
+    state = state.copyWith(
+      dateFrom: from,
+      dateTo: to,
+      clearDateRange: isClearing,
+    );
+    await loadHistory(
+      dateFrom: from,
+      dateTo: to,
+      clearDateRange: isClearing,
+    );
   }
 
   Future<void> refresh() async {

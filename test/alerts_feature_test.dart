@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mandi_intelligence_app/data/models/alert_model.dart';
 import 'package:mandi_intelligence_app/data/services/alert_api_service.dart';
 import 'package:mandi_intelligence_app/data/repositories/alert_repository.dart';
+import 'package:mandi_intelligence_app/features/alerts/providers/alert_providers.dart';
 
 class MockSecureStorage extends FlutterSecureStorage {
   const MockSecureStorage();
@@ -203,6 +204,19 @@ void main() {
       final repo = AlertRepository(failingService, const MockSecureStorage());
 
       expect(() => repo.getAlerts(), throwsA(isA<AlertApiException>()));
+    });
+
+    test('AlertHistoryNotifier correctly sets and clears date range', () async {
+      final repo = AlertRepository(SuccessApiService(), const MockSecureStorage());
+      final notifier = AlertHistoryNotifier(repo, 'en');
+
+      await notifier.setDateRange('2026-08-01', '2026-08-23');
+      expect(notifier.debugState.dateFrom, '2026-08-01');
+      expect(notifier.debugState.dateTo, '2026-08-23');
+
+      await notifier.setDateRange(null, null);
+      expect(notifier.debugState.dateFrom, isNull);
+      expect(notifier.debugState.dateTo, isNull);
     });
   });
 }
