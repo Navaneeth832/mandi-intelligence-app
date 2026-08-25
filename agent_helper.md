@@ -620,3 +620,45 @@ User enters OTP ◄────────────────────�
 5. **Transient Verification Tokens**: `auth/verify-otp` returns a cryptographically hashed 10-minute token. Registration calls (`/auth/register`) require this token, ensuring account creation originates from verified email/phone numbers.
 6. **In-Memory Reference Dictionary Caching**: `price_fetcher.py` loads entities into memory maps to achieve $O(1)$ lookup times during high-volume fuzzy matching normalization.
 7. **FastAPI Lifespan Tasks**: Commented out inside `main.py` to prevent startup context blocking. Data fetching (`price_fetcher.py`), prediction execution (`run_predictions.py`), and alert processing (`scripts/run_alert_generation.py`) are triggered via external cron or administrative CLI scripts.
+
+---
+
+# 20. Offline Cache Implementation
+
+- **Engine**: **`SharedPreferences`** (`shared_preferences: ^2.3.2`) for persistent key-value caching. Provides 100% cross-platform compatibility across Web (`dart2js` / WASM / LocalStorage), Android, iOS, Windows, macOS, and Linux without native FFI dependencies or 64-bit integer hash web compiler errors. Authentication tokens remain securely isolated in `flutter_secure_storage`.
+- **Supported Screens**:
+  - **Home Screen**: Caches Mandi Prices (`getMandiPrices`), States (`getStates`), Districts (`getDistricts`), Markets (`getMarketsList`), and Commodities (`getCommodities`, `getActiveCommodities`).
+  - **Profile Screen**: Caches User Profile (`getProfile`) and Preferred Crops (`getPreferredCrops`).
+  - **Explicit Scope Limitation**: Forecasts, Alerts, Markets Directory, Explore, and other screens are **NOT** yet cached.
+- **Cache Key Strategy**:
+  - `mandi_prices_state={state}_dist={district}_mkt={market}_crop={crop}_lang={language}_p={page}_ps={pageSize}`
+  - `states_lang={language}`
+  - `districts_state={state}_id={stateId}_lang={language}`
+  - `markets_distId={districtId}_lang={language}`
+  - `commodities_type={all|active}`
+  - `user_profile`
+  - `preferred_crops`
+- **Cache Freshness & Timestamping**:
+  - Every cached entry records `cachedAt` (`DateTime`).
+  - UI renders instant cached data with `cachedAt` timestamp, then executes background API refresh.
+- **Online-First & Offline Fallback Strategy**:
+  - **Online**: API call succeeds $\rightarrow$ returns fresh data $\rightarrow$ updates local cache.
+  - **Offline / API Failure**: API call fails $\rightarrow$ reads cache $\rightarrow$ if cached data exists, returns cached data seamlessly without error screens. If no cache exists, displays standard error state.
+  - **Write Operations**: Profile edits (`updateProfile`, `savePreferredCrops`) remain online-only. Offline attempts do not fake synchronization and cleanly present network-required errors.
+- **Cache Indicator UI**:
+  - Displays a subtle warning banner at the top of Home Screen when data is served from local cache (`Offline · Last synced X ago` / localized in EN, HI, ML).
+  - Automatically disappears when fresh network data arrives.
+- **Exact Files Created / Modified**:
+  - **Created**:
+    - `lib/data/models/cache/cached_entry.dart` (`CachedEntry` model holding `cacheKey`, `rawJson`, `cachedAt`)
+    - `lib/data/services/local_cache_service.dart` (`LocalCacheService` using `SharedPreferences`)
+  - **Modified**:
+    - `pubspec.yaml` (Added `shared_preferences: ^2.3.2`)
+    - `lib/data/repositories/mandi_repository.dart` (Online-first & fallback for mandi prices, states, districts, markets, commodities)
+    - `lib/data/repositories/auth_repository.dart` (Online-first & fallback for user profile and preferred crops)
+    - `lib/core/providers/providers.dart` (Registered `localCacheServiceProvider` and injected into `authRepositoryProvider`)
+    - `lib/features/mandi_prices/providers/mandi_prices_provider.dart` (Added `isFromCache` and `cachedAt` to `MandiPricesState`, instant render + background refresh in `MandiPricesNotifier`)
+    - `lib/features/mandi_prices/screens/home_screen.dart` (Rendered `_buildOfflineBanner` when `isFromCache == true`)
+    - `lib/l10n/app_en.arb`, `app_hi.arb`, `app_ml.arb` (Added `offlineLabel` and `lastSyncedLabel`)
+    - `agent_helper.md` (Updated architectural documentation)
+

@@ -1,11 +1,10 @@
-import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cache/cached_entry.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 
 class LocalCacheService {
   static LocalCacheService? _instance;
-  static Isar? _isar;
+  SharedPreferences? _prefs;
 
   LocalCacheService._();
 
@@ -18,52 +17,35 @@ class LocalCacheService {
   }
 
   Future<void> _init() async {
-    if (_isar != null && _isar!.isOpen) return;
-
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      _isar = await Isar.open(
-        [CachedEntrySchema],
-        directory: dir.path,
-        name: 'mandi_cache',
-      );
-    } catch (e) {
-      // If Isar fails to open or is already open
-      _isar = Isar.getInstance('mandi_cache');
-    }
+    _prefs ??= await SharedPreferences.getInstance();
   }
 
   Future<void> saveCache(String key, String jsonContent) async {
-    if (_isar == null || !_isar!.isOpen) await _init();
-    final isar = _isar;
-    if (isar == null) return;
-
-    final entry = CachedEntry()
-      ..cacheKey = key
-      ..rawJson = jsonContent
-      ..cachedAt = DateTime.now();
-
-    await isar.writeTxn(() async {
-      await isar.cachedEntrys.putByCacheKey(entry);
-    });
+    await _init();
+    await _prefs?.setString('cache_data_$key', jsonContent);
+    await _prefs?.setString('cache_time_$key', DateTime.now().toIso8601String());
   }
 
   Future<CachedEntry?> getCache(String key) async {
-    if (_isar == null || !_isar!.isOpen) await _init();
-    final isar = _isar;
-    if (isar == null) return null;
+    await _init();
+    final jsonContent = _prefs?.getString('cache_data_$key');
+    final timeStr = _prefs?.getString('cache_time_$key');
 
-    return await isar.cachedEntrys.getByCacheKey(key);
+    if (jsonContent != null && timeStr != null) {
+      final cachedAt = DateTime.tryParse(timeStr) ?? DateTime.now();
+      return CachedEntry(
+        cacheKey: key,
+        rawJson: jsonContent,
+        cachedAt: cachedAt,
+      );
+    }
+    return null;
   }
 
   Future<void> clearCache(String key) async {
-    if (_isar == null || !_isar!.isOpen) await _init();
-    final isar = _isar;
-    if (isar == null) return;
-
-    await isar.writeTxn(() async {
-      await isar.cachedEntrys.deleteByCacheKey(key);
-    });
+    await _init();
+    await _prefs?.remove('cache_data_$key');
+    await _prefs?.remove('cache_time_$key');
   }
 
   // --- CACHE KEY BUILDERS ---
