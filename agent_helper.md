@@ -457,10 +457,30 @@ The predictive intelligence module estimates future modal prices for 7 days into
 - **Model Engine**: LightGBM regression model with weights stored in `backend/app/ml/lightgbm_weights.txt` and feature specifications in `model_features.json`.
 - **Feature Engineering**: Calculates historical lag features (lag_1, lag_7), rolling mean/std statistics, seasonal day-of-year indicators, and trend direction encodings.
 - **Execution Script**: `backend/run_predictions.py` executes full batch predictions across all active commodity-market-variety-grade combinations and writes records to `prediction_batches` and `commodity_predictions`.
-- **Business Logic Computation**:
-  - **Trend**: `RISING` if end price > start price; `FALLING` if end price < start price; else `STABLE`.
-  - **Best Selling Day**: The date within the 7-day trajectory when price reaches its maximum value (`expected_peak_price`).
-  - **Recommendation**: `SELL TODAY` if best selling day is today or trend is `FALLING`; `WAIT` if trend is `RISING`; else `HOLD`.
+- **Production Business Logic Computation**:
+  1. **Inputs**:
+     - `current_price`: Latest actual modal price from `mandi_prices` table.
+     - `forecast[]` & `forecast_dates[]`: 7-day predicted prices and dates.
+     - `prediction_batch`: Latest valid batch record.
+  2. **Trend (with ±2% Tolerance)**:
+     - `change_pct = ((last_price - first_price) / first_price) * 100`
+     - `change_pct >= +2.0%` $\rightarrow$ `RISING`
+     - `change_pct <= -2.0%` $\rightarrow$ `FALLING`
+     - Otherwise $\rightarrow$ `STABLE`
+  3. **Expected Peak & Best Sell Date**:
+     - `expected_peak_price = max(forecast_prices)`
+     - `best_sell_date = first date having expected_peak_price`
+  4. **Expected Upside %**:
+     - `upside_pct = ((expected_peak_price - current_price) / current_price) * 100` (evaluates whether waiting is worthwhile).
+  5. **Selling Window**:
+     - Forecast dates where `price >= expected_peak_price * 0.98` (dates within 2% of the predicted peak).
+  6. **Recommendation Matrix**:
+     - 🔴 **`SELL TODAY`**: If `current_price >= expected_peak_price * 0.98` OR (`trend == FALLING` AND `expected_upside_pct <= 2%`).
+     - 🟢 **`WAIT`**: If `expected_upside_pct > 2%` AND `selling_window` occurs in the future (at least one window date > today) AND `trend == RISING`.
+     - 🟡 **`HOLD`**: If `abs(expected_upside_pct) <= 2%` AND `trend == STABLE`.
+     - ⚪ **`NO CLEAR SIGNAL`**: If forecast data is incomplete, highly volatile ($CV > 0.4$), or `current_price` is missing/stale ($current\_price \le 0$).
+  7. **Final Response Contract**:
+     Produces `current_price`, `forecast`, `trend`, `expected_peak_price`, `best_sell_date`, `selling_window`, `expected_upside_pct`, `recommendation`, `data_quality`, `transport_cost`, `market_fee`, `expected_profit`, `recommendation_reason`, and `ai_recommendation_title`.
 
 ---
 

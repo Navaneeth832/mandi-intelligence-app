@@ -19,7 +19,10 @@ class CommodityForecast {
   final String trend; // e.g., "RISING", "FALLING", "STABLE"
   final String bestSellDate;
   final double expectedPeakPrice;
-  final String recommendation; // e.g., "WAIT", "SELL TODAY", "HOLD"
+  final List<String> sellingWindow;
+  final double expectedUpsidePct;
+  final String dataQuality;
+  final String recommendation; // e.g., "WAIT", "SELL TODAY", "HOLD", "NO CLEAR SIGNAL"
   final double transportCost;
   final double marketFee;
   final double expectedProfit;
@@ -47,6 +50,9 @@ class CommodityForecast {
     required this.trend,
     required this.bestSellDate,
     required this.expectedPeakPrice,
+    this.sellingWindow = const [],
+    this.expectedUpsidePct = 0.0,
+    this.dataQuality = 'HIGH',
     required this.recommendation,
     this.transportCost = 150.0,
     this.marketFee = 45.0,
@@ -76,6 +82,9 @@ class CommodityForecast {
     String? trend,
     String? bestSellDate,
     double? expectedPeakPrice,
+    List<String>? sellingWindow,
+    double? expectedUpsidePct,
+    String? dataQuality,
     String? recommendation,
     double? transportCost,
     double? marketFee,
@@ -104,6 +113,9 @@ class CommodityForecast {
       trend: trend ?? this.trend,
       bestSellDate: bestSellDate ?? this.bestSellDate,
       expectedPeakPrice: expectedPeakPrice ?? this.expectedPeakPrice,
+      sellingWindow: sellingWindow ?? this.sellingWindow,
+      expectedUpsidePct: expectedUpsidePct ?? this.expectedUpsidePct,
+      dataQuality: dataQuality ?? this.dataQuality,
       recommendation: recommendation ?? this.recommendation,
       transportCost: transportCost ?? this.transportCost,
       marketFee: marketFee ?? this.marketFee,
@@ -138,6 +150,12 @@ class CommodityForecast {
       trend: (json['trend'] as String?) ?? 'STABLE',
       bestSellDate: (json['best_sell_date'] as String?) ?? '',
       expectedPeakPrice: (json['expected_peak_price'] as num).toDouble(),
+      sellingWindow: (json['selling_window'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList() ??
+          const [],
+      expectedUpsidePct: (json['expected_upside_pct'] as num?)?.toDouble() ?? 0.0,
+      dataQuality: (json['data_quality'] as String?) ?? 'HIGH',
       recommendation: (json['recommendation'] as String?) ?? 'HOLD',
       transportCost: (json['transport_cost'] as num?)?.toDouble() ?? 150.0,
       marketFee: (json['market_fee'] as num?)?.toDouble() ?? 45.0,
@@ -171,6 +189,9 @@ class CommodityForecast {
       'trend': trend,
       'best_sell_date': bestSellDate,
       'expected_peak_price': expectedPeakPrice,
+      'selling_window': sellingWindow,
+      'expected_upside_pct': expectedUpsidePct,
+      'data_quality': dataQuality,
       'recommendation': recommendation,
       'transport_cost': transportCost,
       'market_fee': marketFee,

@@ -30,6 +30,9 @@ class ForecastResponse(BaseModel):
     recommendation: str
     best_sell_date: str
     expected_peak_price: float
+    selling_window: List[str] = []
+    expected_upside_pct: float = 0.0
+    data_quality: str = "HIGH"
     transport_cost: float = 150.0
     market_fee: float = 45.0
     expected_profit: float = 480.0

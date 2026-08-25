@@ -17,28 +17,103 @@ def get_translated_name(language_code: str, entity) -> str | None:
     return None
 
 def compute_trend(first_price: float, last_price: float) -> str:
-    """Determine trend: last > first -> RISING, last < first -> FALLING, else STABLE"""
-    if last_price > first_price:
+    """
+    Determine trend using first vs last price with +/- 2% tolerance:
+    change_pct >= +2%  -> RISING
+    change_pct <= -2%  -> FALLING
+    otherwise           -> STABLE
+    """
+    if first_price <= 0:
+        return "STABLE"
+    change_pct = ((last_price - first_price) / first_price) * 100.0
+    if change_pct >= 2.0:
         return "RISING"
-    elif last_price < first_price:
+    elif change_pct <= -2.0:
         return "FALLING"
     return "STABLE"
 
-def compute_recommendation(best_sell_date: date, trend: str, today: date) -> str:
+def compute_expected_upside(expected_peak_price: float, current_price: float) -> float:
     """
-    Determine recommendation:
-    If best selling day == today -> SELL TODAY
-    Else if trend == RISING -> WAIT
-    Else if trend == FALLING -> SELL TODAY
-    Else -> HOLD
+    upside_pct = (expected_peak_price - current_price) / current_price * 100
     """
-    if best_sell_date == today:
-        return "SELL TODAY"
-    elif trend == "RISING":
+    if current_price <= 0:
+        return 0.0
+    return round(((expected_peak_price - current_price) / current_price) * 100.0, 2)
+
+def compute_selling_window(pred_list: list, expected_peak_price: float) -> list[str]:
+    """
+    Selling window = forecast days whose price is within 2% of predicted peak:
+    price >= expected_peak_price * 0.98
+    """
+    threshold = expected_peak_price * 0.98
+    window = []
+    for p in pred_list:
+        if float(p.predicted_price) >= threshold:
+            window.append(p.prediction_day.strftime('%Y-%m-%d'))
+    return window
+
+def evaluate_data_quality(pred_list: list, current_price: float) -> tuple[str, bool]:
+    """
+    Evaluates forecast data quality:
+    Returns (data_quality_label, is_valid)
+    """
+    if not pred_list or len(pred_list) < 3 or current_price <= 0:
+        return "LOW", False
+
+    prices = [float(p.predicted_price) for p in pred_list]
+    if any(p <= 0 for p in prices):
+        return "LOW", False
+
+    # Volatility check: standard deviation / mean
+    mean_val = sum(prices) / len(prices)
+    if mean_val > 0:
+        variance = sum((x - mean_val) ** 2 for x in prices) / len(prices)
+        std_dev = variance ** 0.5
+        cv = std_dev / mean_val
+        if cv > 0.4:
+            return "VOLATILE", False
+
+    return "HIGH", True
+
+def compute_recommendation(
+    best_sell_date_obj: date,
+    selling_window_dates: list[date],
+    trend: str,
+    expected_upside_pct: float,
+    current_price: float,
+    expected_peak_price: float,
+    is_data_valid: bool,
+    today: date
+) -> str:
+    """
+    Production recommendation matrix:
+    - ⚪ NO CLEAR SIGNAL: incomplete data, volatile forecast, or stale/missing current_price
+    - 🟢 WAIT: expected_upside_pct > 2% AND selling_window occurs in future AND trend == RISING
+    - 🟡 HOLD: abs(expected_upside_pct) <= 2% AND trend == STABLE
+    - 🔴 SELL TODAY: current_price >= expected_peak_price * 0.98 OR (trend == FALLING and expected_upside_pct <= 2%)
+    """
+    if not is_data_valid:
+        return "NO CLEAR SIGNAL"
+
+    # 1. 🟢 WAIT
+    has_future_window = any(d > today for d in selling_window_dates)
+    if trend == "RISING" and expected_upside_pct > 2.0 and has_future_window:
         return "WAIT"
-    elif trend == "FALLING":
+
+    # 2. 🟡 HOLD
+    if trend == "STABLE" and abs(expected_upside_pct) <= 2.0:
+        return "HOLD"
+
+    # 3. 🔴 SELL TODAY
+    if current_price >= (expected_peak_price * 0.98):
         return "SELL TODAY"
-    return "HOLD"
+    if trend == "FALLING" and expected_upside_pct <= 2.0:
+        return "SELL TODAY"
+
+    # 4. ⚪ Fallback / No clear signal
+    return "NO CLEAR SIGNAL"
+
+
 
 from app.api.routes.mandi_prices import get_commodity_image_url
 
@@ -147,7 +222,9 @@ def get_predictions_for_user(
         variety_name = first_row.variety.name
         grade_name = first_row.grade.grade_name
 
-        # Compute prices
+        # Compute current price and data metrics
+        curr_price_val = price_map.get(key, 0.0)
+
         prices = [float(p.predicted_price) for p in pred_list]
         first_price = prices[0]
         last_price = prices[-1]
@@ -156,11 +233,26 @@ def get_predictions_for_user(
         trend_raw = compute_trend(first_price, last_price)
         expected_peak = max(prices)
         peak_index = prices.index(expected_peak)
-        
+
         best_sell_date_obj = pred_list[peak_index].prediction_day
         best_sell_date_str = best_sell_date_obj.strftime('%Y-%m-%d')
 
-        recommendation_raw = compute_recommendation(best_sell_date_obj, trend_raw, today_val)
+        selling_window_str_list = compute_selling_window(pred_list, expected_peak)
+        selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
+
+        expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
+        data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
+
+        recommendation_raw = compute_recommendation(
+            best_sell_date_obj,
+            selling_window_dates,
+            trend_raw,
+            expected_upside_pct,
+            curr_price_val,
+            expected_peak,
+            is_data_valid,
+            today_val
+        )
 
         # Localize Trend & Recommendation values
         localized_trend = translate_trend(trend_raw, language)
@@ -175,22 +267,25 @@ def get_predictions_for_user(
             for p in pred_list
         ]
 
-        # Mock advisory and logistics calculations
+        # Advisory and logistics calculations
         transport_cost = 150.0
         market_fee = 45.0
-        curr_price_val = price_map.get(key, 0.0)
         base_diff = expected_peak - curr_price_val - transport_cost - market_fee if curr_price_val > 0 else expected_peak * 0.15
         expected_profit = round(max(120.0, base_diff), 2)
 
         if recommendation_raw == "SELL TODAY":
             ai_title = "Maximum Price Window Active"
-            rec_reason = f"Peak price of ₹{int(expected_peak)} is reached today in {market_name}. Selling now maximizes net profit before expected market correction."
+            rec_reason = f"Current price or market trend indicates optimal return near ₹{int(expected_peak)} in {market_name}. Selling now maximizes net profit."
         elif recommendation_raw == "WAIT":
             ai_title = "Price Appreciation Expected"
-            rec_reason = f"Prices in {market_name} are trending upward towards a peak of ₹{int(expected_peak)} on {best_sell_date_str}. Holding for a few days yields higher returns."
-        else:
+            window_text = f"between {selling_window_str_list[0]} and {selling_window_str_list[-1]}" if len(selling_window_str_list) > 1 else f"on {best_sell_date_str}"
+            rec_reason = f"Prices in {market_name} are trending upward with an expected upside of {expected_upside_pct}%, peaking near ₹{int(expected_peak)} {window_text}."
+        elif recommendation_raw == "HOLD":
             ai_title = "Stable Market Outlook"
-            rec_reason = f"Prices remain steady near ₹{int(expected_peak)}. Monitor local demand before scheduling bulk logistics."
+            rec_reason = f"Prices remain steady near ₹{int(expected_peak)} with minimal expected upside ({expected_upside_pct}%). Monitor local demand."
+        else:
+            ai_title = "Inconclusive Signal"
+            rec_reason = "Market forecast data is incomplete, stale, or volatile. Monitor daily arrivals before scheduling sales."
 
         predictions_list.append({
             "commodity_id": first_row.commodity_id,
@@ -214,6 +309,9 @@ def get_predictions_for_user(
             "recommendation": localized_recommendation,
             "best_sell_date": best_sell_date_str,
             "expected_peak_price": expected_peak,
+            "selling_window": selling_window_str_list,
+            "expected_upside_pct": expected_upside_pct,
+            "data_quality": data_quality_label,
             "transport_cost": transport_cost,
             "market_fee": market_fee,
             "expected_profit": expected_profit,
@@ -279,6 +377,7 @@ def get_best_markets_for_commodity(
         variety_name = first_row.variety.name
         grade_name = first_row.grade.grade_name
 
+        curr_price_val = price_map.get(key, 0.0)
         prices = [float(p.predicted_price) for p in pred_list]
         first_price = prices[0]
         last_price = prices[-1]
@@ -288,7 +387,21 @@ def get_best_markets_for_commodity(
         peak_index = prices.index(expected_peak)
 
         best_sell_date_obj = pred_list[peak_index].prediction_day
-        recommendation_raw = compute_recommendation(best_sell_date_obj, trend_raw, today_val)
+        selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
+
+        expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
+        data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
+
+        recommendation_raw = compute_recommendation(
+            best_sell_date_obj,
+            selling_window_dates,
+            trend_raw,
+            expected_upside_pct,
+            curr_price_val,
+            expected_peak,
+            is_data_valid,
+            today_val
+        )
 
         best_markets_list.append({
             "market_id": mkt.id,
@@ -302,10 +415,11 @@ def get_best_markets_for_commodity(
             "grade_id": first_row.grade_id,
             "grade_name": grade_name,
             "predicted_price": expected_peak,
-            "current_price": price_map.get(key, 0.0),
+            "current_price": curr_price_val,
             "trend": translate_trend(trend_raw, language),
             "recommendation": translate_recommendation(recommendation_raw, language)
         })
 
     best_markets_list.sort(key=lambda x: x["predicted_price"], reverse=True)
     return best_markets_list
+
