@@ -37,6 +37,14 @@ class StateModel {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'translations': translations?.map((t) => t.toJson()).toList(),
+    };
+  }
 }
 
 class StateTranslation {
@@ -59,5 +67,14 @@ class StateTranslation {
       languageCode: json['language_code'],
       translatedName: json['translated_name'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'state_id': stateId,
+      'language_code': languageCode,
+      'translated_name': translatedName,
+    };
   }
 }

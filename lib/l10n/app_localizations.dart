@@ -1159,17 +1159,83 @@ abstract class AppLocalizations {
   /// **'Discard'**
   String get discard;
 
+  /// No description provided for @alertHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert History'**
   String get alertHistory;
+
+  /// No description provided for @todaysAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Alerts'**
   String get todaysAlerts;
+
+  /// No description provided for @allAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
   String get allAlerts;
+
+  /// No description provided for @noAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'No alerts available'**
   String get noAlerts;
+
+  /// No description provided for @noAlertsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No alerts found'**
   String get noAlertsFound;
+
+  /// No description provided for @searchAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search alerts...'**
   String get searchAlerts;
+
+  /// No description provided for @failedToLoadAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load alerts'**
   String get failedToLoadAlerts;
+
+  /// No description provided for @failedToLoadAlertHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load alert history'**
   String get failedToLoadAlertHistory;
+
+  /// No description provided for @previousAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous Alerts'**
   String get previousAlerts;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
   String get today;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
   String get retry;
+
+  /// No description provided for @offlineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get offlineLabel;
+
+  /// No description provided for @lastSyncedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {timeAgo}'**
+  String lastSyncedLabel(Object timeAgo);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

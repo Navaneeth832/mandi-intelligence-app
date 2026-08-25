@@ -252,6 +252,13 @@
   "failedToLoadAlertHistory": "Failed to load alert history",
   "previousAlerts": "Previous Alerts",
   "today": "Today",
-  "retry": "Retry"
+  "retry": "Retry",
+  "offlineLabel": "Offline",
+  "lastSyncedLabel": "Last synced {timeAgo}",
+  "@lastSyncedLabel": {
+    "placeholders": {
+      "timeAgo": {}
+    }
+  }
 }
 

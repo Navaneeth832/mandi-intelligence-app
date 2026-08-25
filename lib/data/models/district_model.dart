@@ -42,6 +42,15 @@ class District {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'state_id': stateId,
+      'translations': translations?.map((t) => t.toJson()).toList(),
+    };
+  }
 }
 
 class DistrictTranslation {
@@ -64,5 +73,14 @@ class DistrictTranslation {
       languageCode: json['language_code'],
       translatedName: json['translated_name'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'district_id': districtId,
+      'language_code': languageCode,
+      'translated_name': translatedName,
+    };
   }
 }

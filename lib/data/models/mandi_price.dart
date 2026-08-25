@@ -55,7 +55,6 @@ class MandiPrice {
       commodityId: json['commodity_id'] as int?,
       marketId: json['market_id'] as int?,
       commodityImageUrl: json['commodity_image_url'] as String?,
-
       modalPrice: (json['modal_price'] as num).toDouble(),
       highPrice: (json['max_price'] as num).toDouble(),
       lowPrice: (json['min_price'] as num).toDouble(),
@@ -70,5 +69,25 @@ class MandiPrice {
         json['created_at'],
       ),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'commodity': commodity,
+      'translated_name': translatedName,
+      'variety': variety,
+      'grade': grade,
+      'market': market,
+      'district': district,
+      'state': state,
+      'commodity_id': commodityId,
+      'market_id': marketId,
+      'commodity_image_url': commodityImageUrl,
+      'modal_price': modalPrice,
+      'max_price': highPrice,
+      'min_price': lowPrice,
+      'arrival_date': lastUpdated.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+    };
   }
 }

@@ -597,4 +597,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get retry => 'पुनः प्रयास करें';
+
+  @override
+  String get offlineLabel => 'ऑफ़लाइन';
+
+  @override
+  String lastSyncedLabel(Object timeAgo) {
+    return 'अंतिम सिंक $timeAgo';
+  }
 }

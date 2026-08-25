@@ -8,6 +8,7 @@ import '../../../data/models/district_model.dart';
 import '../../../data/models/commodity_model.dart';
 import '../../../data/models/market_model.dart';
 import '../../../core/providers/locale_provider.dart';
+import '../../../core/providers/providers.dart';
 import 'filter_model.dart';
 
 // Provider for the ApiService
@@ -18,7 +19,8 @@ final apiServiceProvider = Provider<MandiApiService>((ref) {
 // Provider for the Repository
 final mandiRepositoryProvider = Provider<MandiRepository>((ref) {
   final apiService = ref.watch(apiServiceProvider);
-  return MandiRepository(apiService);
+  final cacheService = ref.watch(localCacheServiceProvider).valueOrNull;
+  return MandiRepository(apiService, cacheService: cacheService);
 });
 
 // --- MANDI PRICES PROVIDER (Existing) ---
@@ -29,6 +31,8 @@ class MandiPricesState {
   final int totalRecords;
   final bool isLoadingMore;
   final bool hasMorePages;
+  final bool isFromCache;
+  final DateTime? cachedAt;
 
   MandiPricesState({
     required this.items,
@@ -37,6 +41,8 @@ class MandiPricesState {
     required this.totalRecords,
     required this.isLoadingMore,
     required this.hasMorePages,
+    this.isFromCache = false,
+    this.cachedAt,
   });
 
   MandiPricesState copyWith({
@@ -46,14 +52,18 @@ class MandiPricesState {
     int? totalRecords,
     bool? isLoadingMore,
     bool? hasMorePages,
+    bool? isFromCache,
+    DateTime? cachedAt,
   }) {
     return MandiPricesState(
       items: items ?? this.items,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
-      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       totalRecords: totalRecords ?? this.totalRecords,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMorePages: hasMorePages ?? this.hasMorePages,
+      isFromCache: isFromCache ?? this.isFromCache,
+      cachedAt: cachedAt ?? this.cachedAt,
     );
   }
 }
@@ -68,7 +78,23 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
   }
 
   Future<void> loadInitialPage() async {
-    state = const AsyncValue.loading();
+    // Check if cached data exists for zero-latency instant render
+    final cachedResult = await _repository.getCachedMandiPrices(_filter, page: 1, pageSize: 50, language: _language);
+    if (cachedResult != null && cachedResult.data.data.isNotEmpty) {
+      state = AsyncValue.data(MandiPricesState(
+        items: cachedResult.data.data,
+        currentPage: cachedResult.data.page,
+        totalPages: cachedResult.data.totalPages,
+        totalRecords: cachedResult.data.totalRecords,
+        isLoadingMore: false,
+        hasMorePages: cachedResult.data.page < cachedResult.data.totalPages,
+        isFromCache: true,
+        cachedAt: cachedResult.cachedAt,
+      ));
+    } else {
+      state = const AsyncValue.loading();
+    }
+
     try {
       final response = await _repository.getMandiPrices(_filter, page: 1, language: _language);
       state = AsyncValue.data(MandiPricesState(
@@ -78,8 +104,14 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
         totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
+        isFromCache: false,
+        cachedAt: DateTime.now(),
       ));
     } catch (err, stack) {
+      if (state.hasValue && state.value!.items.isNotEmpty) {
+        // Keep cached state visible if background API refresh failed!
+        return;
+      }
       state = AsyncValue.error(err, stack);
     }
   }
@@ -103,6 +135,8 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
         totalRecords: response.totalRecords,
         isLoadingMore: false,
         hasMorePages: response.page < response.totalPages,
+        isFromCache: false,
+        cachedAt: DateTime.now(),
       ));
     } catch (err, stack) {
       state = AsyncValue.data(currentState.copyWith(isLoadingMore: false));

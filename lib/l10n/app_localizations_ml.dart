@@ -597,4 +597,12 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get retry => 'വീണ്ടും ശ്രമിക്കുക';
+
+  @override
+  String get offlineLabel => 'ഓഫ്‌ലൈൻ';
+
+  @override
+  String lastSyncedLabel(Object timeAgo) {
+    return 'അവസാനം സിങ്ക് ചെയ്തത് $timeAgo';
+  }
 }

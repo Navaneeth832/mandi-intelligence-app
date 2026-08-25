@@ -40,6 +40,15 @@ class Market {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'district_id': districtId,
+      'translations': translations?.map((t) => t.toJson()).toList(),
+    };
+  }
 }
 
 class MarketTranslation {
@@ -62,5 +71,14 @@ class MarketTranslation {
       languageCode: json['language_code'],
       translatedName: json['translated_name'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'market_id': marketId,
+      'language_code': languageCode,
+      'translated_name': translatedName,
+    };
   }
 }

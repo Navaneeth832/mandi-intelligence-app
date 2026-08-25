@@ -252,5 +252,7 @@
   "failedToLoadAlertHistory": "अलर्ट इतिहास लोड करने में विफल",
   "previousAlerts": "पिछले अलर्ट",
   "today": "आज",
-  "retry": "पुनः प्रयास करें"
+  "retry": "पुनः प्रयास करें",
+  "offlineLabel": "ऑफ़लाइन",
+  "lastSyncedLabel": "अंतिम सिंक {timeAgo}"
 }

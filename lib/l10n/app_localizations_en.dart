@@ -597,4 +597,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get offlineLabel => 'Offline';
+
+  @override
+  String lastSyncedLabel(Object timeAgo) {
+    return 'Last synced $timeAgo';
+  }
 }

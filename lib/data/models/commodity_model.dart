@@ -40,6 +40,15 @@ class Commodity {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'commodity_image_url': commodityImageUrl,
+      'translations': translations?.map((t) => t.toJson()).toList(),
+    };
+  }
 }
 
 class CommodityTranslation {
@@ -62,5 +71,14 @@ class CommodityTranslation {
       languageCode: json['language_code'],
       translatedName: json['translated_name'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'commodity_id': commodityId,
+      'language_code': languageCode,
+      'translated_name': translatedName,
+    };
   }
 }

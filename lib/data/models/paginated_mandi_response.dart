@@ -26,4 +26,14 @@ class PaginatedMandiResponse {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'page': page,
+      'page_size': pageSize,
+      'total_records': totalRecords,
+      'total_pages': totalPages,
+      'data': data.map((item) => item.toJson()).toList(),
+    };
+  }
 }

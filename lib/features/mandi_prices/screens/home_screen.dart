@@ -128,10 +128,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
- Widget _buildBody() {
+  Widget _buildBody() {
     const filter = Filter();
 
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
+    final currentState = pricesAsync.valueOrNull;
+
     return RefreshIndicator(
       onRefresh: () async {
         // Refresh the current filter
@@ -152,18 +154,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         children: [
           _buildHeaderSection(
-              pricesAsync.maybeWhen(
-                data: (state) =>
-                    state.items.isNotEmpty
-                        ? state.items.first.createdAt
-                        : DateTime.now(),
-                orElse: () => DateTime.now(),
-              ),
+            pricesAsync.maybeWhen(
+              data: (state) =>
+                  state.items.isNotEmpty
+                      ? state.items.first.createdAt
+                      : DateTime.now(),
+              orElse: () => DateTime.now(),
             ),
+          ),
+          if (currentState?.isFromCache == true)
+            _buildOfflineBanner(currentState?.cachedAt),
           const SizedBox(height: 24),
           _buildFilterSection(),
           const SizedBox(height: 20),
           _buildPriceList(filter),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOfflineBanner(DateTime? cachedAt) {
+    final l10n = AppLocalizations.of(context)!;
+    final timeAgoStr = cachedAt != null ? getRelativeTime(context, cachedAt) : l10n.justNow;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      margin: const EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF3C7), // Amber 100
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off_rounded, size: 18, color: Color(0xFFD97706)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${l10n.offlineLabel} · ${l10n.lastSyncedLabel(timeAgoStr)}',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF92400E),
+              ),
+            ),
+          ),
         ],
       ),
     );
