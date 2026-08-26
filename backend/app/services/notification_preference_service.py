@@ -22,7 +22,7 @@ class NotificationPreferenceService:
           - market_glut = True
           - ai_recommendation = True
           - delivery_in_app = True
-          - delivery_sms = False
+          - delivery_email = False
           - delivery_push = False
           - frequency = 'instant'
         """
@@ -41,7 +41,7 @@ class NotificationPreferenceService:
                 market_glut=True,
                 ai_recommendation=True,
                 delivery_in_app=True,
-                delivery_sms=False,
+                delivery_email=False,
                 delivery_push=False,
                 frequency=NotificationFrequency.INSTANT.value,
             )
@@ -77,7 +77,7 @@ class NotificationPreferenceService:
         preferences.market_glut = preference_data.market_glut
         preferences.ai_recommendation = preference_data.ai_recommendation
         preferences.delivery_in_app = preference_data.delivery_in_app
-        preferences.delivery_sms = preference_data.delivery_sms
+        preferences.delivery_email = preference_data.delivery_email
         preferences.delivery_push = preference_data.delivery_push
 
         frequency_val = (

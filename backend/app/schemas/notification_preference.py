@@ -16,7 +16,7 @@ class NotificationPreferenceBase(BaseModel):
     market_glut: bool = True
     ai_recommendation: bool = True
     delivery_in_app: bool = True
-    delivery_sms: bool = False
+    delivery_email: bool = False
     delivery_push: bool = False
     frequency: NotificationFrequency = NotificationFrequency.INSTANT
 
@@ -28,7 +28,7 @@ class NotificationPreferenceUpdate(BaseModel):
     market_glut: bool
     ai_recommendation: bool
     delivery_in_app: bool
-    delivery_sms: bool
+    delivery_email: bool
     delivery_push: bool
     frequency: NotificationFrequency
 
@@ -41,7 +41,7 @@ class NotificationPreferenceResponse(BaseModel):
     market_glut: bool
     ai_recommendation: bool
     delivery_in_app: bool
-    delivery_sms: bool
+    delivery_email: bool
     delivery_push: bool
     frequency: str
     created_at: datetime | None = None

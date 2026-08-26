@@ -22,7 +22,7 @@ class NotificationPreference(Base):
     ai_recommendation = Column(Boolean, nullable=False, default=True)
 
     delivery_in_app = Column(Boolean, nullable=False, default=True)
-    delivery_sms = Column(Boolean, nullable=False, default=False)
+    delivery_email = Column(Boolean, nullable=False, default=False)
     delivery_push = Column(Boolean, nullable=False, default=False)
 
     frequency = Column(String(20), nullable=False, default="instant")

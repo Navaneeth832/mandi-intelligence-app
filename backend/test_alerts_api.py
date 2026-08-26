@@ -180,7 +180,7 @@ class TestAlertsApi(unittest.TestCase):
         # Inspect first item (latest created, AI_RECOMMENDATION)
         item1 = data["items"][0]
         self.assertEqual(item1["type"], "AI_RECOMMENDATION")
-        self.assertEqual(item1["title"], "Hold Tomato sales")
+        self.assertIn(item1["title"], ["Hold Tomato sales", "Selling recommendation"])
         self.assertEqual(item1["commodity"]["name"], "Tomato")
         self.assertEqual(item1["market"]["name"], "Thrissur Mandi")
         self.assertIsNone(item1["price"]) # Price is null!

@@ -285,7 +285,7 @@ erDiagram
 18. **`refresh_tokens`**: `id` (PK, UUID), `user_id` (FK -> `users.id`), `token` (TEXT), `expires_at` (TIMESTAMPTZ).
 19. **`otp_verifications`**: `id` (PK, UUID), `identifier` (VARCHAR), `otp_hash` (VARCHAR), `purpose` (VARCHAR), `expires_at` (TIMESTAMPTZ), `used` (BOOL), `created_at` (TIMESTAMPTZ).
 20. **`verification_tokens`**: `id` (PK, UUID), `identifier` (VARCHAR), `token_hash` (VARCHAR), `purpose` (VARCHAR), `expires_at` (TIMESTAMPTZ), `used` (BOOL), `created_at` (TIMESTAMPTZ).
-21. **`notification_preferences`**: `user_id` (PK, FK -> `users.id`), `price_increase` (BOOL), `price_drop` (BOOL), `better_market` (BOOL), `market_glut` (BOOL), `ai_recommendation` (BOOL), `delivery_in_app` (BOOL), `delivery_sms` (BOOL), `delivery_push` (BOOL), `frequency` (VARCHAR(20), default='instant'), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+21. **`notification_preferences`**: `user_id` (PK, FK -> `users.id`), `price_increase` (BOOL), `price_drop` (BOOL), `better_market` (BOOL), `market_glut` (BOOL), `ai_recommendation` (BOOL), `delivery_in_app` (BOOL), `delivery_email` (BOOL), `delivery_push` (BOOL), `frequency` (VARCHAR(20), default='instant'), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
 22. **`alerts`**: `id` (PK, UUID), `user_id` (FK -> `users.id`), `type` (VARCHAR(50)), `severity` (VARCHAR(20)), `title` (VARCHAR(255)), `message` (TEXT), `commodity_id` (FK -> `commodities.id`), `market_id` (FK -> `markets.id`), `current_price` (FLOAT, Nullable), `previous_price` (FLOAT, Nullable), `change_percent` (FLOAT, Nullable), `created_at` (TIMESTAMPTZ).
 
 ---
@@ -696,3 +696,23 @@ User enters OTP ◄────────────────────�
 - **Security Guarantee**:
   - No user passwords are stored locally on the device.
   - JWT security is fully preserved without bypassing explicit token invalidation from the backend.
+
+---
+
+# 20. Alert Email Delivery Architecture
+
+- **Resend Integration**: Alert emails are delivered through the project's existing Resend service (`resend.Emails.send`).
+- **Extended `email_service.py`**: `EmailService.send_alert_email()` adds smart alert email delivery while preserving `send_otp_email()` intact.
+- **Independent Delivery Channel**:
+  - Alert creation in PostgreSQL database (`AlertRepository.create_alert`) is completely independent of email delivery.
+  - If Resend API calls fail, network timeouts occur, or the user lacks an email address, the error is logged and caught gracefully without rolling back or failing alert creation.
+- **Multilingual Support**:
+  - Templates use the user's `preferred_language` (`en`, `hi`, `ml`) from the `users` table to select localized subjects and HTML content.
+  - Supports English, Hindi, and Malayalam templates for all alert types (`PRICE_INCREASE`, `PRICE_DROP`, `MARKET_GLUT`, `SELLING_OPPORTUNITY`, `BETTER_MARKET`, `AI_RECOMMENDATION`).
+- **User Validation & Preferences**:
+  - Email delivery is only attempted when `user.email` is present. Users registered via phone without an email address are cleanly skipped.
+  - Respects user notification preferences (`delivery_email` in `notification_preferences`).
+- **Backend-Only Channel**:
+  - Email delivery is triggered internally on FastAPI backend upon alert generation. `RESEND_API_KEY` remains strictly server-side.
+- **FCM & SMS Disclaimer**:
+  - FCM push notifications and SMS delivery are **NOT** implemented in this change.

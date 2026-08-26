@@ -6,7 +6,7 @@ class NotificationPreferences {
   final bool marketGlut;
   final bool aiRecommendation;
   final bool deliveryInApp;
-  final bool deliverySms;
+  final bool deliveryEmail;
   final bool deliveryPush;
   final String frequency;
   final String? createdAt;
@@ -20,7 +20,7 @@ class NotificationPreferences {
     required this.marketGlut,
     required this.aiRecommendation,
     required this.deliveryInApp,
-    required this.deliverySms,
+    required this.deliveryEmail,
     required this.deliveryPush,
     required this.frequency,
     this.createdAt,
@@ -36,7 +36,7 @@ class NotificationPreferences {
       marketGlut: json['market_glut'] as bool? ?? true,
       aiRecommendation: json['ai_recommendation'] as bool? ?? true,
       deliveryInApp: json['delivery_in_app'] as bool? ?? true,
-      deliverySms: json['delivery_sms'] as bool? ?? false,
+      deliveryEmail: json['delivery_email'] as bool? ?? false,
       deliveryPush: json['delivery_push'] as bool? ?? false,
       frequency: json['frequency'] as String? ?? 'instant',
       createdAt: json['created_at'] as String?,
@@ -52,7 +52,7 @@ class NotificationPreferences {
       'market_glut': marketGlut,
       'ai_recommendation': aiRecommendation,
       'delivery_in_app': deliveryInApp,
-      'delivery_sms': deliverySms,
+      'delivery_email': deliveryEmail,
       'delivery_push': deliveryPush,
       'frequency': frequency,
     };
@@ -66,7 +66,7 @@ class NotificationPreferences {
     bool? marketGlut,
     bool? aiRecommendation,
     bool? deliveryInApp,
-    bool? deliverySms,
+    bool? deliveryEmail,
     bool? deliveryPush,
     String? frequency,
     String? createdAt,
@@ -80,7 +80,7 @@ class NotificationPreferences {
       marketGlut: marketGlut ?? this.marketGlut,
       aiRecommendation: aiRecommendation ?? this.aiRecommendation,
       deliveryInApp: deliveryInApp ?? this.deliveryInApp,
-      deliverySms: deliverySms ?? this.deliverySms,
+      deliveryEmail: deliveryEmail ?? this.deliveryEmail,
       deliveryPush: deliveryPush ?? this.deliveryPush,
       frequency: frequency ?? this.frequency,
       createdAt: createdAt ?? this.createdAt,
@@ -99,7 +99,7 @@ class NotificationPreferences {
           marketGlut == other.marketGlut &&
           aiRecommendation == other.aiRecommendation &&
           deliveryInApp == other.deliveryInApp &&
-          deliverySms == other.deliverySms &&
+          deliveryEmail == other.deliveryEmail &&
           deliveryPush == other.deliveryPush &&
           frequency == other.frequency;
 
@@ -111,7 +111,7 @@ class NotificationPreferences {
       marketGlut.hashCode ^
       aiRecommendation.hashCode ^
       deliveryInApp.hashCode ^
-      deliverySms.hashCode ^
+      deliveryEmail.hashCode ^
       deliveryPush.hashCode ^
       frequency.hashCode;
 }

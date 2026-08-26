@@ -11,7 +11,7 @@ void main() {
       'market_glut': false,
       'ai_recommendation': true,
       'delivery_in_app': true,
-      'delivery_sms': false,
+      'delivery_email': false,
       'delivery_push': false,
       'frequency': 'instant',
       'created_at': '2026-08-08T12:00:00Z',
@@ -27,7 +27,7 @@ void main() {
     expect(prefs.marketGlut, isFalse);
     expect(prefs.aiRecommendation, isTrue);
     expect(prefs.deliveryInApp, isTrue);
-    expect(prefs.deliverySms, isFalse);
+    expect(prefs.deliveryEmail, isFalse);
     expect(prefs.deliveryPush, isFalse);
     expect(prefs.frequency, 'instant');
 
