@@ -22,6 +22,9 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(alertsNotifierProvider.notifier).markAsRead();
+    });
   }
 
   @override

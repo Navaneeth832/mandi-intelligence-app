@@ -6,6 +6,7 @@ import '../../../core/widgets/commodity_image_widget.dart';
 import '../providers/forecast_provider.dart';
 import 'commodity_advisory_screen.dart';
 import 'explore_more_commodities_screen.dart';
+import '../../alerts/widgets/notification_bell.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class ForecastsScreen extends ConsumerWidget {
@@ -91,17 +92,15 @@ class ForecastsScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
+                          NotificationBell(
+                            icon: Icons.notifications_none_rounded,
+                            iconColor: Color(0xFF1F2937),
+                            iconSize: 22,
+                            padding: EdgeInsets.all(12),
+                            containerDecoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFFFE0CC)),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_none_rounded,
-                              color: Color(0xFF1F2937), // Primary Text
-                              size: 22,
+                              border: Border.all(color: Color(0xFFFFE0CC)),
                             ),
                           ),
                         ],

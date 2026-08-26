@@ -14,6 +14,7 @@ class AlertsState {
   final int pageSize;
   final int total;
   final bool hasNextPage;
+  final int unreadCount;
 
   const AlertsState({
     this.isLoading = false,
@@ -25,6 +26,7 @@ class AlertsState {
     this.pageSize = 20,
     this.total = 0,
     this.hasNextPage = false,
+    this.unreadCount = 0,
   });
 
   AlertsState copyWith({
@@ -37,6 +39,7 @@ class AlertsState {
     int? pageSize,
     int? total,
     bool? hasNextPage,
+    int? unreadCount,
     bool clearError = false,
   }) {
     return AlertsState(
@@ -49,6 +52,7 @@ class AlertsState {
       pageSize: pageSize ?? this.pageSize,
       total: total ?? this.total,
       hasNextPage: hasNextPage ?? this.hasNextPage,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 }
@@ -56,6 +60,7 @@ class AlertsState {
 class AlertsNotifier extends StateNotifier<AlertsState> {
   final AlertRepository _repository;
   final String _languageCode;
+  bool _hasBeenRead = false;
 
   AlertsNotifier(this._repository, this._languageCode) : super(const AlertsState()) {
     loadAlerts();
@@ -84,6 +89,7 @@ class AlertsNotifier extends StateNotifier<AlertsState> {
         page: res.page,
         total: res.total,
         hasNextPage: res.hasNextPage,
+        unreadCount: _hasBeenRead ? 0 : res.total,
       );
     } catch (e) {
       state = state.copyWith(
@@ -114,6 +120,7 @@ class AlertsNotifier extends StateNotifier<AlertsState> {
         page: res.page,
         total: res.total,
         hasNextPage: res.hasNextPage,
+        unreadCount: _hasBeenRead ? 0 : res.total,
       );
     } catch (e) {
       state = state.copyWith(isLoadingMore: false);
@@ -123,6 +130,13 @@ class AlertsNotifier extends StateNotifier<AlertsState> {
   Future<void> setFilter(String filter) async {
     if (state.selectedFilter == filter) return;
     await loadAlerts(filter: filter);
+  }
+
+  void markAsRead() {
+    _hasBeenRead = true;
+    if (state.unreadCount != 0) {
+      state = state.copyWith(unreadCount: 0);
+    }
   }
 
   Future<void> refresh() async {
@@ -320,4 +334,9 @@ final alertHistoryNotifierProvider =
   final repo = ref.watch(alertRepositoryProvider);
   final locale = ref.watch(localeProvider);
   return AlertHistoryNotifier(repo, locale.languageCode);
+});
+
+final unreadAlertCountProvider = Provider<int>((ref) {
+  final alertsState = ref.watch(alertsNotifierProvider);
+  return alertsState.unreadCount;
 });

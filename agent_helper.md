@@ -658,7 +658,24 @@ User enters OTP ◄────────────────────�
     - `lib/data/repositories/auth_repository.dart` (Online-first & fallback for user profile and preferred crops)
     - `lib/core/providers/providers.dart` (Registered `localCacheServiceProvider` and injected into `authRepositoryProvider`)
     - `lib/features/mandi_prices/providers/mandi_prices_provider.dart` (Added `isFromCache` and `cachedAt` to `MandiPricesState`, instant render + background refresh in `MandiPricesNotifier`)
-    - `lib/features/mandi_prices/screens/home_screen.dart` (Rendered `_buildOfflineBanner` when `isFromCache == true`)
     - `lib/l10n/app_en.arb`, `app_hi.arb`, `app_ml.arb` (Added `offlineLabel` and `lastSyncedLabel`)
     - `agent_helper.md` (Updated architectural documentation)
 
+---
+
+# 18. Shared Notification Bell & Unread Badge Architecture
+
+- **Home Screen Notification Bell**: Positioned in the upper-right app bar actions of `HomeScreen` using `NotificationBell`.
+- **Advisory / Forecasts Screen Notification Bell**: Positioned in the header of `ForecastsScreen` using `NotificationBell` styled with the cream/orange circular container theme.
+- **Shared Unread-Count State**: Both bells consume a single shared Riverpod provider: `unreadAlertCountProvider` (`lib/features/alerts/providers/alert_providers.dart`).
+- **Badge Behavior**:
+  - `0`: No badge rendered.
+  - `1–9`: Small red circular badge displaying the exact integer count (e.g., `1`, `3`, `9`).
+  - `10+`: Small red pill badge displaying `"9+"`.
+- **Navigation & Read Behavior**:
+  - Tapping either bell navigates to the existing `AlertsScreen` via standard `Navigator.push`.
+  - Opening `AlertsScreen` triggers `markAsRead()`, resetting the shared in-memory `unreadCount` to `0` across both bells simultaneously.
+- **Source of Unread Data**:
+  - Derived in-memory from `alertsNotifierProvider` (which fetches active alerts from `/alerts`).
+- **Push & FCM Disclaimer**:
+  - **FCM (Firebase Cloud Messaging), APNs push notifications, and SMS delivery are NOT implemented.** Alert notifications are handled purely in-app via `/alerts` API and Riverpod state.
