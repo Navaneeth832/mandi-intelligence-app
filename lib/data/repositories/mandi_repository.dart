@@ -184,6 +184,32 @@ class MandiRepository {
     }
   }
 
+  Future<List<Market>> getAllMarketsList(
+    int? districtId, {
+    String? language,
+  }) async {
+    try {
+      final res = await _apiService.getAllMarketsList(
+        districtId,
+        language: language,
+      );
+      final cacheKey = 'all_${LocalCacheService.buildMarketsKey(districtId, language)}';
+      final jsonString = jsonEncode(res.map((m) => m.toJson()).toList());
+      _cacheService?.saveCache(cacheKey, jsonString);
+      return res;
+    } catch (e) {
+      final cacheKey = 'all_${LocalCacheService.buildMarketsKey(districtId, language)}';
+      final cached = await _cacheService?.getCache(cacheKey);
+      if (cached != null) {
+        try {
+          final List list = jsonDecode(cached.rawJson);
+          return list.map((item) => Market.fromJson(item as Map<String, dynamic>)).toList();
+        } catch (_) {}
+      }
+      rethrow;
+    }
+  }
+
   Future<PaginatedMarketResponse> getMarketDirectory(
     int? stateId,
     int? districtId,
@@ -237,7 +263,23 @@ class MandiRepository {
   }
 
   Future<List<Commodity>> getAllCommodities() async {
-    return getCommodities();
+    try {
+      final res = await _apiService.getAllCommodities();
+      final cacheKey = LocalCacheService.buildCommoditiesKey('all');
+      final jsonString = jsonEncode(res.map((c) => c.toJson()).toList());
+      _cacheService?.saveCache(cacheKey, jsonString);
+      return res;
+    } catch (e) {
+      final cacheKey = LocalCacheService.buildCommoditiesKey('all');
+      final cached = await _cacheService?.getCache(cacheKey);
+      if (cached != null) {
+        try {
+          final List list = jsonDecode(cached.rawJson);
+          return list.map((item) => Commodity.fromJson(item as Map<String, dynamic>)).toList();
+        } catch (_) {}
+      }
+      rethrow;
+    }
   }
 
   Future<List<District>> getDistricts({

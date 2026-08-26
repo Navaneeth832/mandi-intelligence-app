@@ -154,7 +154,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildForm() {
     final statesAsync = ref.watch(statesProvider);
     final districtsAsync = ref.watch(districtsProvider(_selectedState?.id));
-    final marketsAsync = ref.watch(marketsListProvider(_selectedDistrict?.id));
+    final marketsAsync = ref.watch(allMarketsListProvider(_selectedDistrict?.id));
     final cropsAsync = ref.watch(activeCommoditiesProvider);
     
     return Scaffold(

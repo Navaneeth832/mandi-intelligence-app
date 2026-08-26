@@ -57,6 +57,28 @@ def get_market_commodities(
     } 
 
 
+@router.get("/all", response_model=list[MarketSchema])
+def get_all_markets(
+    district_id: int | None = None,
+    language: str | None = None,
+    db: Session = Depends(get_db)
+):
+    query = (
+        db.query(Market)
+        .options(selectinload(Market.translations))
+    )
+    if district_id:
+        query = query.filter(
+            Market.district_id == district_id
+        )
+
+    return (
+        query
+        .order_by(Market.name)
+        .all()
+    )
+
+
 @router.get("/", response_model=list[MarketSchema])
 def get_markets(
     district_id: int | None = None,

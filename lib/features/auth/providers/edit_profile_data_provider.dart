@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mandi_intelligence_app/core/providers/providers.dart';
 import 'package:mandi_intelligence_app/features/auth/providers/profile_notifier.dart';
 import 'package:mandi_intelligence_app/features/mandi_prices/providers/mandi_prices_provider.dart';
 import 'package:mandi_intelligence_app/data/models/commodity_model.dart';
@@ -39,7 +38,7 @@ final editProfileDataProvider = FutureProvider.autoDispose<EditProfileData>((ref
 
   List<Market>? markets;
   if (user != null && user.districtId != null) {
-      markets = await ref.watch(marketsListProvider(user.districtId!).future);
+      markets = await ref.watch(allMarketsListProvider(user.districtId!).future);
   }
 
   return EditProfileData(

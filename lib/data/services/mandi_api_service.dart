@@ -185,6 +185,32 @@ class MandiApiService {
         .map((e) => Market.fromJson(e))
         .toList();
   }
+
+  Future<List<Market>> getAllMarketsList(int? districtId, {String? language}) async {
+    String endpoint = '/markets/all';
+    final queryParams = <String, String>{};
+    
+    if (districtId != null) {
+      queryParams['district_id'] = districtId.toString();
+    }
+    if (language != null && language.isNotEmpty) {
+      queryParams['language'] = language;
+    }
+    
+    final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+    
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load all markets');
+    }
+
+    final List<dynamic> data = jsonDecode(response.body);
+
+    return data
+        .map((e) => Market.fromJson(e))
+        .toList();
+  }
   
   Future<PaginatedMarketResponse> getMarketDirectory({
     int page = 1,

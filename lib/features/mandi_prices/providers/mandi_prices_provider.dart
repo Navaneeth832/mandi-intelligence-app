@@ -320,6 +320,22 @@ final marketsListProvider =
   );
 });
 
+final allMarketsListProvider =
+    FutureProvider.family<
+        List<Market>,
+        int?>((ref, districtId) {
+
+  final repository =
+      ref.watch(mandiRepositoryProvider);
+  final locale = ref.watch(localeProvider);
+  final language = locale.languageCode;
+
+  return repository.getAllMarketsList(
+    districtId,
+    language: language,
+  );
+});
+
 final districtsProvider =
     FutureProvider.family<
         List<District>,
