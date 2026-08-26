@@ -19,7 +19,6 @@ from app.schemas.alert import (
 )
 
 from app.services.alert_localization import AlertLocalizationService
-from app.services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +147,8 @@ class AlertService:
         lang = user.preferred_language or "en"
         commodity_name = AlertLocalizationService.get_translated_commodity(db, alert.commodity_id, lang)
         market_name = AlertLocalizationService.get_translated_market(db, alert.market_id, lang)
+
+        from app.services.email_service import EmailService
 
         return EmailService.send_alert_email(
             email=user.email,
