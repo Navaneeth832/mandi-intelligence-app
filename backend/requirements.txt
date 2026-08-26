@@ -18,3 +18,5 @@ pandas
 scikit-learn
 numpy
 lightgbm
+geopy
+GeoAlchemy2

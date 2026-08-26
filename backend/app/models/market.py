@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import relationship
+from geoalchemy2 import Geography
 
 from app.core.database import Base
 
@@ -16,6 +17,10 @@ class Market(Base):
     )
 
     name = Column(String, nullable=False)
+
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
 
     district = relationship(
         "District",

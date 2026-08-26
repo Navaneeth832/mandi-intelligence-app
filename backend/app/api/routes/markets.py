@@ -12,8 +12,13 @@ import logging
 import requests
 import urllib3
 from datetime import date
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class ClosestMarketResponse(BaseModel):
+    market_id: int
+    district_id: int
 
 
 def get_translated_name(language_code: str, entity):
@@ -23,6 +28,28 @@ def get_translated_name(language_code: str, entity):
             if translation.language_code == language_code:
                 return translation.translated_name
     return None
+
+
+@router.get("/closest", response_model=list[ClosestMarketResponse])
+def get_closest_markets(
+    lat: float,
+    lng: float,
+    db: Session = Depends(get_db)
+):
+    """
+    Get the top 10 closest markets to a given latitude and longitude.
+    """
+    query = (
+        db.query(Market.id, Market.district_id)
+        .filter(Market.location.isnot(None))
+        .order_by(
+            Market.location.op('<->')(func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326))
+        )
+        .limit(10)
+    )
+    results = query.all()
+    return [{"market_id": r.id, "district_id": r.district_id} for r in results]
+
 
 
 @router.get("/{market_id}/commodities")
