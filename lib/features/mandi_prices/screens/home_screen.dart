@@ -280,7 +280,7 @@ Widget _buildFilterSection() {
   final cropsAsync = ref.watch(commodityListProvider);
   final statesAsync = ref.watch(statesProvider);
 
-  final states = statesAsync.value ?? [];
+  final states = statesAsync.valueOrNull ?? [];
 
   // Find selected state ID
   StateModel? selectedStateObj;
@@ -336,7 +336,7 @@ Widget _buildFilterSection() {
               width: 160,
               child: FilterDropdownButton<String>(
                 hintText: AppLocalizations.of(context)!.commodity,
-                items: cropsAsync.value ?? [],
+                items: cropsAsync.valueOrNull ?? [],
                 value: _tempCrop,
                 onChanged: (value) {
                   setState(() {
@@ -397,7 +397,7 @@ Widget _buildFilterSection() {
               width: 160,
               child: FilterDropdownButton<String>(
                 hintText: AppLocalizations.of(context)!.market,
-                items: marketsAsync.value ?? [],
+                items: marketsAsync.valueOrNull ?? [],
                 value: _tempMarket,
                 onChanged: (value) {
                   setState(() {

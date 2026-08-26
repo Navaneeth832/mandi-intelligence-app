@@ -96,7 +96,12 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
     }
 
     try {
-      final response = await _repository.getMandiPrices(_filter, page: 1, language: _language);
+      final response = await _repository.getMandiPrices(
+        _filter,
+        page: 1,
+        language: _language,
+        fallbackToCache: false,
+      );
       state = AsyncValue.data(MandiPricesState(
         items: response.data,
         currentPage: response.page,
@@ -112,7 +117,21 @@ class MandiPricesNotifier extends StateNotifier<AsyncValue<MandiPricesState>> {
         // Keep cached state visible if background API refresh failed!
         return;
       }
-      state = AsyncValue.error(err, stack);
+      final fallbackCache = await _repository.getCachedMandiPrices(_filter, page: 1, pageSize: 50, language: _language);
+      if (fallbackCache != null && fallbackCache.data.data.isNotEmpty) {
+        state = AsyncValue.data(MandiPricesState(
+          items: fallbackCache.data.data,
+          currentPage: fallbackCache.data.page,
+          totalPages: fallbackCache.data.totalPages,
+          totalRecords: fallbackCache.data.totalRecords,
+          isLoadingMore: false,
+          hasMorePages: fallbackCache.data.page < fallbackCache.data.totalPages,
+          isFromCache: true,
+          cachedAt: fallbackCache.cachedAt,
+        ));
+      } else {
+        state = AsyncValue.error(err, stack);
+      }
     }
   }
 
