@@ -6,6 +6,14 @@ import '../models/auth/login_request.dart';
 import '../models/auth/signup_request.dart';
 import '../models/auth/user_profile.dart';
 
+class UnauthorizedException implements Exception {
+  final String message;
+  UnauthorizedException([this.message = 'Unauthorized']);
+
+  @override
+  String toString() => message;
+}
+
 class AuthApiService {
   final String baseUrl = ApiConstants.baseUrl;
 
@@ -165,6 +173,10 @@ class AuthApiService {
       },
     );
 
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw UnauthorizedException(_extractErrorMessage(response, 'Unauthorized'));
+    }
+
     if (response.statusCode != 200) {
       throw Exception('Failed to get profile: ${response.body}');
     }
@@ -180,6 +192,10 @@ class AuthApiService {
         'Authorization': 'Bearer $token',
       },
     );
+
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw UnauthorizedException(_extractErrorMessage(response, 'Unauthorized'));
+    }
 
     if (response.statusCode != 200) {
       throw Exception('Failed to get preferred crops: ${response.body}');
@@ -203,6 +219,10 @@ Future<void> savePreferredCrops(
     }),
   );
 
+  if (response.statusCode == 401 || response.statusCode == 403) {
+    throw UnauthorizedException(_extractErrorMessage(response, 'Unauthorized'));
+  }
+
   if (response.statusCode != 200) {
     throw Exception(
       'Failed to save preferred crops: ${response.body}',
@@ -217,7 +237,11 @@ Future<void> savePreferredCrops(
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-    ).timeout(const Duration(seconds: 10)); // Added timeout
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw UnauthorizedException(_extractErrorMessage(response, 'Unauthorized'));
+    }
 
     if (response.statusCode != 200) {
       throw Exception('Failed to get current user: ${response.body}');

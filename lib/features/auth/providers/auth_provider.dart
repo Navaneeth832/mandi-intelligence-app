@@ -5,6 +5,7 @@ import '../../../core/providers/providers.dart';
 import '../../../data/models/auth/login_request.dart';
 import '../../../data/models/auth/signup_request.dart';
 import '../../../data/models/auth/user_profile.dart';
+import '../../../data/services/auth_api_service.dart';
 
 const Object _unset = Object();
 
@@ -311,6 +312,18 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> _checkAuth() async {
+    final repo = ref.read(authRepositoryProvider);
+    final token = await repo.getToken();
+
+    if (token == null) {
+      state = AuthState(
+        currentUser: null,
+        isAuthenticated: false,
+        isInitializing: false,
+      );
+      return;
+    }
+
     try {
       final user = await _loadAuthenticatedUser();
       state = AuthState(
@@ -318,11 +331,28 @@ class AuthNotifier extends Notifier<AuthState> {
         isAuthenticated: user != null,
         isInitializing: false,
       );
-    } catch (e) {
+    } on UnauthorizedException {
       state = AuthState(
-        isInitializing: false,
+        currentUser: null,
         isAuthenticated: false,
-        error: _formatError(e),
+        isInitializing: false,
+      );
+    } catch (e) {
+      // Network failure / connection timeout during startup.
+      // A stored JWT exists locally -> DO NOT log out the user!
+      UserProfile? cachedUser;
+      try {
+        cachedUser = await repo.getProfile();
+      } catch (_) {}
+
+      if (cachedUser?.preferredLanguage != null) {
+        ref.read(localeProvider.notifier).setLocale(_normalizeLanguageCode(cachedUser!.preferredLanguage));
+      }
+
+      state = AuthState(
+        currentUser: cachedUser,
+        isAuthenticated: true,
+        isInitializing: false,
       );
     }
   }

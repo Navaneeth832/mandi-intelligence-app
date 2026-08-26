@@ -679,3 +679,20 @@ User enters OTP ◄────────────────────�
   - Derived in-memory from `alertsNotifierProvider` (which fetches active alerts from `/alerts`).
 - **Push & FCM Disclaimer**:
   - **FCM (Firebase Cloud Messaging), APNs push notifications, and SMS delivery are NOT implemented.** Alert notifications are handled purely in-app via `/alerts` API and Riverpod state.
+
+---
+
+# 19. Offline Authentication / Session Persistence Architecture
+
+- **JWT Secure Storage**: User JWT access tokens are stored securely on the device using `flutter_secure_storage`.
+- **Offline Session Persistence**:
+  - Network failures (timeouts, `SocketException`, connection errors, offline status) during startup or session restoration do **NOT** log the user out.
+  - The app preserves the locally stored JWT token and keeps the user's `AuthState.isAuthenticated` state set to `true`.
+  - MainScreen opens seamlessly and utilizes existing offline-cached profile and mandi price data.
+- **Cached User Profile Usage**:
+  - When offline, `getCurrentUser()` and `_checkAuth()` retrieve the existing cached profile from `LocalCacheService` (`user_profile` key) to restore user locale and initial state.
+- **Explicit Auth Rejection Handling**:
+  - Explicit HTTP `401 Unauthorized` or `403 Forbidden` responses from the backend throw `UnauthorizedException`, which triggers `logout()` and clears the invalid JWT token to present `LoginScreen`.
+- **Security Guarantee**:
+  - No user passwords are stored locally on the device.
+  - JWT security is fully preserved without bypassing explicit token invalidation from the backend.

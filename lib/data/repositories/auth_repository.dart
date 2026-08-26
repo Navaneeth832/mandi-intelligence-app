@@ -51,6 +51,9 @@ class AuthRepository {
         key: _tokenKey,
         value: response.accessToken!,
       );
+      final cacheKey = LocalCacheService.buildUserProfileKey();
+      final jsonString = jsonEncode(response.user.toJson());
+      _cacheService?.saveCache(cacheKey, jsonString);
     }
 
     return response;
@@ -74,6 +77,9 @@ class AuthRepository {
       final jsonString = jsonEncode(response.user.toJson());
       _cacheService?.saveCache(cacheKey, jsonString);
       return response.user;
+    } on UnauthorizedException {
+      await logout();
+      rethrow;
     } catch (e) {
       final cacheKey = LocalCacheService.buildUserProfileKey();
       final cached = await _cacheService?.getCache(cacheKey);
@@ -97,6 +103,9 @@ class AuthRepository {
       final jsonString = jsonEncode(data);
       _cacheService?.saveCache(cacheKey, jsonString);
       return data;
+    } on UnauthorizedException {
+      await logout();
+      rethrow;
     } catch (e) {
       final cacheKey = LocalCacheService.buildPreferredCropsKey();
       final cached = await _cacheService?.getCache(cacheKey);
@@ -127,9 +136,15 @@ class AuthRepository {
     if (token == null) return null;
     try {
       final response = await _apiService.getCurrentUser(token);
+      final cacheKey = LocalCacheService.buildUserProfileKey();
+      final jsonString = jsonEncode(response.user.toJson());
+      _cacheService?.saveCache(cacheKey, jsonString);
       return response.user;
+    } on UnauthorizedException {
+      await logout();
+      return null;
     } catch (e) {
-      // Fallback to cache if network error occurs
+      // Fallback to cache if network/server error occurs
       final cacheKey = LocalCacheService.buildUserProfileKey();
       final cached = await _cacheService?.getCache(cacheKey);
       if (cached != null) {
@@ -138,9 +153,8 @@ class AuthRepository {
           return UserProfile.fromJson(jsonMap);
         } catch (_) {}
       }
-      // If token is invalid or no cache, remove token
-      await logout();
-      return null;
+      // Network error occurred without cache. DO NOT LOG OUT! Rethrow so AuthNotifier knows token is stored.
+      rethrow;
     }
   }
 
