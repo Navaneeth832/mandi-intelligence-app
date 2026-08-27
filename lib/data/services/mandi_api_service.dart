@@ -10,6 +10,7 @@ import '../models/paginated_market_response.dart';
 import '../models/commodity_model.dart';
 import '../models/state_model.dart';
 import '../models/market_model.dart';
+import '../models/market_comparison_model.dart';
 
 class MandiApiService {
 
@@ -321,5 +322,41 @@ class MandiApiService {
           (e) => District.fromJson(e),
         )
         .toList();
+  }
+
+  Future<MarketComparisonResponse> getMarketComparison({
+    required double lat,
+    required double lng,
+    int? commodityId,
+    double transportRatePerKm = 2.5,
+    double quantity = 10.0,
+  }) async {
+    // -------------------------------------------------------------------------
+    // ENDPOINT SWITCH FOR RAIHAN:
+    // Change '/markets/compare-mock' to '/markets/compare' when the real
+    // PostGIS endpoint is deployed.
+    // -------------------------------------------------------------------------
+    const String endpoint = '/markets/compare-mock';
+
+    final queryParams = <String, String>{
+      'lat': lat.toString(),
+      'lng': lng.toString(),
+      'transport_rate_per_km': transportRatePerKm.toString(),
+      'quantity': quantity.toString(),
+    };
+
+    if (commodityId != null) {
+      queryParams['commodity_id'] = commodityId.toString();
+    }
+
+    final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load market comparison');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    return MarketComparisonResponse.fromJson(data);
   }
 }

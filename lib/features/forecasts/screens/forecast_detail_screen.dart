@@ -785,6 +785,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                     builder: (context) => MarketComparisonScreen(
                       commodityName: widget.forecast.commodityName,
                       currentMarketName: widget.forecast.marketName,
+                      commodityId: widget.forecast.commodityId,
                     ),
                   ),
                 );
