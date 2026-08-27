@@ -401,7 +401,7 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
                     'BEST VALUE — Highest Net Payout',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.extrabold,
+                      fontWeight: FontWeight.w800,
                       fontSize: 12,
                       letterSpacing: 0.5,
                     ),
@@ -533,7 +533,7 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
                             _currencyFormat.format(item.netProfit),
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.extrabold,
+                              fontWeight: FontWeight.w800,
                               color: isBest ? const Color(0xFF047857) : const Color(0xFF065F46),
                             ),
                           ),
