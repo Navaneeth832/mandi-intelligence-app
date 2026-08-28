@@ -1,0 +1,66 @@
+name: Build & Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Documentation Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install markdown
+
+      - name: Build Documentation Website
+        run: |
+          python scripts/build_docs.py
+
+      - name: Verify Documentation Output
+        run: |
+          if [ ! -f "docs/index.html" ]; then
+            echo "Error: docs/index.html was not generated!"
+            exit 1
+          fi
+          echo "Documentation site generated successfully."
+
+      - name: Prepare Subpath Directory (_site/docs)
+        run: |
+          mkdir -p _site/docs
+          cp -r docs/* _site/docs/
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

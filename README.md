@@ -2,6 +2,14 @@
 
 A robust, full-stack agricultural market intelligence application designed to analyze and track daily Mandi commodity prices. The system combines a powerful, robust **FastAPI (Python) backend** powered by an ORM database layout, with a highly interactive **Flutter (Dart) frontend** styled with smooth charts and state-of-the-art loaders.
 
+## 📚 Technical Documentation
+
+Complete technical documentation, architecture diagrams, database schemas, machine learning pipeline, API specifications, and workflow guides are available on the automated documentation website:
+
+👉 **[View Technical Documentation Website](https://navaneeth832.github.io/mandi-intelligence-app/docs/)**
+
+*(Note: The documentation site is generated automatically from `agent_helper.md` via GitHub Actions on every push to the `main` branch).*
+
 ---
 
 ## 🚀 Key Features

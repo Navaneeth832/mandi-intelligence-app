@@ -20,3 +20,4 @@ numpy
 lightgbm
 geopy
 GeoAlchemy2
+markdown

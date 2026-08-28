@@ -1,4 +1,5 @@
 # Mandi Intelligence - Long-Term Architectural Memory
+*(Last Updated: 27 August 2026)*
 
 This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.
 
@@ -17,8 +18,8 @@ This document serves as the single authoritative persistent memory and comprehen
   6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`) and searchable historical alert archives.
   7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).
 - **Current implementation status**:
-  - **Backend**: Fully functional FastAPI service deployed on Railway. Features database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.
-  - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), and dual-mode fallback repositories for offline/resilient demo operation.
+  - **Backend**: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (`latitude`, `longitude`, `location` Geography Point with GiST indexing), geocoding script (`populate_market_coordinates.py`), nearby market comparison endpoint (`/markets/compare-mock`), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.
+  - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), production-ready Nearby Mandi Comparison Screen (`MarketComparisonScreen`, 5 sort options, quantity controls, Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.
 - **Completed Core Modules**:
   - Authentication (OTP send/verify with transient verification tokens, login, register, me).
   - Forgot Password recovery pipeline.
@@ -46,7 +47,8 @@ This document serves as the single authoritative persistent memory and comprehen
 ### Backend
 - **Framework**: FastAPI (Python)
 - **Server**: Uvicorn
-- **ORM / DB Access**: SQLAlchemy (PostgreSQL engine)
+- **ORM / DB Access**: SQLAlchemy (PostgreSQL engine with PostGIS / `GeoAlchemy2`)
+- **Geocoding & Spatial**: `geopy` (GoogleV3 geocoder), `GeoAlchemy2` (PostGIS Geography column)
 - **Machine Learning**: LightGBM, Pandas, NumPy, Scikit-learn (`app/ml/lightgbm_weights.txt`, `app/ml/model_features.json`)
 - **Data Fetcher**: `httpx`, `requests`
 - **Config & Validation**: Pydantic / `pydantic-settings`
@@ -208,6 +210,8 @@ flowchart TD
 | `/states/` | `GET` | None | List states with active markets | Query: `language` | `List[StateSchema]` |
 | `/districts/` | `GET` | None | List districts in a state | Query: `state_id`, `language` | `List[DistrictSchema]` |
 | `/markets/` | `GET` | None | List markets in a district | Query: `district_id`, `language` | `List[MarketSchema]` |
+| `/markets/closest` | `GET` | None | Get 10 closest markets by coordinates | Query: `lat`, `lng` | `List[ClosestMarketResponse]` |
+| `/markets/compare-mock` | `GET` | None | Financial comparison across nearby mandis | Query: `lat`, `lng`, `commodity_id`, `transport_rate_per_km`, `quantity` | `MarketComparisonResponse` |
 | `/markets/{id}/commodities` | `GET` | None | Active commodities in market today | Path: `market_id` | `{"market_id", "commodity_count", "commodities"}` |
 | `/commodities/` | `GET` | None | List commodities with prices today | None | `List[CommoditySchema]` |
 | `/commodities/active` | `GET` | None | List active trackable commodities | None | `List[CommoditySchema]` |
@@ -265,7 +269,7 @@ erDiagram
 2. **`state_translations`**: `id` (PK, INT), `state_id` (FK -> `states.id`), `language_code` (VARCHAR(2)), `translated_name` (VARCHAR). Unique(`state_id`, `language_code`).
 3. **`districts`**: `id` (PK, INT), `state_id` (FK -> `states.id`), `name` (VARCHAR).
 4. **`district_translations`**: `id` (PK, INT), `district_id` (FK -> `districts.id`), `language_code` (VARCHAR(2)), `translated_name` (VARCHAR). Unique(`district_id`, `language_code`).
-5. **`markets`**: `id` (PK, INT), `district_id` (FK -> `districts.id`), `name` (VARCHAR).
+5. **`markets`**: `id` (PK, INT), `district_id` (FK -> `districts.id`), `name` (VARCHAR), `latitude` (FLOAT, Nullable), `longitude` (FLOAT, Nullable), `location` (`Geography(Point, 4326)`, Nullable). Indexed via GiST (`idx_markets_location`).
 6. **`market_translations`**: `id` (PK, INT), `market_id` (FK -> `markets.id`), `language_code` (VARCHAR(2)), `translated_name` (VARCHAR). Unique(`market_id`, `language_code`).
 7. **`commodities_group`**: `id` (PK, INT), `name` (VARCHAR).
 8. **`commodities`**: `id` (PK, INT), `commodity_group_id` (FK -> `commodities_group.id`), `name` (VARCHAR).
@@ -663,7 +667,7 @@ User enters OTP ◄────────────────────�
 
 ---
 
-# 18. Shared Notification Bell & Unread Badge Architecture
+# 21. Shared Notification Bell & Unread Badge Architecture
 
 - **Home Screen Notification Bell**: Positioned in the upper-right app bar actions of `HomeScreen` using `NotificationBell`.
 - **Advisory / Forecasts Screen Notification Bell**: Positioned in the header of `ForecastsScreen` using `NotificationBell` styled with the cream/orange circular container theme.
@@ -682,7 +686,7 @@ User enters OTP ◄────────────────────�
 
 ---
 
-# 19. Offline Authentication / Session Persistence Architecture
+# 22. Offline Authentication / Session Persistence Architecture
 
 - **JWT Secure Storage**: User JWT access tokens are stored securely on the device using `flutter_secure_storage`.
 - **Offline Session Persistence**:
@@ -699,7 +703,7 @@ User enters OTP ◄────────────────────�
 
 ---
 
-# 20. Alert Email Delivery Architecture
+# 23. Alert Email Delivery Architecture
 
 - **Resend Integration**: Alert emails are delivered through the project's existing Resend service (`resend.Emails.send`).
 - **Extended `email_service.py`**: `EmailService.send_alert_email()` adds smart alert email delivery while preserving `send_otp_email()` intact.
@@ -716,3 +720,46 @@ User enters OTP ◄────────────────────�
   - Email delivery is triggered internally on FastAPI backend upon alert generation. `RESEND_API_KEY` remains strictly server-side.
 - **FCM & SMS Disclaimer**:
   - FCM push notifications and SMS delivery are **NOT** implemented in this change.
+
+
+---
+
+# 24. Nearby Mandi Comparison & Financial Analytics Engine
+
+Added on **27 August 2026**:
+
+Provides multi-mandi financial payout comparison engine for farmers evaluating selling locations.
+
+### Financial Calculations Matrix
+
+| Metric | Formula |
+| :--- | :--- |
+| **Distance ($D$)** | Spherical distance between user coords $(lat_u, lng_u)$ & Mandi coords $(lat_m, lng_m)$ in kilometers via PostGIS `ST_Distance`. |
+| **Selling Price ($P$)** | Latest `modal_price` per quintal (₹/qtl) for target commodity. |
+| **Transport Cost ($C_t$)** | $D 	imes 	ext{Transport Rate per km per quintal}$ *(e.g., ₹2.5 / km / qtl)*. |
+| **Mandi Commission ($C_m$)** | $P 	imes 1\%$ *(Standard 1% market fee)*. |
+| **Net Profit ($P_{net}$)** | $P - (C_t + C_m)$ per quintal. |
+| **Total Net Profit ($P_{total}$)** | $P_{net} 	imes 	ext{Quantity (quintals)}$. |
+| **Best Value Badge** | Mandi with the **highest $P_{net}$** among nearby mandis. |
+
+### Endpoints & Handoff Switching
+- **Mock Endpoint**: `GET /markets/compare-mock` in `backend/app/api/routes/markets.py`.
+- **Handoff Switch for Raihan**: To connect the real PostGIS query:
+  1. Rename route to `@router.get("/compare")` in `markets.py`.
+  2. Change line 338 of `lib/data/services/mandi_api_service.dart`: `const String endpoint = '/markets/compare';`.
+- **Frontend Components**:
+  - `lib/data/models/market_comparison_model.dart` (`MarketComparisonItem`, `MarketComparisonResponse`).
+  - `lib/features/forecasts/providers/market_comparison_provider.dart` (`marketComparisonProvider`, `MarketSortOption` enum with 5 options: `bestValue`, `netProfit`, `sellingPrice`, `distance`, `lowestTransport`).
+  - `lib/features/forecasts/screens/market_comparison_screen.dart` (`MarketComparisonScreen`, location bar, quantity controls, sort chips, `NearbyMandiCard` with 🏆 BEST VALUE badge).
+
+---
+
+# 25. Technical Documentation Website Pipeline
+
+Added on **27 August 2026**:
+
+- **Source of Truth**: `agent_helper.md` is the single source of truth for all project architecture and technical documentation.
+- **Automated Generation**: The documentation website is generated automatically via `scripts/build_docs.py` into `docs/index.html`.
+- **Mermaid Rendering**: All Mermaid diagrams (`flowchart TD`, `erDiagram`, `flowchart TB`) are preserved and rendered visually using Mermaid.js.
+- **GitHub Actions & Pages**: `.github/workflows/docs.yml` automatically rebuilds and deploys the documentation website to GitHub Pages on every `git push` to the `main` branch.
+- **README Integration**: `README.md` includes a prominent `## 📚 Technical Documentation` link pointing to the live GitHub Pages site.

@@ -63,7 +63,21 @@ def get_market_comparison(
     db: Session = Depends(get_db)
 ):
     """
-    Get financial comparison across nearby mandis using real data.
+    MOCK ENDPOINT: Get financial comparison across nearby mandis.
+    -----------------------------------------------------------------------
+    NOTE:
+    To replace this mock endpoint with actual database calculations:
+    1. Query top 10 closest markets using PostGIS:
+       `user_point = cast(func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326), Geography)`
+       `distance_km = func.ST_Distance(Market.location, user_point) / 1000.0`
+    2. Join `MandiPrice` to fetch the latest `modal_price` for `commodity_id`.
+    3. Calculate:
+       - `transport_cost = distance_km * transport_rate_per_km`
+       - `mandi_commission = selling_price * 0.01` (1% fee)
+       - `net_profit = selling_price - transport_cost - mandi_commission`
+       - `total_net_profit = net_profit * quantity`
+    4. Mark the market with the highest `net_profit` as `is_best_value = True`.
+    -----------------------------------------------------------------------
     """
     user_point = func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326)
     distance_col = (func.ST_Distance(Market.location, user_point) / 1000.0).label("distance_km")
