@@ -336,7 +336,7 @@ class MandiApiService {
     // Change '/markets/compare-mock' to '/markets/compare' when the real
     // PostGIS endpoint is deployed.
     // -------------------------------------------------------------------------
-    const String endpoint = '/markets/compare-mock';
+    const String endpoint = '/markets/compare';
 
     final queryParams = <String, String>{
       'lat': lat.toString(),
