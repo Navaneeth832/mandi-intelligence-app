@@ -7,6 +7,8 @@ from app.models.market import Market
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
 from app.repositories.mandi_price_repository import get_latest_arrival_date
+from app.models.district import District
+from app.models.state import State
 from app.schemas.location import MarketSchema
 import logging
 import requests
@@ -15,10 +17,6 @@ from datetime import date
 from pydantic import BaseModel
 
 router = APIRouter()
-
-class ClosestMarketResponse(BaseModel):
-    market_id: int
-    district_id: int
 
 
 class MarketComparisonItem(BaseModel):
@@ -55,11 +53,11 @@ def get_translated_name(language_code: str, entity):
     return None
 
 
-@router.get("/compare-mock", response_model=MarketComparisonResponse)
-def get_market_comparison_mock(
-    lat: float = 9.5916,
-    lng: float = 76.5222,
-    commodity_id: int | None = None,
+@router.get("/compare", response_model=MarketComparisonResponse)
+def get_market_comparison(
+    lat: float,
+    lng: float,
+    commodity_id: int,
     transport_rate_per_km: float = 2.5,
     quantity: float = 10.0,
     db: Session = Depends(get_db)
@@ -81,78 +79,47 @@ def get_market_comparison_mock(
     4. Mark the market with the highest `net_profit` as `is_best_value = True`.
     -----------------------------------------------------------------------
     """
-    # Realistic mock dataset around requested coordinates
-    mock_mandis = [
-        {
-            "market_id": 101,
-            "market_name": "Kottayam Mandi",
-            "district_name": "Kottayam",
-            "state_name": "Kerala",
-            "latitude": 9.5916,
-            "longitude": 76.5222,
-            "distance_km": 6.4,
-            "selling_price": 2450.0,
-        },
-        {
-            "market_id": 102,
-            "market_name": "Ettumanoor Mandi",
-            "district_name": "Kottayam",
-            "state_name": "Kerala",
-            "latitude": 9.6685,
-            "longitude": 76.5623,
-            "distance_km": 11.2,
-            "selling_price": 2480.0,
-        },
-        {
-            "market_id": 103,
-            "market_name": "Changanassery Mandi",
-            "district_name": "Kottayam",
-            "state_name": "Kerala",
-            "latitude": 9.4473,
-            "longitude": 76.5370,
-            "distance_km": 17.5,
-            "selling_price": 2520.0,
-        },
-        {
-            "market_id": 104,
-            "market_name": "Pala Mandi",
-            "district_name": "Kottayam",
-            "state_name": "Kerala",
-            "latitude": 9.7107,
-            "longitude": 76.6841,
-            "distance_km": 26.8,
-            "selling_price": 2560.0,
-        },
-        {
-            "market_id": 105,
-            "market_name": "Thiruvalla Mandi",
-            "district_name": "Pathanamthitta",
-            "state_name": "Kerala",
-            "latitude": 9.3834,
-            "longitude": 76.5741,
-            "distance_km": 24.1,
-            "selling_price": 2410.0,
-        },
-    ]
+    user_point = func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326)
+    distance_col = (func.ST_Distance(Market.location, user_point) / 1000.0).label("distance_km")
+
+    latest_date = get_latest_arrival_date(db)
+
+    # Find the top 10 closest markets that have a price for this commodity on the latest date
+    results = (
+        db.query(
+            Market,
+            distance_col,
+            MandiPrice.modal_price
+        )
+        .join(MandiPrice, MandiPrice.market_id == Market.id)
+        .join(Market.district)
+        .join(District.state)
+        .filter(
+            Market.location.isnot(None),
+            MandiPrice.commodity_id == commodity_id,
+            MandiPrice.arrival_date == latest_date
+        )
+        .order_by(distance_col)
+        .limit(10)
+        .all()
+    )
 
     items = []
-    for m in mock_mandis:
-        dist = m["distance_km"]
-        price = m["selling_price"]
+    for market, dist, price in results:
         t_cost = round(dist * transport_rate_per_km, 2)
-        comm = round(price * 0.01, 2)  # 1% mandi commission
-        net_p = round(price - t_cost - comm, 2)
+        comm = round(float(price) * 0.01, 2)  # 1% mandi commission
+        net_p = round(float(price) - t_cost - comm, 2)
         tot_p = round(net_p * quantity, 2)
 
         items.append(MarketComparisonItem(
-            market_id=m["market_id"],
-            market_name=m["market_name"],
-            district_name=m["district_name"],
-            state_name=m["state_name"],
-            latitude=m["latitude"],
-            longitude=m["longitude"],
+            market_id=market.id,
+            market_name=market.name,
+            district_name=market.district.name,
+            state_name=market.district.state.name,
+            latitude=market.latitude,
+            longitude=market.longitude,
             distance_km=dist,
-            selling_price=price,
+            selling_price=float(price),
             transport_cost=t_cost,
             mandi_commission=comm,
             net_profit=net_p,
@@ -174,26 +141,6 @@ def get_market_comparison_mock(
         markets=items
     )
 
-
-@router.get("/closest", response_model=list[ClosestMarketResponse])
-def get_closest_markets(
-    lat: float,
-    lng: float,
-    db: Session = Depends(get_db)
-):
-    """
-    Get the top 10 closest markets to a given latitude and longitude.
-    """
-    query = (
-        db.query(Market.id, Market.district_id)
-        .filter(Market.location.isnot(None))
-        .order_by(
-            Market.location.op('<->')(func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326))
-        )
-        .limit(10)
-    )
-    results = query.all()
-    return [{"market_id": r.id, "district_id": r.district_id} for r in results]
 
 
 
