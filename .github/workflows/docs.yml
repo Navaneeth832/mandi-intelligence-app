@@ -68,7 +68,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build Flutter Web App
-        run: flutter build web --release --base-href "/mandi-intelligence-app/"
+        run: flutter build web --release --base-href "/"
 
       - name: Prepare Combined Pages Directory (_site)
         run: |
