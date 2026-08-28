@@ -67,7 +67,7 @@ def get_market_comparison_mock(
     """
     MOCK ENDPOINT: Get financial comparison across nearby mandis.
     -----------------------------------------------------------------------
-    NOTE FOR RAIHAN:
+    NOTE:
     To replace this mock endpoint with actual database calculations:
     1. Query top 10 closest markets using PostGIS:
        `user_point = cast(func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326), Geography)`

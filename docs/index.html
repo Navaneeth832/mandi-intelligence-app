@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandi Intelligence - Technical Documentation</title>
+    <meta name="description" content="Complete technical documentation, architecture, database schemas, APIs, and machine learning pipeline for Mandi Intelligence Project.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Mermaid.js for Rendering Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            
+            --bg-body: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --bg-header: rgba(255, 255, 255, 0.85);
+            --bg-code: #0F172A;
+            --text-code: #F8FAFC;
+            
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            
+            --brand-green: #27A32D;
+            --brand-green-light: #F0FDF4;
+            --brand-green-border: #DCFCE7;
+            
+            --border-color: #E2E8F0;
+            --border-subtle: #F1F5F9;
+            
+            --sidebar-width: 290px;
+            --header-height: 64px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #090D16;
+            --bg-card: #111827;
+            --bg-sidebar: #0F172A;
+            --bg-header: rgba(15, 23, 42, 0.85);
+            --bg-code: #030712;
+            --text-code: #E2E8F0;
+            
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            --brand-green: #4ADE80;
+            --brand-green-light: rgba(39, 163, 45, 0.15);
+            --brand-green-border: rgba(39, 163, 45, 0.3);
+            
+            --border-color: #1E293B;
+            --border-subtle: #0F172A;
+            
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: var(--header-height);
+            background-color: var(--bg-header);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #27A32D, #15803D);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(39, 163, 45, 0.3);
+        }
+
+        .brand-title {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-badge {
+            font-size: 11px;
+            font-weight: 700;
+            background-color: var(--brand-green-light);
+            color: var(--brand-green);
+            border: 1px solid var(--brand-green-border);
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 260px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 14px 8px 36px;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 0 3px var(--brand-green-light);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--bg-body);
+            color: var(--brand-green);
+            border-color: var(--brand-green-border);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        /* Main Layout */
+        .layout-container {
+            display: flex;
+            flex: 1;
+            max-width: 1536px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            position: sticky;
+            top: var(--header-height);
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-heading {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding-left: 10px;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 7px 12px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-item:hover {
+            background-color: var(--brand-green-light);
+            color: var(--brand-green);
+        }
+
+        .nav-item.active {
+            background-color: var(--brand-green-light);
+            color: var(--brand-green);
+            font-weight: 700;
+            border-left: 3px solid var(--brand-green);
+        }
+
+        .nav-level-1 { font-weight: 700; color: var(--text-primary); margin-top: 10px; }
+        .nav-level-2 { padding-left: 16px; }
+        .nav-level-3 { padding-left: 28px; font-size: 12.5px; opacity: 0.85; }
+        .nav-level-4 { padding-left: 38px; font-size: 12px; opacity: 0.75; }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px 48px 80px 48px;
+            max-width: 1080px;
+            overflow-x: hidden;
+        }
+
+        /* Content Styling */
+        .markdown-body {
+            color: var(--text-primary);
+        }
+
+        .markdown-body h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+            scroll-margin-top: calc(var(--header-height) + 24px);
+        }
+
+        .markdown-body h2 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            scroll-margin-top: calc(var(--header-height) + 24px);
+        }
+
+        .markdown-body h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            scroll-margin-top: calc(var(--header-height) + 24px);
+        }
+
+        .markdown-body p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 18px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            font-size: 14.5px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .markdown-body hr {
+            border: 0;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 36px 0;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--brand-green);
+            background-color: var(--brand-green-light);
+            padding: 14px 20px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Inline Code & Code Blocks */
+        code {
+            font-family: var(--font-code);
+            font-size: 13.5px;
+            background-color: var(--border-subtle);
+            color: var(--brand-green);
+            padding: 2px 6px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        pre {
+            background-color: var(--bg-code);
+            color: var(--text-code);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            border: none;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Responsive Tables */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 28px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            background-color: var(--bg-card);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--border-subtle);
+            color: var(--text-primary);
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--brand-green-light);
+        }
+
+        /* High-Resolution Mermaid Cards & Sizing */
+        .mermaid-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin: 32px 0;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .mermaid-card.expanded {
+            position: fixed;
+            inset: 20px;
+            z-index: 1000;
+            margin: 0;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-card);
+        }
+
+        .mermaid-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background-color: var(--border-subtle);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mermaid-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mermaid-card-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mermaid-expand-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mermaid-expand-btn:hover {
+            background-color: var(--brand-green-light);
+            color: var(--brand-green);
+            border-color: var(--brand-green-border);
+        }
+
+        .mermaid-viewport {
+            padding: 32px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: var(--bg-card);
+            min-height: 420px;
+            max-height: 650px;
+        }
+
+        .mermaid-card.expanded .mermaid-viewport {
+            max-height: none;
+            flex: 1;
+        }
+
+        .mermaid-scale-wrapper {
+            display: inline-block;
+            transition: transform 0.2s ease;
+            transform-origin: top center;
+            width: 100%;
+        }
+
+        .mermaid {
+            font-family: var(--font-main) !important;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Force crisp large SVG rendering */
+        .mermaid svg {
+            max-width: none !important;
+            min-width: 950px !important;
+            height: auto !important;
+            font-size: 15px !important;
+        }
+
+        .mermaid-card.expanded .mermaid svg {
+            min-width: 1300px !important;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px 48px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            background-color: var(--bg-card);
+            margin-top: auto;
+        }
+
+        /* Mobile Drawer & Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 40;
+        }
+
+        /* Media Queries */
+        @media (max-width: 1024px) {
+            aside {
+                position: fixed;
+                left: -100%;
+                top: var(--header-height);
+                height: calc(100vh - var(--header-height));
+                z-index: 45;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-lg);
+            }
+
+            aside.open {
+                left: 0;
+            }
+
+            .mobile-overlay.open {
+                display: block;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            main {
+                padding: 28px 24px 60px 24px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .search-box {
+                display: none;
+            }
+
+            header {
+                padding: 0 16px;
+            }
+
+            .brand-badge {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="icon-btn mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Menu">
+                ☰
+            </button>
+            <a href="#" class="brand-container">
+                <div class="brand-logo">🚜</div>
+                <span class="brand-title">Mandi Intelligence</span>
+                <span class="brand-badge">Docs</span>
+            </a>
+        </div>
+
+        <div class="header-actions">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="docSearchInput" placeholder="Search documentation..." onkeyup="filterDocsSearch()">
+            </div>
+
+            <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">
+                <span id="themeIcon">🌙</span>
+            </button>
+
+            <a href="https://github.com/Navaneeth832/mandi-intelligence-app" target="_blank" rel="noopener noreferrer" class="icon-btn">
+                <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <span>GitHub</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Mobile Nav Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
+
+    <!-- Main Container -->
+    <div class="layout-container">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-heading">Documentation Map</div>
+            <nav class="nav-list">
+                <a class="nav-item nav-level-1" href="#mandi-intelligence---long-term-architectural-memory" onclick="closeMobileNav()">Mandi Intelligence - Long-Term Architectural Memory</a>
+<a class="nav-item nav-level-1" href="#1-project-overview" onclick="closeMobileNav()">1. Project Overview</a>
+<a class="nav-item nav-level-1" href="#2-tech-stack" onclick="closeMobileNav()">2. Tech Stack</a>
+<a class="nav-item nav-level-3" href="#frontend" onclick="closeMobileNav()">Frontend</a>
+<a class="nav-item nav-level-3" href="#backend" onclick="closeMobileNav()">Backend</a>
+<a class="nav-item nav-level-3" href="#database-deployment" onclick="closeMobileNav()">Database &amp; Deployment</a>
+<a class="nav-item nav-level-1" href="#3-repository-structure" onclick="closeMobileNav()">3. Repository Structure</a>
+<a class="nav-item nav-level-1" href="#4-high-level-architecture" onclick="closeMobileNav()">4. High-Level Architecture</a>
+<a class="nav-item nav-level-1" href="#5-backend-endpoints-list" onclick="closeMobileNav()">5. Backend Endpoints List</a>
+<a class="nav-item nav-level-1" href="#6-database-schema" onclick="closeMobileNav()">6. Database Schema</a>
+<a class="nav-item nav-level-3" href="#reference-translation-tables" onclick="closeMobileNav()">Reference &amp; Translation Tables</a>
+<a class="nav-item nav-level-3" href="#transactional-time-series-tables" onclick="closeMobileNav()">Transactional &amp; Time-Series Tables</a>
+<a class="nav-item nav-level-3" href="#users-session-tables" onclick="closeMobileNav()">Users &amp; Session Tables</a>
+<a class="nav-item nav-level-1" href="#7-frontend-architecture-screen-layout" onclick="closeMobileNav()">7. Frontend Architecture &amp; Screen Layout</a>
+<a class="nav-item nav-level-1" href="#8-state-management" onclick="closeMobileNav()">8. State Management</a>
+<a class="nav-item nav-level-3" href="#auth-user-providers" onclick="closeMobileNav()">Auth &amp; User Providers</a>
+<a class="nav-item nav-level-3" href="#mandi-prices-providers" onclick="closeMobileNav()">Mandi Prices Providers</a>
+<a class="nav-item nav-level-3" href="#forecasts-predictions-providers" onclick="closeMobileNav()">Forecasts &amp; Predictions Providers</a>
+<a class="nav-item nav-level-3" href="#alerts-providers" onclick="closeMobileNav()">Alerts Providers</a>
+<a class="nav-item nav-level-1" href="#9-models-schemas" onclick="closeMobileNav()">9. Models &amp; Schemas</a>
+<a class="nav-item nav-level-3" href="#frontend-data-models-libdatamodels" onclick="closeMobileNav()">Frontend Data Models (lib/data/models/)</a>
+<a class="nav-item nav-level-3" href="#backend-schemas-backendappschemas" onclick="closeMobileNav()">Backend Schemas (backend/app/schemas/)</a>
+<a class="nav-item nav-level-1" href="#10-services-processing-logic" onclick="closeMobileNav()">10. Services &amp; Processing Logic</a>
+<a class="nav-item nav-level-3" href="#authentication-security-services" onclick="closeMobileNav()">Authentication &amp; Security Services</a>
+<a class="nav-item nav-level-3" href="#machine-learning-prediction-services" onclick="closeMobileNav()">Machine Learning &amp; Prediction Services</a>
+<a class="nav-item nav-level-3" href="#alert-engine-localization-services" onclick="closeMobileNav()">Alert Engine &amp; Localization Services</a>
+<a class="nav-item nav-level-1" href="#11-machine-learning-prediction-pipeline" onclick="closeMobileNav()">11. Machine Learning &amp; Prediction Pipeline</a>
+<a class="nav-item nav-level-1" href="#12-actionable-alerts-notification-system" onclick="closeMobileNav()">12. Actionable Alerts &amp; Notification System</a>
+<a class="nav-item nav-level-3" href="#alert-types-scope" onclick="closeMobileNav()">Alert Types &amp; Scope</a>
+<a class="nav-item nav-level-1" href="#13-data-ingestion-engine" onclick="closeMobileNav()">13. Data Ingestion Engine</a>
+<a class="nav-item nav-level-1" href="#14-authentication-recovery-profile-lifecycle" onclick="closeMobileNav()">14. Authentication, Recovery &amp; Profile Lifecycle</a>
+<a class="nav-item nav-level-3" href="#1-user-registration-flow" onclick="closeMobileNav()">1. User Registration Flow</a>
+<a class="nav-item nav-level-3" href="#2-password-recovery-flow" onclick="closeMobileNav()">2. Password Recovery Flow</a>
+<a class="nav-item nav-level-3" href="#3-session-guard" onclick="closeMobileNav()">3. Session Guard</a>
+<a class="nav-item nav-level-1" href="#15-localization-architecture" onclick="closeMobileNav()">15. Localization Architecture</a>
+<a class="nav-item nav-level-1" href="#16-external-apis-third-party-integrations" onclick="closeMobileNav()">16. External APIs &amp; Third-Party Integrations</a>
+<a class="nav-item nav-level-1" href="#17-important-constants-configuration" onclick="closeMobileNav()">17. Important Constants &amp; Configuration</a>
+<a class="nav-item nav-level-3" href="#environment-variables-backendenv" onclick="closeMobileNav()">Environment Variables (backend/.env)</a>
+<a class="nav-item nav-level-3" href="#frontend-base-constants-libcoreconstantsapiconstantsdart" onclick="closeMobileNav()">Frontend Base Constants (lib/core/constants/apiconstants.dart)</a>
+<a class="nav-item nav-level-1" href="#18-common-development-tasks" onclick="closeMobileNav()">18. Common Development Tasks</a>
+<a class="nav-item nav-level-3" href="#1-adding-a-new-api-endpoint" onclick="closeMobileNav()">1. Adding a New API Endpoint</a>
+<a class="nav-item nav-level-3" href="#2-adding-a-database-entity" onclick="closeMobileNav()">2. Adding a Database Entity</a>
+<a class="nav-item nav-level-1" href="#19-technical-debt-gotchas-key-design-decisions" onclick="closeMobileNav()">19. Technical Debt, Gotchas &amp; Key Design Decisions</a>
+<a class="nav-item nav-level-1" href="#20-offline-cache-implementation" onclick="closeMobileNav()">20. Offline Cache Implementation</a>
+<a class="nav-item nav-level-1" href="#21-shared-notification-bell-unread-badge-architecture" onclick="closeMobileNav()">21. Shared Notification Bell &amp; Unread Badge Architecture</a>
+<a class="nav-item nav-level-1" href="#22-offline-authentication-session-persistence-architecture" onclick="closeMobileNav()">22. Offline Authentication / Session Persistence Architecture</a>
+<a class="nav-item nav-level-1" href="#23-alert-email-delivery-architecture" onclick="closeMobileNav()">23. Alert Email Delivery Architecture</a>
+<a class="nav-item nav-level-1" href="#24-nearby-mandi-comparison-financial-analytics-engine" onclick="closeMobileNav()">24. Nearby Mandi Comparison &amp; Financial Analytics Engine</a>
+<a class="nav-item nav-level-3" href="#financial-calculations-matrix" onclick="closeMobileNav()">Financial Calculations Matrix</a>
+<a class="nav-item nav-level-3" href="#endpoints-handoff-switching" onclick="closeMobileNav()">Endpoints &amp; Handoff Switching</a>
+<a class="nav-item nav-level-1" href="#25-technical-documentation-website-pipeline" onclick="closeMobileNav()">25. Technical Documentation Website Pipeline</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <article class="markdown-body" id="docsContent">
+                <h1 id="mandi-intelligence-long-term-architectural-memory">Mandi Intelligence - Long-Term Architectural Memory</h1>
+<p><em>(Last Updated: 27 August 2026)</em></p>
+<p>This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.</p>
+<hr />
+<h1 id="1-project-overview">1. Project Overview</h1>
+<ul>
+<li><strong>What this project does</strong>: Mandi Intelligence is an agricultural marketplace analysis and intelligence platform. It aggregates live agricultural commodity prices from across India, normalizes them, generates 7-day machine learning price predictions, processes actionable price alerts, and delivers them via a localized mobile app (with a desktop viewport frame wrapper).</li>
+<li><strong>Primary purpose</strong>: To empower farmers, traders, and agricultural stakeholders with real-time commodity price data, historical trends, 7-day machine learning forecasts, best selling day recommendations, and customized crop price alerts.</li>
+<li><strong>Main user flow</strong>:<br />
+  1. <strong>Authentication &amp; Recovery</strong>: User registers or logs in via OTP (Email via Resend or SMS via Fast2SMS). Registered users can also recover passwords via a 3-phase Forgot Password OTP flow.<br />
+  2. <strong>Onboarding &amp; Profile Setup</strong>: New users select their State, District, preferred UI Language (English, Hindi, Malayalam), and trackable crops (crop preferences).<br />
+  3. <strong>Real-Time Price Tracking (Home Tab)</strong>: Displays current daily mandi prices filtered by location and preferred crops, formatted with Variety and Grade tags.<br />
+  4. <strong>Detailed Analysis &amp; Market Directory (Markets Tab)</strong>: Users can inspect 7-day historical price movement charts (<code>fl_chart</code>) or browse a paginated directory of active markets in a state/district.<br />
+  5. <strong>Predictions &amp; Advisory (Advisory Tab)</strong>: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee &amp; expected profit breakdown, and Forecast Section with daily timeline). Features a "Compare Nearby Mandis" portal (<code>MarketComparisonScreen</code> placeholder) and an "Explore More Commodities" portal to search predictions across non-preferred crops.<br />
+  6. <strong>Actionable Alerts &amp; History (Alerts Bell Header)</strong>: Displays real-time actionable price alerts (<code>PRICE_INCREASE</code>, <code>PRICE_DROP</code>, <code>BETTER_MARKET</code>, <code>AI_RECOMMENDATION</code>) and searchable historical alert archives.<br />
+  7. <strong>Profile &amp; Notification Management (Profile Tab)</strong>: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).</li>
+<li><strong>Current implementation status</strong>:</li>
+<li><strong>Backend</strong>: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (<code>latitude</code>, <code>longitude</code>, <code>location</code> Geography Point with GiST indexing), geocoding script (<code>populate_market_coordinates.py</code>), nearby market comparison endpoint (<code>/markets/compare-mock</code>), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.</li>
+<li><strong>Frontend</strong>: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (<code>MobileFrameWrapper</code>), production-ready Nearby Mandi Comparison Screen (<code>MarketComparisonScreen</code>, 5 sort options, quantity controls, Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.</li>
+<li><strong>Completed Core Modules</strong>:</li>
+<li>Authentication (OTP send/verify with transient verification tokens, login, register, me).</li>
+<li>Forgot Password recovery pipeline.</li>
+<li>Notification Preferences management.</li>
+<li>Dual price ingestion pipeline (Agmarknet V2 Daily API + Data.gov.in V1 Fallback API).</li>
+<li>Advanced fuzzy matching normalization for Markets, Commodities, and Varieties.</li>
+<li>Multi-language localization (EN, HI, ML) for App UI and database-driven translations.</li>
+<li>7-day historical price timeline visualization.</li>
+<li>LightGBM Machine Learning 7-day price forecasting engine.</li>
+<li>Actionable &amp; Historical Alerts System (<code>PRICE_INCREASE</code>, <code>PRICE_DROP</code>, <code>BETTER_MARKET</code>, <code>AI_RECOMMENDATION</code>).</li>
+</ul>
+<hr />
+<h1 id="2-tech-stack">2. Tech Stack</h1>
+<h3 id="frontend">Frontend</h3>
+<ul>
+<li><strong>Framework</strong>: Flutter (Dart ^3.5.0)</li>
+<li><strong>State Management</strong>: <code>flutter_riverpod</code> (^2.5.1)</li>
+<li><strong>Local Storage / Session</strong>: <code>flutter_secure_storage</code> (^9.2.2) (stores JWT Bearer token)</li>
+<li><strong>Charts</strong>: <code>fl_chart</code> (^1.2.0) (price history &amp; 7-day prediction trajectory)</li>
+<li><strong>Networking</strong>: <code>http</code> (^1.2.1)</li>
+<li><strong>Localization</strong>: <code>flutter_localizations</code> (SDK), <code>intl</code> (^0.20.2), <code>flutter gen-l10n</code></li>
+<li><strong>Animations &amp; UI</strong>: <code>shimmer</code> (^3.0.0), <code>MobileFrameWrapper</code> (390x884 desktop viewport constraint)</li>
+</ul>
+<h3 id="backend">Backend</h3>
+<ul>
+<li><strong>Framework</strong>: FastAPI (Python)</li>
+<li><strong>Server</strong>: Uvicorn</li>
+<li><strong>ORM / DB Access</strong>: SQLAlchemy (PostgreSQL engine with PostGIS / <code>GeoAlchemy2</code>)</li>
+<li><strong>Geocoding &amp; Spatial</strong>: <code>geopy</code> (GoogleV3 geocoder), <code>GeoAlchemy2</code> (PostGIS Geography column)</li>
+<li><strong>Machine Learning</strong>: LightGBM, Pandas, NumPy, Scikit-learn (<code>app/ml/lightgbm_weights.txt</code>, <code>app/ml/model_features.json</code>)</li>
+<li><strong>Data Fetcher</strong>: <code>httpx</code>, <code>requests</code></li>
+<li><strong>Config &amp; Validation</strong>: Pydantic / <code>pydantic-settings</code></li>
+<li><strong>Security &amp; Token</strong>: Passlib (<code>bcrypt</code>), <code>python-jose[cryptography]</code> (JWT)</li>
+<li><strong>Email Delivery</strong>: <code>resend</code> (SDK)</li>
+<li><strong>SMS Delivery</strong>: <code>Fast2SMS</code> API (<code>SMSService</code>)</li>
+</ul>
+<h3 id="database-deployment">Database &amp; Deployment</h3>
+<ul>
+<li><strong>Database</strong>: PostgreSQL (hosted on Railway)</li>
+<li><strong>Deployment</strong>: Railway (<code>mandi-intelligence-app-production</code>)</li>
+</ul>
+<hr />
+<h1 id="3-repository-structure">3. Repository Structure</h1>
+<pre><code>.
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── routes/             # Entity &amp; feature routers
+│   │   │   │   ├── alerts.py             # Actionable &amp; historical alerts
+│   │   │   │   ├── commodities.py        # Commodities endpoints
+│   │   │   │   ├── districts.py          # Districts by state
+│   │   │   │   ├── mandi_prices.py       # Daily price search &amp; pagination
+│   │   │   │   ├── market_directory.py   # Market directory index
+│   │   │   │   ├── markets.py            # Markets by district
+│   │   │   │   ├── predictions.py        # ML price predictions (Forecasts)
+│   │   │   │   ├── price_history.py      # 7-day historical prices
+│   │   │   │   └── states.py             # Active states
+│   │   │   ├── auth.py                   # OTP, Register, Login, Forgot Password
+│   │   │   ├── crop_preferences.py       # User tracked crops
+│   │   │   ├── notification_preferences.py # Notification settings
+│   │   │   └── profile.py                # Profile retrieval &amp; updates
+│   │   ├── core/                         # Config, Database, Dependencies, Security
+│   │   ├── ml/                           # LightGBM weights &amp; model feature JSON
+│   │   │   ├── lightgbm_weights.txt
+│   │   │   └── model_features.json
+│   │   ├── models/                       # 22 SQLAlchemy DB models
+│   │   ├── repositories/                 # SQL queries (mandi prices, predictions, alerts)
+│   │   ├── schemas/                      # Pydantic schemas (alerts, predictions, auth, etc.)
+│   │   ├── services/                     # Business logic &amp; processors
+│   │   │   ├── alert_processors/         # Price shift &amp; AI alert processors
+│   │   │   ├── alert_generation_service.py # Alert generator dispatcher
+│   │   │   ├── alert_localization.py     # Template-based alert translation
+│   │   │   ├── alert_service.py          # Alert persistence &amp; mapping
+│   │   │   ├── auth_service.py           # Verification &amp; user creation
+│   │   │   ├── email_service.py          # Resend email wrapper
+│   │   │   ├── otp_service.py            # OTP generator &amp; validator
+│   │   │   ├── prediction_runner.py      # ML execution interface
+│   │   │   ├── prediction_service.py     # Prediction grouping &amp; metrics
+│   │   │   ├── sms_service.py            # Fast2SMS wrapper
+│   │   │   └── verification_token_service.py # Hashed transient tokens
+│   │   ├── static/                       # Static files server
+│   │   │   └── commodity-images/         # Static images (1.jpeg, default.webp, etc.)
+│   │   ├── utils/                        # Auth identifier helpers
+│   │   └── main.py                       # FastAPI entrypoint &amp; router registry
+│   ├── price_fetcher.py                  # Scraper coordinator (V2 Agmarknet -&gt; V1 Gov)
+│   ├── price_fetcher_v1.py               # Gov V1 public API client
+│   ├── price_fetcher_v2.py               # Agmarknet V2 JSON API client
+│   ├── run_predictions.py                # Standalone LightGBM inference &amp; batch saver
+│   ├── commodity_normalizer.py           # Fuzzy matching for commodities
+│   ├── market_normalizer.py              # Fuzzy matching for markets
+│   ├── variety_normalizer.py             # Fuzzy matching for varieties
+│   ├── commodity_aliases.py              # Alias dictionary mappings
+│   ├── Data_mapping.py                   # Pre-compiled Agmarknet IDs mapping
+│   ├── generate_mapping.py               # Agmarknet mapping generator
+│   ├── insert_data.py                    # Mapping DB seeder
+│   └── test_alerts_api.py                # Automated pytest suite for Alerts API
+│
+├── lib/
+│   ├── core/
+│   │   ├── constants/                    # ApiConstants (baseUrl, endpoints)
+│   │   ├── providers/                    # localeProvider, storageProvider, authApiProvider
+│   │   ├── theme/                        # AppTheme (Material 3 palettes)
+│   │   └── widgets/                      # Global widgets (MobileFrameWrapper, CommodityImageWidget)
+│   ├── data/
+│   │   ├── datasources/                  # AlertFallbackDataSource (Offline mock engine)
+│   │   ├── models/                       # Dart data models (Alert, Forecast, MandiPrice, UserProfile)
+│   │   ├── repositories/                 # Repositories (AlertRepo, AuthRepo, ForecastRepo, MandiRepo)
+│   │   └── services/                     # HTTP API clients (AlertApiService, AuthApiService, etc.)
+│   ├── features/
+│   │   ├── alerts/                       # AlertsScreen, AlertHistoryScreen, AlertCard, FilterChips
+│   │   ├── auth/                         # Login, Signup, ForgotPassword, Onboarding, Profile, Settings
+│   │   ├── forecasts/                    # ForecastsScreen, ForecastDetailScreen, Explore Screens
+│   │   └── mandi_prices/                 # HomeScreen, FilterResultsScreen, MarketDetailScreen, MarketsScreen
+│   ├── l10n/                             # ARB localizations (app_en.arb, app_hi.arb, app_ml.arb)
+│   ├── main.dart                         # Flutter entrypoint &amp; AuthWrapper
+│   └── main_screen.dart                  # BottomNavBar tab navigator frame
+└── test/
+    └── alerts_feature_test.dart          # Automated Flutter widget &amp; repository tests
+</code></pre>
+<hr />
+<h1 id="4-high-level-architecture">4. High-Level Architecture</h1>
+
+<div class="mermaid-card">
+    <div class="mermaid-card-header">
+        <span class="mermaid-card-title">📊 Architecture Diagram</span>
+        <div class="mermaid-card-controls">
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, 0.2)" title="Zoom In">🔍 +</button>
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, -0.2)" title="Zoom Out">🔍 −</button>
+            <button class="mermaid-expand-btn" onclick="resetMermaidZoom(this)" title="Reset Zoom">↺ Reset</button>
+            <button class="mermaid-expand-btn" onclick="toggleMermaidFullscreen(this)" title="Toggle Fullscreen">⤢ Fullscreen</button>
+        </div>
+    </div>
+    <div class="mermaid-viewport">
+        <div class="mermaid-scale-wrapper">
+            <pre class="mermaid">flowchart TD
+    subgraph Client [&quot;Flutter Mobile and Desktop App&quot;]
+        UI[&quot;Flutter UI Screens and Widgets&quot;] --&gt;|Watches| RP[&quot;Riverpod Providers&quot;]
+        RP --&gt;|Calls| Repo[&quot;Repository Layer&quot;]
+        Repo --&gt;|Online HTTP| AS[&quot;API Services&quot;]
+        Repo -.-&gt;|Network Fallback| FBDS[&quot;AlertFallbackDataSource&quot;]
+    end
+
+    subgraph Server [&quot;FastAPI Backend Service&quot;]
+        AS --&gt;|Bearer JWT JSON| RT[&quot;FastAPI Routers&quot;]
+        RT --&gt;|Injects| Deps[&quot;Auth and Database Dependencies&quot;]
+        RT --&gt;|Invokes| Serv[&quot;Services Layer&quot;]
+        Serv --&gt;|Queries| DBRepo[&quot;Repository Layer&quot;]
+        DBRepo --&gt;|SQLAlchemy| DB[(&quot;PostgreSQL Database&quot;)]
+        Static[&quot;StaticFiles Engine&quot;] --&gt;|Serves Images| UI
+    end
+
+    subgraph Predictions [&quot;ML Forecast Engine&quot;]
+        CronP[&quot;Cron / Admin Trigger&quot;] --&gt; PR[&quot;run_predictions.py&quot;]
+        PR --&gt;|Loads Weights| LGB[&quot;LightGBM Model&quot;]
+        PR --&gt;|Reads History| DB
+        LGB --&gt;|Writes Batches| DB
+    end
+
+    subgraph AlertsEngine [&quot;Alert Processor System&quot;]
+        CronA[&quot;Cron / Service Trigger&quot;] --&gt; AGS[&quot;AlertGenerationService&quot;]
+        AGS --&gt;|Evaluates Shifts| Processors[&quot;PriceShiftProcessor&quot;]
+        Processors --&gt;|Localizes via Templates| ALS[&quot;AlertLocalizationService&quot;]
+        ALS --&gt;|Persists Alerts| DB
+    end
+
+    subgraph DataPipeline [&quot;Price Scraper Pipeline&quot;]
+        CronS[&quot;External Cron&quot;] --&gt; PF[&quot;price_fetcher.py&quot;]
+        PF --&gt;|Attempts V2| V2[&quot;Agmarknet API&quot;]
+        PF --&gt;|Fallback V1| V1[&quot;Data.gov.in API&quot;]
+        PF --&gt;|Fuzzy Matches| Norm[&quot;Normalizers&quot;]
+        Norm --&gt;|Bulk Upsert| DB
+    end</pre>
+        </div>
+    </div>
+</div>
+
+<hr />
+<h1 id="5-backend-endpoints-list">5. Backend Endpoints List</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Auth</th>
+<th style="text-align: left;">Purpose</th>
+<th style="text-align: left;">Request Payload</th>
+<th style="text-align: left;">Response Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>/auth/send-otp</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Generate &amp; dispatch signup OTP</td>
+<td style="text-align: left;"><code>SendOTPRequest</code></td>
+<td style="text-align: left;"><code>{"message", "identifier", "registration_method"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/verify-otp</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Validate OTP; issue transient token</td>
+<td style="text-align: left;"><code>VerifyOTPRequest</code></td>
+<td style="text-align: left;"><code>{"verification_token", "token_type", "expires_in_seconds"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/forgot-password/send-otp</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Send reset password OTP</td>
+<td style="text-align: left;"><code>SendOTPRequest</code></td>
+<td style="text-align: left;"><code>{"message", "identifier", "registration_method"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/forgot-password/verify-otp</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Verify reset OTP; issue reset token</td>
+<td style="text-align: left;"><code>VerifyOTPRequest</code></td>
+<td style="text-align: left;"><code>{"verification_token", "token_type", "expires_in_seconds"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/forgot-password/reset-password</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Reset password using reset token</td>
+<td style="text-align: left;"><code>ResetPasswordRequest</code></td>
+<td style="text-align: left;"><code>{"message"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/register</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Register account using token</td>
+<td style="text-align: left;"><code>UserRegister</code></td>
+<td style="text-align: left;"><code>UserResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/login</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Authenticate credentials &amp; return JWT</td>
+<td style="text-align: left;"><code>UserLogin</code></td>
+<td style="text-align: left;"><code>{"access_token", "token_type", "user"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/auth/me</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Get current session user profile</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>UserResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Get profile with state &amp; district</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>UserResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile</code></td>
+<td style="text-align: left;"><code>PUT</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Update profile details</td>
+<td style="text-align: left;"><code>UserProfileUpdate</code></td>
+<td style="text-align: left;"><code>UserResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile/preferences</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Fetch user tracked crop preferences</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>List[CropPreferenceResponse]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile/preferences</code></td>
+<td style="text-align: left;"><code>PUT</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Bulk update user crop preferences</td>
+<td style="text-align: left;"><code>CropPreferenceUpdate</code></td>
+<td style="text-align: left;"><code>List[CropPreferenceResponse]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile/notification-preferences</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Retrieve notification settings</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>NotificationPreferenceResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/profile/notification-preferences</code></td>
+<td style="text-align: left;"><code>PUT</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Update notification settings</td>
+<td style="text-align: left;"><code>NotificationPreferenceUpdate</code></td>
+<td style="text-align: left;"><code>NotificationPreferenceResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/states/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List states with active markets</td>
+<td style="text-align: left;">Query: <code>language</code></td>
+<td style="text-align: left;"><code>List[StateSchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/districts/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List districts in a state</td>
+<td style="text-align: left;">Query: <code>state_id</code>, <code>language</code></td>
+<td style="text-align: left;"><code>List[DistrictSchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/markets/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List markets in a district</td>
+<td style="text-align: left;">Query: <code>district_id</code>, <code>language</code></td>
+<td style="text-align: left;"><code>List[MarketSchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/markets/closest</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Get 10 closest markets by coordinates</td>
+<td style="text-align: left;">Query: <code>lat</code>, <code>lng</code></td>
+<td style="text-align: left;"><code>List[ClosestMarketResponse]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/markets/compare-mock</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Financial comparison across nearby mandis</td>
+<td style="text-align: left;">Query: <code>lat</code>, <code>lng</code>, <code>commodity_id</code>, <code>transport_rate_per_km</code>, <code>quantity</code></td>
+<td style="text-align: left;"><code>MarketComparisonResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/markets/{id}/commodities</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Active commodities in market today</td>
+<td style="text-align: left;">Path: <code>market_id</code></td>
+<td style="text-align: left;"><code>{"market_id", "commodity_count", "commodities"}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/commodities/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List commodities with prices today</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>List[CommoditySchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/commodities/active</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List active trackable commodities</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>List[CommoditySchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/commodities/all</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">List all mapped commodities</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"><code>List[CommoditySchema]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/mandi-prices/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Paginated search of mandi prices</td>
+<td style="text-align: left;">Query: <code>state</code>, <code>district</code>, <code>market</code>, <code>commodity</code>, <code>variety</code>, <code>language</code>, <code>page</code>, <code>page_size</code></td>
+<td style="text-align: left;"><code>PaginatedMandiResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/price-history/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Get 7 latest price records</td>
+<td style="text-align: left;">Query: <code>commodity</code>, <code>market</code>, <code>variety</code></td>
+<td style="text-align: left;"><code>List[PriceHistoryResponse]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/market-directory/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Paginated directory of active markets</td>
+<td style="text-align: left;">Query: <code>state_id</code>, <code>district_id</code>, <code>commodity_id</code>, <code>search</code>, <code>language</code>, <code>page</code>, <code>page_size</code></td>
+<td style="text-align: left;"><code>PaginatedMarketResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/predictions/</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Get 7-day ML price predictions</td>
+<td style="text-align: left;">Query: <code>commodity_id</code>, <code>market_id</code>, <code>commodity_ids</code>, <code>market_ids</code>, <code>language</code>, <code>page</code>, <code>page_size</code></td>
+<td style="text-align: left;"><code>PaginatedForecastResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/alerts</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Active actionable alerts for user</td>
+<td style="text-align: left;">Query: <code>type</code>, <code>page</code>, <code>page_size</code></td>
+<td style="text-align: left;"><code>PaginatedAlertsResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/alerts/history</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Historical alerts archive</td>
+<td style="text-align: left;">Query: <code>type</code>, <code>search</code>, <code>date_from</code>, <code>date_to</code>, <code>page</code>, <code>page_size</code></td>
+<td style="text-align: left;"><code>PaginatedAlertsResponse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/static/*</code></td>
+<td style="text-align: left;"><code>GET</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Serves static assets &amp; images</td>
+<td style="text-align: left;">Static asset path</td>
+<td style="text-align: left;">Image file stream</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="6-database-schema">6. Database Schema</h1>
+<p>All primary database entities exist as SQLAlchemy models in <code>backend/app/models/</code>.</p>
+
+<div class="mermaid-card">
+    <div class="mermaid-card-header">
+        <span class="mermaid-card-title">📊 Architecture Diagram</span>
+        <div class="mermaid-card-controls">
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, 0.2)" title="Zoom In">🔍 +</button>
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, -0.2)" title="Zoom Out">🔍 −</button>
+            <button class="mermaid-expand-btn" onclick="resetMermaidZoom(this)" title="Reset Zoom">↺ Reset</button>
+            <button class="mermaid-expand-btn" onclick="toggleMermaidFullscreen(this)" title="Toggle Fullscreen">⤢ Fullscreen</button>
+        </div>
+    </div>
+    <div class="mermaid-viewport">
+        <div class="mermaid-scale-wrapper">
+            <pre class="mermaid">erDiagram
+    states ||--o{ state_translations : &quot;translated_by&quot;
+    states ||--o{ districts : &quot;contains&quot;
+    districts ||--o{ district_translations : &quot;translated_by&quot;
+    districts ||--o{ markets : &quot;contains&quot;
+    markets ||--o{ market_translations : &quot;translated_by&quot;
+    markets ||--o{ mandi_prices : &quot;reports&quot;
+    markets ||--o{ commodity_predictions : &quot;targets&quot;
+    markets ||--o{ alerts : &quot;context_market&quot;
+
+    commodities_group ||--o{ commodities : &quot;groups&quot;
+    commodities ||--o{ commodity_translations : &quot;translated_by&quot;
+    commodities ||--o{ varieties : &quot;includes&quot;
+    commodities ||--o{ grade : &quot;categorizes&quot;
+    commodities ||--o{ active_commodity : &quot;tracked_in&quot;
+    commodities ||--o{ mandi_prices : &quot;records&quot;
+    commodities ||--o{ commodity_predictions : &quot;forecasts&quot;
+    commodities ||--o{ user_crop_preferences : &quot;tracked_by&quot;
+    commodities ||--o{ alerts : &quot;context_commodity&quot;
+
+    varieties ||--o{ mandi_prices : &quot;specifies&quot;
+    varieties ||--o{ commodity_predictions : &quot;specifies&quot;
+    grade ||--o{ mandi_prices : &quot;specifies&quot;
+    grade ||--o{ commodity_predictions : &quot;specifies&quot;
+
+    prediction_batches ||--o{ commodity_predictions : &quot;contains_batch&quot;
+
+    users ||--o{ user_crop_preferences : &quot;prefers&quot;
+    users ||--o{ refresh_tokens : &quot;owns&quot;
+    users ||--o{ notification_preferences : &quot;configures&quot;
+    users ||--o{ alerts : &quot;receives&quot;</pre>
+        </div>
+    </div>
+</div>
+
+<h3 id="reference-translation-tables">Reference &amp; Translation Tables</h3>
+<ol>
+<li><strong><code>states</code></strong>: <code>id</code> (PK, INT), <code>name</code> (VARCHAR).</li>
+<li><strong><code>state_translations</code></strong>: <code>id</code> (PK, INT), <code>state_id</code> (FK -&gt; <code>states.id</code>), <code>language_code</code> (VARCHAR(2)), <code>translated_name</code> (VARCHAR). Unique(<code>state_id</code>, <code>language_code</code>).</li>
+<li><strong><code>districts</code></strong>: <code>id</code> (PK, INT), <code>state_id</code> (FK -&gt; <code>states.id</code>), <code>name</code> (VARCHAR).</li>
+<li><strong><code>district_translations</code></strong>: <code>id</code> (PK, INT), <code>district_id</code> (FK -&gt; <code>districts.id</code>), <code>language_code</code> (VARCHAR(2)), <code>translated_name</code> (VARCHAR). Unique(<code>district_id</code>, <code>language_code</code>).</li>
+<li><strong><code>markets</code></strong>: <code>id</code> (PK, INT), <code>district_id</code> (FK -&gt; <code>districts.id</code>), <code>name</code> (VARCHAR), <code>latitude</code> (FLOAT, Nullable), <code>longitude</code> (FLOAT, Nullable), <code>location</code> (<code>Geography(Point, 4326)</code>, Nullable). Indexed via GiST (<code>idx_markets_location</code>).</li>
+<li><strong><code>market_translations</code></strong>: <code>id</code> (PK, INT), <code>market_id</code> (FK -&gt; <code>markets.id</code>), <code>language_code</code> (VARCHAR(2)), <code>translated_name</code> (VARCHAR). Unique(<code>market_id</code>, <code>language_code</code>).</li>
+<li><strong><code>commodities_group</code></strong>: <code>id</code> (PK, INT), <code>name</code> (VARCHAR).</li>
+<li><strong><code>commodities</code></strong>: <code>id</code> (PK, INT), <code>commodity_group_id</code> (FK -&gt; <code>commodities_group.id</code>), <code>name</code> (VARCHAR).</li>
+<li><strong><code>commodity_translations</code></strong>: <code>id</code> (PK, INT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>language_code</code> (VARCHAR(2)), <code>translated_name</code> (VARCHAR). Unique(<code>commodity_id</code>, <code>language_code</code>).</li>
+<li><strong><code>varieties</code></strong>: <code>id</code> (PK, INT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>name</code> (VARCHAR).</li>
+<li><strong><code>grade</code></strong> (Table name: <code>grade</code>): <code>id</code> (PK, INT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>grade_name</code> (VARCHAR).</li>
+<li><strong><code>active_commodity</code></strong> (Table name: <code>active_commodity</code>): <code>id</code> (PK, INT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>, Unique, Cascade Delete).</li>
+</ol>
+<h3 id="transactional-time-series-tables">Transactional &amp; Time-Series Tables</h3>
+<ol start="13">
+<li><strong><code>mandi_prices</code></strong>: <code>id</code> (PK, INT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>variety_id</code> (FK -&gt; <code>varieties.id</code>), <code>grade_id</code> (FK -&gt; <code>grade.id</code>), <code>market_id</code> (FK -&gt; <code>markets.id</code>), <code>modal_price</code> (NUMERIC), <code>min_price</code> (NUMERIC), <code>max_price</code> (NUMERIC), <code>arrival_date</code> (DATE), <code>created_at</code> (TIMESTAMPTZ). Unique(<code>commodity_id</code>, <code>variety_id</code>, <code>grade_id</code>, <code>market_id</code>, <code>arrival_date</code>).</li>
+<li><strong><code>prediction_batches</code></strong>: <code>id</code> (PK, INT), <code>prediction_date</code> (DATE), <code>prediction_time</code> (VARCHAR), <code>model_version</code> (VARCHAR), <code>created_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>commodity_predictions</code></strong>: <code>id</code> (PK, INT), <code>batch_id</code> (FK -&gt; <code>prediction_batches.id</code>), <code>market_id</code> (FK -&gt; <code>markets.id</code>), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>variety_id</code> (FK -&gt; <code>varieties.id</code>), <code>grade_id</code> (FK -&gt; <code>grade.id</code>), <code>prediction_day</code> (DATE), <code>predicted_price</code> (NUMERIC), <code>created_at</code> (TIMESTAMPTZ).</li>
+</ol>
+<h3 id="users-session-tables">Users &amp; Session Tables</h3>
+<ol start="16">
+<li><strong><code>users</code></strong>: <code>id</code> (PK, UUID), <code>name</code> (VARCHAR), <code>email</code> (VARCHAR, Unique, Nullable), <code>phone_number</code> (VARCHAR, Unique, Nullable), <code>password_hash</code> (VARCHAR), <code>state_id</code> (FK -&gt; <code>states.id</code>), <code>district_id</code> (FK -&gt; <code>districts.id</code>), <code>preferred_market_id</code> (FK -&gt; <code>markets.id</code>, Nullable), <code>preferred_language</code> (VARCHAR(20), Default='en'), <code>registration_method</code> (VARCHAR(20)), <code>is_verified</code> (BOOL), <code>created_at</code> (TIMESTAMPTZ), <code>updated_at</code> (TIMESTAMPTZ). Constraint: Exactly one of email or phone set.</li>
+<li><strong><code>user_crop_preferences</code></strong>: <code>user_id</code> (PK, FK -&gt; <code>users.id</code>), <code>commodity_id</code> (PK, FK -&gt; <code>commodities.id</code>).</li>
+<li><strong><code>refresh_tokens</code></strong>: <code>id</code> (PK, UUID), <code>user_id</code> (FK -&gt; <code>users.id</code>), <code>token</code> (TEXT), <code>expires_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>otp_verifications</code></strong>: <code>id</code> (PK, UUID), <code>identifier</code> (VARCHAR), <code>otp_hash</code> (VARCHAR), <code>purpose</code> (VARCHAR), <code>expires_at</code> (TIMESTAMPTZ), <code>used</code> (BOOL), <code>created_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>verification_tokens</code></strong>: <code>id</code> (PK, UUID), <code>identifier</code> (VARCHAR), <code>token_hash</code> (VARCHAR), <code>purpose</code> (VARCHAR), <code>expires_at</code> (TIMESTAMPTZ), <code>used</code> (BOOL), <code>created_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>notification_preferences</code></strong>: <code>user_id</code> (PK, FK -&gt; <code>users.id</code>), <code>price_increase</code> (BOOL), <code>price_drop</code> (BOOL), <code>better_market</code> (BOOL), <code>market_glut</code> (BOOL), <code>ai_recommendation</code> (BOOL), <code>delivery_in_app</code> (BOOL), <code>delivery_email</code> (BOOL), <code>delivery_push</code> (BOOL), <code>frequency</code> (VARCHAR(20), default='instant'), <code>created_at</code> (TIMESTAMPTZ), <code>updated_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>alerts</code></strong>: <code>id</code> (PK, UUID), <code>user_id</code> (FK -&gt; <code>users.id</code>), <code>type</code> (VARCHAR(50)), <code>severity</code> (VARCHAR(20)), <code>title</code> (VARCHAR(255)), <code>message</code> (TEXT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>market_id</code> (FK -&gt; <code>markets.id</code>), <code>current_price</code> (FLOAT, Nullable), <code>previous_price</code> (FLOAT, Nullable), <code>change_percent</code> (FLOAT, Nullable), <code>created_at</code> (TIMESTAMPTZ).</li>
+</ol>
+<hr />
+<h1 id="7-frontend-architecture-screen-layout">7. Frontend Architecture &amp; Screen Layout</h1>
+
+<div class="mermaid-card">
+    <div class="mermaid-card-header">
+        <span class="mermaid-card-title">📊 Architecture Diagram</span>
+        <div class="mermaid-card-controls">
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, 0.2)" title="Zoom In">🔍 +</button>
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, -0.2)" title="Zoom Out">🔍 −</button>
+            <button class="mermaid-expand-btn" onclick="resetMermaidZoom(this)" title="Reset Zoom">↺ Reset</button>
+            <button class="mermaid-expand-btn" onclick="toggleMermaidFullscreen(this)" title="Toggle Fullscreen">⤢ Fullscreen</button>
+        </div>
+    </div>
+    <div class="mermaid-viewport">
+        <div class="mermaid-scale-wrapper">
+            <pre class="mermaid">flowchart TB
+    subgraph AuthLayer [&quot;Authentication and Onboarding Layer&quot;]
+        AuthWrapper[&quot;AuthWrapper \n Navigation Guard and Session Check&quot;]
+        LoginScreen[&quot;LoginScreen \n Email/Phone + Password&quot;]
+        SignupScreen[&quot;SignupScreen (3-Phase) \n Identifier -&gt; Send OTP -&gt; Register&quot;]
+        ForgotPasswordScreen[&quot;ForgotPasswordScreen (3-Phase) \n Identifier -&gt; Reset OTP -&gt; New Password&quot;]
+        OnboardingScreen[&quot;OnboardingScreen \n State, District, Lang and Tracked Crops&quot;]
+    end
+
+    subgraph AppHub [&quot;Main Application Shell&quot;]
+        MainScreen[&quot;MainScreen \n BottomNavBar (4 Main Tabs)&quot;]
+    end
+
+    subgraph HomeTab [&quot;Tab 0: Mandi Prices (Home)&quot;]
+        HomeScreen[&quot;HomeScreen \n Filters and Price Cards&quot;]
+        FilterResultsScreen[&quot;FilterResultsScreen \n Custom Query Results&quot;]
+    end
+
+    subgraph MarketsTab [&quot;Tab 1: Market Directory&quot;]
+        MarketsScreen[&quot;MarketsScreen \n State Dropdown and Search Bar&quot;]
+        MarketDirectoryDetailScreen[&quot;MarketDirectoryDetailScreen \n Market Metadata and Active Crops Grid&quot;]
+        MarketDetailScreen[&quot;MarketDetailScreen \n 7-Day Price LineChart and Stats Cards&quot;]
+    end
+
+    subgraph AdvisoryTab [&quot;Tab 2: Forecasts and Advisory&quot;]
+        ForecastsScreen[&quot;ForecastsScreen \n Preferred Crop Predictions&quot;]
+        CommodityAdvisoryScreen[&quot;CommodityAdvisoryScreen \n Commodity Predictions Breakdown&quot;]
+        ExploreMoreCommoditiesScreen[&quot;ExploreMoreCommoditiesScreen \n Search Portal for Non-Preferred Crops&quot;]
+        ExploreAdvisoryResultsScreen[&quot;ExploreAdvisoryResultsScreen \n Multi-Crop Prediction Results&quot;]
+        ForecastDetailScreen[&quot;ForecastDetailScreen \n 3 Sections: Prediction, AI Advisory &amp; Forecast&quot;]
+        MarketComparisonScreen[&quot;MarketComparisonScreen \n Placeholder for Nearby Mandi Distance &amp; Net Profit Comparison&quot;]
+    end
+
+    subgraph AlertsHeader [&quot;Alerts Header Navigation&quot;]
+        AlertsScreen[&quot;AlertsScreen \n Active Actionable Alerts and Filter Chips&quot;]
+        AlertHistoryScreen[&quot;AlertHistoryScreen \n Searchable Alert Archive and Date Grouping&quot;]
+    end
+
+    subgraph ProfileTab [&quot;Tab 3: Profile Management&quot;]
+        ProfileScreen[&quot;ProfileScreen \n User Info, Tracked Crops, Settings&quot;]
+        NotificationSettingsScreen[&quot;NotificationSettingsScreen \n Alert Toggles and Delivery Radios&quot;]
+    end
+
+    LoginScreen --&gt; SignupScreen
+    LoginScreen --&gt; ForgotPasswordScreen
+    LoginScreen --&gt; AuthWrapper
+    SignupScreen --&gt; AuthWrapper
+    ForgotPasswordScreen --&gt; LoginScreen
+    AuthWrapper --&gt; OnboardingScreen
+    AuthWrapper --&gt; MainScreen
+    OnboardingScreen --&gt; MainScreen
+    MainScreen --&gt; HomeScreen
+    MainScreen --&gt; MarketsScreen
+    MainScreen --&gt; ForecastsScreen
+    MainScreen --&gt; ProfileScreen
+    HomeScreen --&gt; AlertsScreen
+    AlertsScreen --&gt; AlertHistoryScreen
+    HomeScreen --&gt; FilterResultsScreen
+    HomeScreen --&gt; MarketDetailScreen
+    FilterResultsScreen --&gt; MarketDetailScreen
+    MarketsScreen --&gt; MarketDirectoryDetailScreen
+    MarketDirectoryDetailScreen --&gt; MarketDetailScreen
+    ForecastsScreen --&gt; CommodityAdvisoryScreen
+    ForecastsScreen --&gt; ExploreMoreCommoditiesScreen
+    ForecastsScreen --&gt; ForecastDetailScreen
+    ExploreMoreCommoditiesScreen --&gt; ExploreAdvisoryResultsScreen
+    ExploreAdvisoryResultsScreen --&gt; ForecastDetailScreen
+    ForecastDetailScreen --&gt; MarketComparisonScreen
+    ProfileScreen --&gt; OnboardingScreen
+    ProfileScreen --&gt; NotificationSettingsScreen</pre>
+        </div>
+    </div>
+</div>
+
+<hr />
+<h1 id="8-state-management">8. State Management</h1>
+<p>The frontend utilizes <strong>Riverpod</strong> (<code>flutter_riverpod</code>) for reactive state management and caching.</p>
+<h3 id="auth-user-providers">Auth &amp; User Providers</h3>
+<ul>
+<li><code>authProvider</code> (<code>auth_provider.dart</code>): <code>NotifierProvider&lt;AuthNotifier, AuthState&gt;</code>. Controls authentication status, active user profile, login, registration, and forgot password steps.</li>
+<li><code>localeProvider</code> (<code>locale_provider.dart</code>): <code>StateNotifierProvider&lt;LocaleNotifier, Locale&gt;</code>. Manages active language locale (<code>en</code>, <code>hi</code>, <code>ml</code>).</li>
+<li><code>profileNotifierProvider</code> (<code>profile_notifier.dart</code>): <code>AutoDisposeAsyncNotifierProvider&lt;ProfileNotifier, UserProfile?&gt;</code>. Caches user profile data from <code>/profile</code>.</li>
+<li><code>preferredCropsNotifierProvider</code> (<code>profile_notifier.dart</code>): <code>AutoDisposeAsyncNotifierProvider&lt;PreferredCropsNotifier, List&lt;Map&lt;String, dynamic&gt;&gt;&gt;</code>. Caches tracked crop IDs from <code>/profile/preferences</code>.</li>
+<li><code>editProfileDataProvider</code> (<code>edit_profile_data_provider.dart</code>): <code>FutureProvider.autoDispose&lt;EditProfileData&gt;</code>. Combines profile state, crop preferences, and location dropdowns.</li>
+</ul>
+<h3 id="mandi-prices-providers">Mandi Prices Providers</h3>
+<ul>
+<li><code>mandiPricesProvider</code> (<code>mandi_prices_provider.dart</code>): <code>StateNotifierProvider.family&lt;MandiPricesNotifier, AsyncValue&lt;MandiPricesState&gt;, Filter&gt;</code>. Handles paginated daily price searches. Automatically refetches on locale changes to update translated entity names.</li>
+<li><code>marketDirectoryProvider</code> (<code>mandi_prices_provider.dart</code>): Manages paginated market directory indexing.</li>
+<li><code>statesProvider</code>, <code>districtsProvider</code>, <code>marketsProvider</code>, <code>marketsListProvider</code>: Location lookup providers reactive to <code>localeProvider</code>.</li>
+</ul>
+<h3 id="forecasts-predictions-providers">Forecasts &amp; Predictions Providers</h3>
+<ul>
+<li><code>forecastRepositoryProvider</code> (<code>forecast_provider.dart</code>): Injects <code>ForecastRepository</code>.</li>
+<li><code>forecastsNotifierProvider</code> (<code>forecast_provider.dart</code>): <code>StateNotifierProvider&lt;ForecastsNotifier, AsyncValue&lt;PaginatedForecastResponse&gt;&gt;</code>. Watches <code>preferredCropsNotifierProvider</code> and <code>forecastsFilterProvider</code> to fetch 7-day price forecasts.</li>
+<li><code>explorePredictionsProvider</code> (<code>forecast_provider.dart</code>): <code>FutureProvider.family&lt;PaginatedForecastResponse, ExplorePredictionsParams&gt;</code>. Fetches predictions for explored non-preferred commodities.</li>
+<li><code>preferredCommoditiesProvider</code> (<code>forecast_provider.dart</code>): Resolves preferred crop IDs to localized <code>Commodity</code> objects.</li>
+</ul>
+<h3 id="alerts-providers">Alerts Providers</h3>
+<ul>
+<li><code>alertRepositoryProvider</code> (<code>alert_providers.dart</code>): Injects <code>AlertRepository</code> with transparent HTTP API client and fallback offline data source (<code>AlertFallbackDataSource</code>).</li>
+<li><code>alertsNotifierProvider</code> (<code>alert_providers.dart</code>): <code>StateNotifierProvider&lt;AlertsNotifier, AlertsState&gt;</code>. Manages active alerts list, filter chips (<code>All</code>, <code>Better Market</code>, <code>Price Increase</code>, <code>Price Drop</code>, <code>AI Recommendation</code>), pagination, and pull-to-refresh.</li>
+<li><code>alertHistoryNotifierProvider</code> (<code>alert_providers.dart</code>): <code>StateNotifierProvider&lt;AlertHistoryNotifier, AlertHistoryState&gt;</code>. Manages searchable alert archives, date filters, and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).</li>
+</ul>
+<hr />
+<h1 id="9-models-schemas">9. Models &amp; Schemas</h1>
+<h3 id="frontend-data-models-libdatamodels">Frontend Data Models (<code>lib/data/models/</code>)</h3>
+<ul>
+<li><code>UserProfile</code> (<code>user_profile.dart</code>): User details model (<code>hasCompletedProfile</code> check).</li>
+<li><code>MandiPrice</code> (<code>mandi_price.dart</code>): Price record with <code>grade</code>, <code>variety</code>, <code>minPrice</code>, <code>maxPrice</code>, <code>modalPrice</code>, <code>arrivalDate</code>, and <code>getDisplayCommodity()</code>.</li>
+<li><code>CommodityForecast</code> (<code>forecast_model.dart</code>): 7-day ML prediction containing <code>commodityId</code>, <code>commodityName</code>, <code>varietyName</code>, <code>gradeName</code>, <code>marketName</code>, <code>districtName</code>, <code>stateName</code>, <code>currentPrice</code>, <code>forecast</code> (<code>List&lt;ForecastDay&gt;</code>), <code>trend</code> (<code>Rising</code>/<code>Falling</code>/<code>Stable</code>), <code>bestSellDate</code>, <code>expectedPeakPrice</code>, <code>recommendation</code> (<code>Sell Today</code>/<code>Wait</code>/<code>Hold</code>), <code>transportCost</code>, <code>marketFee</code>, <code>expectedProfit</code>, <code>recommendationReason</code>, <code>aiRecommendationTitle</code>.</li>
+<li><code>PaginatedForecastResponse</code> (<code>forecast_model.dart</code>): Container for paginated predictions.</li>
+<li><code>Alert</code> (<code>alert_model.dart</code>): Actionable alert object containing <code>id</code>, <code>type</code>, <code>severity</code>, <code>title</code>, <code>message</code>, <code>commodity</code>, <code>market</code>, <code>price</code> (<code>current</code>, <code>previous</code>, <code>changePercent</code>), <code>createdAt</code>.</li>
+<li><code>PaginatedAlertsResponse</code> (<code>alert_model.dart</code>): Container for paginated alerts. Defensively filters out any <code>MARKET_GLUT</code> entries.</li>
+<li><code>NotificationPreferences</code> (<code>notification_preferences.dart</code>): Delivery channel toggles and frequency (<code>instant</code> vs <code>daily_summary</code>).</li>
+</ul>
+<h3 id="backend-schemas-backendappschemas">Backend Schemas (<code>backend/app/schemas/</code>)</h3>
+<ul>
+<li><code>UserResponse</code>, <code>UserRegister</code>, <code>UserLogin</code>, <code>SendOTPRequest</code>, <code>VerifyOTPRequest</code>, <code>ResetPasswordRequest</code> (<code>user.py</code>).</li>
+<li><code>StateSchema</code>, <code>DistrictSchema</code>, <code>MarketSchema</code> (<code>location.py</code>).</li>
+<li><code>MandiPriceSchema</code>, <code>PaginatedMandiResponse</code> (<code>mandi_price.py</code>).</li>
+<li><code>ForecastResponse</code> (includes <code>transport_cost</code>, <code>market_fee</code>, <code>expected_profit</code>, <code>recommendation_reason</code>, <code>ai_recommendation_title</code>), <code>PaginatedForecastResponse</code> (<code>prediction.py</code>).</li>
+<li><code>AlertSchema</code>, <code>PaginatedAlertsResponse</code>, <code>AlertCreateSchema</code>, <code>AlertType</code>, <code>AlertSeverity</code> (<code>alert.py</code>).</li>
+<li><code>NotificationPreferenceResponse</code>, <code>NotificationPreferenceUpdate</code> (<code>notification_preference.py</code>).</li>
+</ul>
+<hr />
+<h1 id="10-services-processing-logic">10. Services &amp; Processing Logic</h1>
+<h3 id="authentication-security-services">Authentication &amp; Security Services</h3>
+<ol>
+<li><strong><code>AuthService</code></strong> (<code>auth_service.py</code>): Handles email/phone normalization, OTP dispatching, verification token generation, password hashing, and user creation.</li>
+<li><strong><code>OTPService</code></strong> (<code>otp_service.py</code>): Generates cryptographically secure 6-digit OTP codes, bcrypts them before database storage, and validates 5-minute expiry windows.</li>
+<li><strong><code>VerificationTokenService</code></strong> (<code>verification_token_service.py</code>): Generates 32-character URL-safe verification tokens, hashes them in the database, and enforces 10-minute validity.</li>
+<li><strong><code>EmailService</code></strong> (<code>email_service.py</code>): Resend SDK wrapper for sending transactional emails containing OTPs.</li>
+<li><strong><code>SMSService</code></strong> (<code>sms_service.py</code>): Fast2SMS API wrapper (<code>https://www.fast2sms.com/dev/bulkV2</code>) for dispatching SMS OTPs (with console print fallback during dev).</li>
+</ol>
+<h3 id="machine-learning-prediction-services">Machine Learning &amp; Prediction Services</h3>
+<ol start="6">
+<li><strong><code>PredictionRunner</code></strong> (<code>prediction_runner.py</code>): Programmatic trigger interface that invokes <code>run_predictions.py</code>.</li>
+<li><strong><code>PredictionService</code></strong> (<code>prediction_service.py</code>): Fetches raw predictions from <code>prediction_batches</code> and <code>commodity_predictions</code>, groups chronological days by <code>(commodity_id, market_id, variety_id, grade_id)</code>, computes peak price, best selling day, trend, and recommendation, and localizes names via translation tables.</li>
+</ol>
+<h3 id="alert-engine-localization-services">Alert Engine &amp; Localization Services</h3>
+<ol start="8">
+<li><strong><code>AlertGenerationService</code></strong> (<code>alert_generation_service.py</code>): Dispatches alert processors (<code>PriceShiftProcessor</code>, etc.) to evaluate price shifts and persist new alerts into the <code>alerts</code> table.</li>
+<li><strong><code>AlertLocalizationService</code></strong> (<code>alert_localization.py</code>): Multi-language alert template renderer (EN, HI, ML) with in-memory translation caches for commodities and markets.</li>
+<li><strong><code>AlertService</code></strong> (<code>alert_service.py</code>): Manages database queries for active alerts, searchable history, and deterministic sorting (<code>created_at desc, id desc</code>).</li>
+</ol>
+<hr />
+<h1 id="11-machine-learning-prediction-pipeline">11. Machine Learning &amp; Prediction Pipeline</h1>
+<p>The predictive intelligence module estimates future modal prices for 7 days into the future.</p>
+<pre><code>[Raw mandi_prices DB records] ──► [Feature Engineering: 7-day Lags, Rolling Averages, Seasonality]
+                                                   │
+                                                   ▼
+                                       [LightGBM Model Weights]
+                                                   │
+                                                   ▼
+                                 [Generated 7-Day Forecast Batch]
+                                                   │
+                                                   ▼
+                                [prediction_batches &amp; commodity_predictions]
+</code></pre>
+<ul>
+<li><strong>Model Engine</strong>: LightGBM regression model with weights stored in <code>backend/app/ml/lightgbm_weights.txt</code> and feature specifications in <code>model_features.json</code>.</li>
+<li><strong>Feature Engineering</strong>: Calculates historical lag features (lag_1, lag_7), rolling mean/std statistics, seasonal day-of-year indicators, and trend direction encodings.</li>
+<li><strong>Execution Script</strong>: <code>backend/run_predictions.py</code> executes full batch predictions across all active commodity-market-variety-grade combinations and writes records to <code>prediction_batches</code> and <code>commodity_predictions</code>.</li>
+<li><strong>Production Business Logic Computation</strong>:<br />
+  1. <strong>Inputs</strong>:<ul>
+<li><code>current_price</code>: Latest actual modal price from <code>mandi_prices</code> table.</li>
+<li><code>forecast[]</code> &amp; <code>forecast_dates[]</code>: 7-day predicted prices and dates.</li>
+<li><code>prediction_batch</code>: Latest valid batch record.<br />
+  2. <strong>Trend (with ±2% Tolerance)</strong>:</li>
+<li><code>change_pct = ((last_price - first_price) / first_price) * 100</code></li>
+<li><code>change_pct &gt;= +2.0%</code> $\rightarrow$ <code>RISING</code></li>
+<li><code>change_pct &lt;= -2.0%</code> $\rightarrow$ <code>FALLING</code></li>
+<li>Otherwise $\rightarrow$ <code>STABLE</code><br />
+  3. <strong>Expected Peak &amp; Best Sell Date</strong>:</li>
+<li><code>expected_peak_price = max(forecast_prices)</code></li>
+<li><code>best_sell_date = first date having expected_peak_price</code><br />
+  4. <strong>Expected Upside %</strong>:</li>
+<li><code>upside_pct = ((expected_peak_price - current_price) / current_price) * 100</code> (evaluates whether waiting is worthwhile).<br />
+  5. <strong>Selling Window</strong>:</li>
+<li>Forecast dates where <code>price &gt;= expected_peak_price * 0.98</code> (dates within 2% of the predicted peak).<br />
+  6. <strong>Recommendation Matrix</strong>:</li>
+<li>🔴 <strong><code>SELL TODAY</code></strong>: If <code>current_price &gt;= expected_peak_price * 0.98</code> OR (<code>trend == FALLING</code> AND <code>expected_upside_pct &lt;= 2%</code>).</li>
+<li>🟢 <strong><code>WAIT</code></strong>: If <code>expected_upside_pct &gt; 2%</code> AND <code>selling_window</code> occurs in the future (at least one window date &gt; today) AND <code>trend == RISING</code>.</li>
+<li>🟡 <strong><code>HOLD</code></strong>: If <code>abs(expected_upside_pct) &lt;= 2%</code> AND <code>trend == STABLE</code>.</li>
+<li>⚪ <strong><code>NO CLEAR SIGNAL</code></strong>: If forecast data is incomplete, highly volatile ($CV &gt; 0.4$), or <code>current_price</code> is missing/stale ($current_price \le 0$).<br />
+  7. <strong>Final Response Contract</strong>:<br />
+ Produces <code>current_price</code>, <code>forecast</code>, <code>trend</code>, <code>expected_peak_price</code>, <code>best_sell_date</code>, <code>selling_window</code>, <code>expected_upside_pct</code>, <code>recommendation</code>, <code>data_quality</code>, <code>transport_cost</code>, <code>market_fee</code>, <code>expected_profit</code>, <code>recommendation_reason</code>, and <code>ai_recommendation_title</code>.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h1 id="12-actionable-alerts-notification-system">12. Actionable Alerts &amp; Notification System</h1>
+<p>Conforms strictly to the <strong>Alerts API — v1 Contract</strong>.</p>
+<h3 id="alert-types-scope">Alert Types &amp; Scope</h3>
+<ul>
+<li><strong>Supported Types</strong>: <code>PRICE_INCREASE</code>, <code>PRICE_DROP</code>, <code>BETTER_MARKET</code>, <code>AI_RECOMMENDATION</code>.</li>
+<li><strong>Explicit Exclusion</strong>: <code>MARKET_GLUT</code> is explicitly <strong>OUT OF SCOPE</strong>. Any request containing <code>type=MARKET_GLUT</code> is rejected by the backend with <code>HTTP 400 Bad Request</code>.</li>
+<li><strong>Backend Architecture</strong>:</li>
+<li><code>Alert</code> SQLAlchemy model mapping to <code>alerts</code> table.</li>
+<li><code>AlertService</code> providing <code>get_user_alerts</code> and <code>get_user_alert_history</code> with full-text SQL search across titles, messages, commodities, and markets.</li>
+<li><code>AlertGenerationService</code> coordinating <code>PriceShiftProcessor</code> instances.</li>
+<li><code>AlertLocalizationService</code> applying localized message templates (<code>en</code>, <code>hi</code>, <code>ml</code>).</li>
+<li><strong>Frontend Architecture</strong>:</li>
+<li><code>AlertRepository</code> transparently attempts the real <code>/alerts</code> HTTP API. On network failures or offline demo scenarios, it seamlessly falls back to <code>AlertFallbackDataSource</code> (which provides realistic mock alerts for Tomato in Thrissur, Coconut in Kozhikode, Potato in Palakkad).</li>
+<li><code>AlertsScreen</code> renders active alerts with filter chips (<code>All</code>, <code>Better Market</code>, <code>Price Increase</code>, <code>Price Drop</code>, <code>AI Recommendation</code>).</li>
+<li><code>AlertHistoryScreen</code> renders searchable archives with date range bounds and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).</li>
+</ul>
+<hr />
+<h1 id="13-data-ingestion-engine">13. Data Ingestion Engine</h1>
+<p><code>backend/price_fetcher.py</code> runs scheduled price ingestion:</p>
+<ol>
+<li>Loads active commodities from <code>active_commodity</code>.</li>
+<li>Resolves commodity parameters using <code>Data_mapping.py</code> generated by <code>generate_mapping.py</code>.</li>
+<li>Calls <strong>Agmarknet V2 Daily API</strong> (<code>https://api.agmarknet.gov.in/v1/daily-price-arrival/report</code>) via JSON POST.</li>
+<li>If V2 fails (timeout, 5xx server error, or rate limit), falls back to <strong>Gov V1 Public API</strong> (<code>https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070</code>) using API Key authentication.</li>
+<li>Ingested records pass through <code>validate_records()</code>.</li>
+<li>Fuzzy normalizers map string text to database foreign key IDs (<code>commodity_id</code>, <code>market_id</code>, <code>variety_id</code>, <code>grade_id</code>).</li>
+<li>Performs bulk upserts into <code>mandi_prices</code> using PostgreSQL <code>on_conflict_do_update</code> on constraint <code>mandi_prices_unique</code>.</li>
+</ol>
+<hr />
+<h1 id="14-authentication-recovery-profile-lifecycle">14. Authentication, Recovery &amp; Profile Lifecycle</h1>
+<h3 id="1-user-registration-flow">1. User Registration Flow</h3>
+<pre><code>User (Email/Phone) ──► /auth/send-otp ──► [Resend Email / Fast2SMS]
+                                                │
+User enters OTP ◄───────────────────────────────┘
+       │
+       ▼
+/auth/verify-otp ──► Returns hashed transient verification_token (10 min expiry)
+       │
+       ▼
+/auth/register (Provides Name, Password, verification_token) ──► Account Created &amp; User Logged In
+</code></pre>
+<h3 id="2-password-recovery-flow">2. Password Recovery Flow</h3>
+<pre><code>User ──► /auth/forgot-password/send-otp ──► [Dispatches Reset OTP]
+                                                   │
+User enters OTP ◄──────────────────────────────────┘
+       │
+       ▼
+/auth/forgot-password/verify-otp ──► Returns transient reset token
+       │
+       ▼
+/auth/forgot-password/reset-password (New Password + Token) ──► Password Updated &amp; Navigates to Login
+</code></pre>
+<h3 id="3-session-guard">3. Session Guard</h3>
+<p><code>AuthWrapper</code> (<code>main.dart</code>) checks <code>authProvider</code>. If user is unauthenticated -&gt; <code>LoginScreen</code>. If profile is incomplete (<code>state_id == null || district_id == null</code>) -&gt; <code>OnboardingScreen</code>. Otherwise -&gt; <code>MainScreen</code>.</p>
+<hr />
+<h1 id="15-localization-architecture">15. Localization Architecture</h1>
+<ul>
+<li><strong>Database Entity Translations</strong>:</li>
+<li>State names in <code>state_translations</code>.</li>
+<li>District names in <code>district_translations</code>.</li>
+<li>Market names in <code>market_translations</code>.</li>
+<li>Commodity names in <code>commodity_translations</code>.</li>
+<li>API endpoints accept <code>?language=en</code>, <code>?language=hi</code>, or <code>?language=ml</code> query parameters, performing SQL joins on translation tables and falling back to English columns when translation rows are absent.</li>
+<li><strong>Frontend App UI Translations</strong>:</li>
+<li>Defined in ARB files: <code>lib/l10n/app_en.arb</code>, <code>app_hi.arb</code>, <code>app_ml.arb</code>.</li>
+<li>Generated into <code>AppLocalizations</code> via <code>flutter gen-l10n</code>.</li>
+<li>Active locale stored in <code>localeProvider</code>. Changing locale dynamically re-triggers API providers to fetch localized data.</li>
+</ul>
+<hr />
+<h1 id="16-external-apis-third-party-integrations">16. External APIs &amp; Third-Party Integrations</h1>
+<ol>
+<li><strong>Agmarknet V2 Daily API</strong>: <code>https://api.agmarknet.gov.in/v1/daily-price-arrival/report</code> (Primary price scraper).</li>
+<li><strong>Gov V1 Public API</strong>: <code>https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070</code> (Fallback price scraper, requires <code>api-key</code>).</li>
+<li><strong>Resend SMTP Email API</strong>: Dispatches OTP verification emails. Requires <code>RESEND_API_KEY</code>.</li>
+<li><strong>Fast2SMS Bulk V2 API</strong>: <code>https://www.fast2sms.com/dev/bulkV2</code> (SMS OTP dispatcher). Requires <code>FAST2SMS_API_KEY</code>.</li>
+</ol>
+<hr />
+<h1 id="17-important-constants-configuration">17. Important Constants &amp; Configuration</h1>
+<h3 id="environment-variables-backendenv">Environment Variables (<code>backend/.env</code>)</h3>
+<ul>
+<li><code>DATABASE_URL</code>: Hosted PostgreSQL connection URL.</li>
+<li><code>SECRET_KEY</code>: Used for JWT signing.</li>
+<li><code>API_KEY</code>: Gov data API key.</li>
+<li><code>RESEND_API_KEY</code>: API key for email delivery.</li>
+<li><code>FAST2SMS_API_KEY</code>: API key for Fast2SMS gateway.</li>
+<li><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_EMAIL</code>, <code>SMTP_PASSWORD</code>: Fallback SMTP configuration.</li>
+</ul>
+<h3 id="frontend-base-constants-libcoreconstantsapi_constantsdart">Frontend Base Constants (<code>lib/core/constants/api_constants.dart</code>)</h3>
+<ul>
+<li><code>baseUrl</code>: <code>https://mandi-intelligence-app-production.up.railway.app</code></li>
+<li>Static images base route: <code>/static/commodity-images/{commodityId}.jpeg</code></li>
+</ul>
+<hr />
+<h1 id="18-common-development-tasks">18. Common Development Tasks</h1>
+<h3 id="1-adding-a-new-api-endpoint">1. Adding a New API Endpoint</h3>
+<ul>
+<li><strong>Backend</strong>:<br />
+  1. Define Pydantic schema in <code>backend/app/schemas/</code>.<br />
+  2. Implement route logic in relevant file under <code>backend/app/api/routes/</code> or new router.<br />
+  3. Register router in <code>backend/app/main.py</code> using <code>app.include_router()</code>.</li>
+<li><strong>Frontend</strong>:<br />
+  1. Define model in <code>lib/data/models/</code>.<br />
+  2. Implement HTTP call in service under <code>lib/data/services/</code>.<br />
+  3. Expose method in repository under <code>lib/data/repositories/</code>.<br />
+  4. Create Riverpod provider in relevant feature <code>providers/</code>.</li>
+</ul>
+<h3 id="2-adding-a-database-entity">2. Adding a Database Entity</h3>
+<ul>
+<li><strong>Backend</strong>:<br />
+  1. Create SQLAlchemy model in <code>backend/app/models/</code>.<br />
+  2. Export model in <code>backend/app/models/__init__.py</code>.<br />
+  3. Run <code>python create_tables.py</code> or execute <code>Base.metadata.create_all()</code>.</li>
+</ul>
+<hr />
+<h1 id="19-technical-debt-gotchas-key-design-decisions">19. Technical Debt, Gotchas &amp; Key Design Decisions</h1>
+<ol>
+<li><strong>Desktop Viewport Wrapper (<code>MobileFrameWrapper</code>)</strong>: On web or desktop browsers (screen width &gt; 450px), <code>MobileFrameWrapper</code> wraps the app in a realistic 390x884 mobile device mockup frame with dark slate background and subtle glows, ensuring UI visual consistency across all viewports.</li>
+<li><strong>Singular Database Table Names</strong>: Note that <code>grade</code> and <code>active_commodity</code> are named singular in PostgreSQL. All other tables (<code>states</code>, <code>districts</code>, <code>markets</code>, <code>commodities</code>, <code>varieties</code>, <code>mandi_prices</code>, <code>users</code>, <code>alerts</code>, <code>prediction_batches</code>, <code>commodity_predictions</code>, <code>notification_preferences</code>) are named plural.</li>
+<li><strong><code>MARKET_GLUT</code> Exclusion</strong>: <code>MARKET_GLUT</code> is explicitly excluded across backend validators, repositories, UI filter chips, and data models. Querying <code>MARKET_GLUT</code> returns <code>HTTP 400 Bad Request</code>.</li>
+<li><strong>Dual-Mode Fallback Repository Pattern</strong>: To guarantee seamless demo execution and offline resilience, <code>AlertRepository</code> transparently falls back to <code>AlertFallbackDataSource</code> if API network requests fail or time out.</li>
+<li><strong>Transient Verification Tokens</strong>: <code>auth/verify-otp</code> returns a cryptographically hashed 10-minute token. Registration calls (<code>/auth/register</code>) require this token, ensuring account creation originates from verified email/phone numbers.</li>
+<li><strong>In-Memory Reference Dictionary Caching</strong>: <code>price_fetcher.py</code> loads entities into memory maps to achieve $O(1)$ lookup times during high-volume fuzzy matching normalization.</li>
+<li><strong>FastAPI Lifespan Tasks</strong>: Commented out inside <code>main.py</code> to prevent startup context blocking. Data fetching (<code>price_fetcher.py</code>), prediction execution (<code>run_predictions.py</code>), and alert processing (<code>scripts/run_alert_generation.py</code>) are triggered via external cron or administrative CLI scripts.</li>
+</ol>
+<hr />
+<h1 id="20-offline-cache-implementation">20. Offline Cache Implementation</h1>
+<ul>
+<li><strong>Engine</strong>: <strong><code>SharedPreferences</code></strong> (<code>shared_preferences: ^2.3.2</code>) for persistent key-value caching. Provides 100% cross-platform compatibility across Web (<code>dart2js</code> / WASM / LocalStorage), Android, iOS, Windows, macOS, and Linux without native FFI dependencies or 64-bit integer hash web compiler errors. Authentication tokens remain securely isolated in <code>flutter_secure_storage</code>.</li>
+<li><strong>Supported Screens</strong>:</li>
+<li><strong>Home Screen</strong>: Caches Mandi Prices (<code>getMandiPrices</code>), States (<code>getStates</code>), Districts (<code>getDistricts</code>), Markets (<code>getMarketsList</code>), and Commodities (<code>getCommodities</code>, <code>getActiveCommodities</code>).</li>
+<li><strong>Profile Screen</strong>: Caches User Profile (<code>getProfile</code>) and Preferred Crops (<code>getPreferredCrops</code>).</li>
+<li><strong>Explicit Scope Limitation</strong>: Forecasts, Alerts, Markets Directory, Explore, and other screens are <strong>NOT</strong> yet cached.</li>
+<li><strong>Cache Key Strategy</strong>:</li>
+<li><code>mandi_prices_state={state}_dist={district}_mkt={market}_crop={crop}_lang={language}_p={page}_ps={pageSize}</code></li>
+<li><code>states_lang={language}</code></li>
+<li><code>districts_state={state}_id={stateId}_lang={language}</code></li>
+<li><code>markets_distId={districtId}_lang={language}</code></li>
+<li><code>commodities_type={all|active}</code></li>
+<li><code>user_profile</code></li>
+<li><code>preferred_crops</code></li>
+<li><strong>Cache Freshness &amp; Timestamping</strong>:</li>
+<li>Every cached entry records <code>cachedAt</code> (<code>DateTime</code>).</li>
+<li>UI renders instant cached data with <code>cachedAt</code> timestamp, then executes background API refresh.</li>
+<li><strong>Online-First &amp; Offline Fallback Strategy</strong>:</li>
+<li><strong>Online</strong>: API call succeeds $\rightarrow$ returns fresh data $\rightarrow$ updates local cache.</li>
+<li><strong>Offline / API Failure</strong>: API call fails $\rightarrow$ reads cache $\rightarrow$ if cached data exists, returns cached data seamlessly without error screens. If no cache exists, displays standard error state.</li>
+<li><strong>Write Operations</strong>: Profile edits (<code>updateProfile</code>, <code>savePreferredCrops</code>) remain online-only. Offline attempts do not fake synchronization and cleanly present network-required errors.</li>
+<li><strong>Cache Indicator UI</strong>:</li>
+<li>Displays a subtle warning banner at the top of Home Screen when data is served from local cache (<code>Offline · Last synced X ago</code> / localized in EN, HI, ML).</li>
+<li>Automatically disappears when fresh network data arrives.</li>
+<li><strong>Exact Files Created / Modified</strong>:</li>
+<li><strong>Created</strong>:<ul>
+<li><code>lib/data/models/cache/cached_entry.dart</code> (<code>CachedEntry</code> model holding <code>cacheKey</code>, <code>rawJson</code>, <code>cachedAt</code>)</li>
+<li><code>lib/data/services/local_cache_service.dart</code> (<code>LocalCacheService</code> using <code>SharedPreferences</code>)</li>
+</ul>
+</li>
+<li><strong>Modified</strong>:<ul>
+<li><code>pubspec.yaml</code> (Added <code>shared_preferences: ^2.3.2</code>)</li>
+<li><code>lib/data/repositories/mandi_repository.dart</code> (Online-first &amp; fallback for mandi prices, states, districts, markets, commodities)</li>
+<li><code>lib/data/repositories/auth_repository.dart</code> (Online-first &amp; fallback for user profile and preferred crops)</li>
+<li><code>lib/core/providers/providers.dart</code> (Registered <code>localCacheServiceProvider</code> and injected into <code>authRepositoryProvider</code>)</li>
+<li><code>lib/features/mandi_prices/providers/mandi_prices_provider.dart</code> (Added <code>isFromCache</code> and <code>cachedAt</code> to <code>MandiPricesState</code>, instant render + background refresh in <code>MandiPricesNotifier</code>)</li>
+<li><code>lib/l10n/app_en.arb</code>, <code>app_hi.arb</code>, <code>app_ml.arb</code> (Added <code>offlineLabel</code> and <code>lastSyncedLabel</code>)</li>
+<li><code>agent_helper.md</code> (Updated architectural documentation)</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h1 id="21-shared-notification-bell-unread-badge-architecture">21. Shared Notification Bell &amp; Unread Badge Architecture</h1>
+<ul>
+<li><strong>Home Screen Notification Bell</strong>: Positioned in the upper-right app bar actions of <code>HomeScreen</code> using <code>NotificationBell</code>.</li>
+<li><strong>Advisory / Forecasts Screen Notification Bell</strong>: Positioned in the header of <code>ForecastsScreen</code> using <code>NotificationBell</code> styled with the cream/orange circular container theme.</li>
+<li><strong>Shared Unread-Count State</strong>: Both bells consume a single shared Riverpod provider: <code>unreadAlertCountProvider</code> (<code>lib/features/alerts/providers/alert_providers.dart</code>).</li>
+<li><strong>Badge Behavior</strong>:</li>
+<li><code>0</code>: No badge rendered.</li>
+<li><code>1–9</code>: Small red circular badge displaying the exact integer count (e.g., <code>1</code>, <code>3</code>, <code>9</code>).</li>
+<li><code>10+</code>: Small red pill badge displaying <code>"9+"</code>.</li>
+<li><strong>Navigation &amp; Read Behavior</strong>:</li>
+<li>Tapping either bell navigates to the existing <code>AlertsScreen</code> via standard <code>Navigator.push</code>.</li>
+<li>Opening <code>AlertsScreen</code> triggers <code>markAsRead()</code>, resetting the shared in-memory <code>unreadCount</code> to <code>0</code> across both bells simultaneously.</li>
+<li><strong>Source of Unread Data</strong>:</li>
+<li>Derived in-memory from <code>alertsNotifierProvider</code> (which fetches active alerts from <code>/alerts</code>).</li>
+<li><strong>Push &amp; FCM Disclaimer</strong>:</li>
+<li><strong>FCM (Firebase Cloud Messaging), APNs push notifications, and SMS delivery are NOT implemented.</strong> Alert notifications are handled purely in-app via <code>/alerts</code> API and Riverpod state.</li>
+</ul>
+<hr />
+<h1 id="22-offline-authentication-session-persistence-architecture">22. Offline Authentication / Session Persistence Architecture</h1>
+<ul>
+<li><strong>JWT Secure Storage</strong>: User JWT access tokens are stored securely on the device using <code>flutter_secure_storage</code>.</li>
+<li><strong>Offline Session Persistence</strong>:</li>
+<li>Network failures (timeouts, <code>SocketException</code>, connection errors, offline status) during startup or session restoration do <strong>NOT</strong> log the user out.</li>
+<li>The app preserves the locally stored JWT token and keeps the user's <code>AuthState.isAuthenticated</code> state set to <code>true</code>.</li>
+<li>MainScreen opens seamlessly and utilizes existing offline-cached profile and mandi price data.</li>
+<li><strong>Cached User Profile Usage</strong>:</li>
+<li>When offline, <code>getCurrentUser()</code> and <code>_checkAuth()</code> retrieve the existing cached profile from <code>LocalCacheService</code> (<code>user_profile</code> key) to restore user locale and initial state.</li>
+<li><strong>Explicit Auth Rejection Handling</strong>:</li>
+<li>Explicit HTTP <code>401 Unauthorized</code> or <code>403 Forbidden</code> responses from the backend throw <code>UnauthorizedException</code>, which triggers <code>logout()</code> and clears the invalid JWT token to present <code>LoginScreen</code>.</li>
+<li><strong>Security Guarantee</strong>:</li>
+<li>No user passwords are stored locally on the device.</li>
+<li>JWT security is fully preserved without bypassing explicit token invalidation from the backend.</li>
+</ul>
+<hr />
+<h1 id="23-alert-email-delivery-architecture">23. Alert Email Delivery Architecture</h1>
+<ul>
+<li><strong>Resend Integration</strong>: Alert emails are delivered through the project's existing Resend service (<code>resend.Emails.send</code>).</li>
+<li><strong>Extended <code>email_service.py</code></strong>: <code>EmailService.send_alert_email()</code> adds smart alert email delivery while preserving <code>send_otp_email()</code> intact.</li>
+<li><strong>Independent Delivery Channel</strong>:</li>
+<li>Alert creation in PostgreSQL database (<code>AlertRepository.create_alert</code>) is completely independent of email delivery.</li>
+<li>If Resend API calls fail, network timeouts occur, or the user lacks an email address, the error is logged and caught gracefully without rolling back or failing alert creation.</li>
+<li><strong>Multilingual Support</strong>:</li>
+<li>Templates use the user's <code>preferred_language</code> (<code>en</code>, <code>hi</code>, <code>ml</code>) from the <code>users</code> table to select localized subjects and HTML content.</li>
+<li>Supports English, Hindi, and Malayalam templates for all alert types (<code>PRICE_INCREASE</code>, <code>PRICE_DROP</code>, <code>MARKET_GLUT</code>, <code>SELLING_OPPORTUNITY</code>, <code>BETTER_MARKET</code>, <code>AI_RECOMMENDATION</code>).</li>
+<li><strong>User Validation &amp; Preferences</strong>:</li>
+<li>Email delivery is only attempted when <code>user.email</code> is present. Users registered via phone without an email address are cleanly skipped.</li>
+<li>Respects user notification preferences (<code>delivery_email</code> in <code>notification_preferences</code>).</li>
+<li><strong>Backend-Only Channel</strong>:</li>
+<li>Email delivery is triggered internally on FastAPI backend upon alert generation. <code>RESEND_API_KEY</code> remains strictly server-side.</li>
+<li><strong>FCM &amp; SMS Disclaimer</strong>:</li>
+<li>FCM push notifications and SMS delivery are <strong>NOT</strong> implemented in this change.</li>
+</ul>
+<hr />
+<h1 id="24-nearby-mandi-comparison-financial-analytics-engine">24. Nearby Mandi Comparison &amp; Financial Analytics Engine</h1>
+<p>Added on <strong>27 August 2026</strong>:</p>
+<p>Provides multi-mandi financial payout comparison engine for farmers evaluating selling locations.</p>
+<h3 id="financial-calculations-matrix">Financial Calculations Matrix</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Distance ($D$)</strong></td>
+<td style="text-align: left;">Spherical distance between user coords $(lat_u, lng_u)$ &amp; Mandi coords $(lat_m, lng_m)$ in kilometers via PostGIS <code>ST_Distance</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Selling Price ($P$)</strong></td>
+<td style="text-align: left;">Latest <code>modal_price</code> per quintal (₹/qtl) for target commodity.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Transport Cost ($C_t$)</strong></td>
+<td style="text-align: left;">$D   imes    ext{Transport Rate per km per quintal}$ <em>(e.g., ₹2.5 / km / qtl)</em>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Mandi Commission ($C_m$)</strong></td>
+<td style="text-align: left;">$P     imes 1\%$ <em>(Standard 1% market fee)</em>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Net Profit ($P_{net}$)</strong></td>
+<td style="text-align: left;">$P - (C_t + C_m)$ per quintal.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Total Net Profit ($P_{total}$)</strong></td>
+<td style="text-align: left;">$P_{net}     imes    ext{Quantity (quintals)}$.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Best Value Badge</strong></td>
+<td style="text-align: left;">Mandi with the <strong>highest $P_{net}$</strong> among nearby mandis.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="endpoints-handoff-switching">Endpoints &amp; Handoff Switching</h3>
+<ul>
+<li><strong>Mock Endpoint</strong>: <code>GET /markets/compare-mock</code> in <code>backend/app/api/routes/markets.py</code>.</li>
+<li><strong>Handoff Switch for Raihan</strong>: To connect the real PostGIS query:<br />
+  1. Rename route to <code>@router.get("/compare")</code> in <code>markets.py</code>.<br />
+  2. Change line 338 of <code>lib/data/services/mandi_api_service.dart</code>: <code>const String endpoint = '/markets/compare';</code>.</li>
+<li><strong>Frontend Components</strong>:</li>
+<li><code>lib/data/models/market_comparison_model.dart</code> (<code>MarketComparisonItem</code>, <code>MarketComparisonResponse</code>).</li>
+<li><code>lib/features/forecasts/providers/market_comparison_provider.dart</code> (<code>marketComparisonProvider</code>, <code>MarketSortOption</code> enum with 5 options: <code>bestValue</code>, <code>netProfit</code>, <code>sellingPrice</code>, <code>distance</code>, <code>lowestTransport</code>).</li>
+<li><code>lib/features/forecasts/screens/market_comparison_screen.dart</code> (<code>MarketComparisonScreen</code>, location bar, quantity controls, sort chips, <code>NearbyMandiCard</code> with 🏆 BEST VALUE badge).</li>
+</ul>
+<hr />
+<h1 id="25-technical-documentation-website-pipeline">25. Technical Documentation Website Pipeline</h1>
+<p>Added on <strong>27 August 2026</strong>:</p>
+<ul>
+<li><strong>Source of Truth</strong>: <code>agent_helper.md</code> is the single source of truth for all project architecture and technical documentation.</li>
+<li><strong>Automated Generation</strong>: The documentation website is generated automatically via <code>scripts/build_docs.py</code> into <code>docs/index.html</code>.</li>
+<li><strong>Mermaid Rendering</strong>: All Mermaid diagrams (<code>flowchart TD</code>, <code>erDiagram</code>, <code>flowchart TB</code>) are preserved and rendered visually using Mermaid.js.</li>
+<li><strong>GitHub Actions &amp; Pages</strong>: <code>.github/workflows/docs.yml</code> automatically rebuilds and deploys the documentation website to GitHub Pages on every <code>git push</code> to the <code>main</code> branch.</li>
+<li><strong>README Integration</strong>: <code>README.md</code> includes a prominent <code>## 📚 Technical Documentation</code> link pointing to the live GitHub Pages site.</li>
+</ul>
+            </article>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Mandi Intelligence Project Documentation • Generated automatically from <code>agent_helper.md</code></p>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // 1. Mermaid Initialization with High-Resolution Rendering
+        document.addEventListener("DOMContentLoaded", function() {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
+                securityLevel: 'loose',
+                flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
+                er: { useMaxWidth: false },
+                sequence: { useMaxWidth: false }
+            });
+
+            // Wrap tables in responsive wrapper
+            document.querySelectorAll('.markdown-body table').forEach(function(table) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            });
+
+            // Active nav highlight on scroll
+            initScrollSpy();
+        });
+
+        // 2. Theme Toggle (Light/Dark)
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('themeIcon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            
+            location.reload();
+        }
+
+        // Restore Theme Preference
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            });
+        })();
+
+        // 3. Mobile Navigation Controls
+        function toggleMobileNav() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('mobileOverlay').classList.toggle('open');
+        }
+
+        function closeMobileNav() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('mobileOverlay').classList.remove('open');
+        }
+
+        // 4. Live Search Filter
+        function filterDocsSearch() {
+            const input = document.getElementById('docSearchInput').value.toLowerCase();
+            const content = document.getElementById('docsContent');
+            const items = content.querySelectorAll('h1, h2, h3, p, li, tr');
+
+            if (!input) {
+                items.forEach(el => el.style.display = '');
+                return;
+            }
+
+            items.forEach(el => {
+                const text = el.textContent.toLowerCase();
+                if (text.includes(input)) {
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        // 5. ScrollSpy Active Section Highlighting
+        function initScrollSpy() {
+            const headings = Array.from(document.querySelectorAll('.doc-heading'));
+            const navItems = Array.from(document.querySelectorAll('.nav-item'));
+
+            window.addEventListener('scroll', function() {
+                let current = '';
+                const scrollPos = window.scrollY + 100;
+
+                headings.forEach(heading => {
+                    if (scrollPos >= heading.offsetTop) {
+                        current = heading.getAttribute('id');
+                    }
+                });
+
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === '#' + current) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // 6. Interactive Diagram Zoom Controls
+        function zoomMermaid(btn, factor) {
+            const card = btn.closest('.mermaid-card');
+            const wrapper = card.querySelector('.mermaid-scale-wrapper');
+            if (!wrapper) return;
+            
+            let currentScale = parseFloat(wrapper.getAttribute('data-scale') || '1.0');
+            currentScale = Math.max(0.6, Math.min(3.0, currentScale + factor));
+            wrapper.setAttribute('data-scale', currentScale);
+            wrapper.style.transform = `scale(${currentScale})`;
+        }
+
+        function resetMermaidZoom(btn) {
+            const card = btn.closest('.mermaid-card');
+            const wrapper = card.querySelector('.mermaid-scale-wrapper');
+            if (!wrapper) return;
+            wrapper.setAttribute('data-scale', '1.0');
+            wrapper.style.transform = 'scale(1.0)';
+        }
+
+        function toggleMermaidFullscreen(btn) {
+            const card = btn.closest('.mermaid-card');
+            card.classList.toggle('expanded');
+            if (card.classList.contains('expanded')) {
+                btn.textContent = '⤓ Close Fullscreen';
+            } else {
+                btn.textContent = '⤢ Fullscreen';
+            }
+        }
+    </script>
+</body>
+</html>
