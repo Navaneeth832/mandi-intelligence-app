@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../core/services/location_service.dart';
 import '../../../data/models/market_comparison_model.dart';
 import '../providers/market_comparison_provider.dart';
+import 'market_location_picker_screen.dart';
 
 class MarketComparisonScreen extends ConsumerStatefulWidget {
   final String commodityName;
   final String currentMarketName;
   final int? commodityId;
+  final double? selectedLat;
+  final double? selectedLng;
+  final String? selectedLocationLabel;
 
   const MarketComparisonScreen({
     super.key,
     required this.commodityName,
     required this.currentMarketName,
     this.commodityId,
+    this.selectedLat,
+    this.selectedLng,
+    this.selectedLocationLabel,
   });
 
   @override
@@ -31,9 +39,18 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(marketComparisonProvider.notifier).fetchComparison(
-            commodityId: widget.commodityId,
-          );
+      if (widget.selectedLat != null && widget.selectedLng != null) {
+        ref.read(marketComparisonProvider.notifier).setCustomLocation(
+              lat: widget.selectedLat!,
+              lng: widget.selectedLng!,
+              label: widget.selectedLocationLabel ?? 'Selected Location',
+              commodityId: widget.commodityId,
+            );
+      } else {
+        ref.read(marketComparisonProvider.notifier).fetchComparison(
+              commodityId: widget.commodityId,
+            );
+      }
     });
   }
 
@@ -106,7 +123,7 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
         border: Border.all(color: const Color(0xFFFFE0CC)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.08),
+            color: const Color(0xFFF97316).withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -153,7 +170,7 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
                 ),
               ),
               TextButton.icon(
-                onPressed: () => _showLocationDialog(context),
+                onPressed: () => _openLocationPicker(context),
                 icon: const Icon(Icons.edit_location_alt_outlined, size: 16, color: Color(0xFFF97316)),
                 label: const Text(
                   'Change',
@@ -369,8 +386,8 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
         boxShadow: [
           BoxShadow(
             color: isBest
-                ? const Color(0xFFF97316).withOpacity(0.15)
-                : Colors.black.withOpacity(0.04),
+                ? const Color(0xFFF97316).withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
             blurRadius: isBest ? 16 : 8,
             offset: const Offset(0, 4),
           ),
@@ -598,96 +615,30 @@ class _MarketComparisonScreenState extends ConsumerState<MarketComparisonScreen>
     );
   }
 
-  void _showLocationDialog(BuildContext context) {
-    final latController = TextEditingController(text: '9.5916');
-    final lngController = TextEditingController(text: '76.5222');
-    final labelController = TextEditingController(text: 'Kottayam, Kerala');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Set Custom Coordinates / Location',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: labelController,
-              decoration: const InputDecoration(
-                labelText: 'Location Name',
-                hintText: 'e.g. Kottayam, Kerala',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: latController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Latitude',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: lngController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Longitude',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  final lat = double.tryParse(latController.text) ?? 9.5916;
-                  final lng = double.tryParse(lngController.text) ?? 76.5222;
-                  final label = labelController.text.isNotEmpty ? labelController.text : 'Custom Location';
-
-                  ref.read(marketComparisonProvider.notifier).setCustomLocation(
-                        lat: lat,
-                        lng: lng,
-                        label: label,
-                        commodityId: widget.commodityId,
-                      );
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Apply Location', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
+  Future<void> _openLocationPicker(BuildContext context) async {
+    final state = ref.read(marketComparisonProvider);
+    final result = await Navigator.push<UserLocationResult>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MarketLocationPickerScreen(
+          commodityName: widget.commodityName,
+          currentMarketName: widget.currentMarketName,
+          commodityId: widget.commodityId,
+          initialLat: state.lat,
+          initialLng: state.lng,
+          initialLabel: state.locationLabel,
+          isChangeMode: true,
         ),
       ),
     );
+
+    if (result != null) {
+      ref.read(marketComparisonProvider.notifier).setCustomLocation(
+            lat: result.latitude,
+            lng: result.longitude,
+            label: result.label,
+            commodityId: widget.commodityId,
+          );
+    }
   }
 }

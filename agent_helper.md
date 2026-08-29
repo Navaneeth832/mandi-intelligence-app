@@ -1,5 +1,5 @@
 # Mandi Intelligence - Long-Term Architectural Memory
-*(Last Updated: 27 August 2026)*
+*(Last Updated: 29 August 2026)*
 
 This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.
 
@@ -14,12 +14,12 @@ This document serves as the single authoritative persistent memory and comprehen
   2. **Onboarding & Profile Setup**: New users select their State, District, preferred UI Language (English, Hindi, Malayalam), and trackable crops (crop preferences).
   3. **Real-Time Price Tracking (Home Tab)**: Displays current daily mandi prices filtered by location and preferred crops, formatted with Variety and Grade tags.
   4. **Detailed Analysis & Market Directory (Markets Tab)**: Users can inspect 7-day historical price movement charts (`fl_chart`) or browse a paginated directory of active markets in a state/district.
-  5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee & expected profit breakdown, and Forecast Section with daily timeline). Features a "Compare Nearby Mandis" portal (`MarketComparisonScreen` placeholder) and an "Explore More Commodities" portal to search predictions across non-preferred crops.
+  5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee & expected profit breakdown, and Forecast Section with daily timeline). Features an interactive two-step "Compare Nearby Mandis" flow (`MarketLocationPickerScreen` for GPS detection & interactive OpenStreetMap pin drop, transitioning to `MarketComparisonScreen` for results) and an "Explore More Commodities" portal to search predictions across non-preferred crops.
   6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`) and searchable historical alert archives.
   7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).
 - **Current implementation status**:
   - **Backend**: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (`latitude`, `longitude`, `location` Geography Point with GiST indexing), geocoding script (`populate_market_coordinates.py`), nearby market comparison endpoint (`/markets/compare-mock`), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.
-  - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), production-ready Nearby Mandi Comparison Screen (`MarketComparisonScreen`, 5 sort options, quantity controls, Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.
+  - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), production-ready Two-Step Nearby Mandi Comparison workflow (`MarketLocationPickerScreen` with GPS detection and OpenStreetMap pin drop + `MarketComparisonScreen` with 5 sort options, quantity controls, Change Location support, and Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.
 - **Completed Core Modules**:
   - Authentication (OTP send/verify with transient verification tokens, login, register, me).
   - Forgot Password recovery pipeline.
@@ -30,6 +30,7 @@ This document serves as the single authoritative persistent memory and comprehen
   - 7-day historical price timeline visualization.
   - LightGBM Machine Learning 7-day price forecasting engine.
   - Actionable & Historical Alerts System (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`).
+  - Two-Step Spatial Mandi Comparison System (GPS auto-detection, OpenStreetMap pin-drop picker with Nominatim reverse geocoding, financial payout matrix with best-value ranking).
 
 ---
 
@@ -39,6 +40,7 @@ This document serves as the single authoritative persistent memory and comprehen
 - **Framework**: Flutter (Dart ^3.5.0)
 - **State Management**: `flutter_riverpod` (^2.5.1)
 - **Local Storage / Session**: `flutter_secure_storage` (^9.2.2) (stores JWT Bearer token)
+- **Maps & Geolocation**: `flutter_map` (^8.3.2), `latlong2` (^0.10.1), `geolocator` (^14.0.2), OpenStreetMap Nominatim reverse geocoding
 - **Charts**: `fl_chart` (^1.2.0) (price history & 7-day prediction trajectory)
 - **Networking**: `http` (^1.2.1)
 - **Localization**: `flutter_localizations` (SDK), `intl` (^0.20.2), `flutter gen-l10n`
@@ -123,6 +125,7 @@ This document serves as the single authoritative persistent memory and comprehen
 │   ├── core/
 │   │   ├── constants/                    # ApiConstants (baseUrl, endpoints)
 │   │   ├── providers/                    # localeProvider, storageProvider, authApiProvider
+│   │   ├── services/                     # LocationService (GPS detection & reverse geocoding)
 │   │   ├── theme/                        # AppTheme (Material 3 palettes)
 │   │   └── widgets/                      # Global widgets (MobileFrameWrapper, CommodityImageWidget)
 │   ├── data/
@@ -133,7 +136,7 @@ This document serves as the single authoritative persistent memory and comprehen
 │   ├── features/
 │   │   ├── alerts/                       # AlertsScreen, AlertHistoryScreen, AlertCard, FilterChips
 │   │   ├── auth/                         # Login, Signup, ForgotPassword, Onboarding, Profile, Settings
-│   │   ├── forecasts/                    # ForecastsScreen, ForecastDetailScreen, Explore Screens
+│   │   ├── forecasts/                    # ForecastsScreen, ForecastDetailScreen, MarketLocationPickerScreen, MarketComparisonScreen, Explore Screens
 │   │   └── mandi_prices/                 # HomeScreen, FilterResultsScreen, MarketDetailScreen, MarketsScreen
 │   ├── l10n/                             # ARB localizations (app_en.arb, app_hi.arb, app_ml.arb)
 │   ├── main.dart                         # Flutter entrypoint & AuthWrapper
@@ -327,7 +330,8 @@ flowchart TB
         ExploreMoreCommoditiesScreen["ExploreMoreCommoditiesScreen \n Search Portal for Non-Preferred Crops"]
         ExploreAdvisoryResultsScreen["ExploreAdvisoryResultsScreen \n Multi-Crop Prediction Results"]
         ForecastDetailScreen["ForecastDetailScreen \n 3 Sections: Prediction, AI Advisory & Forecast"]
-        MarketComparisonScreen["MarketComparisonScreen \n Placeholder for Nearby Mandi Distance & Net Profit Comparison"]
+        MarketLocationPickerScreen["MarketLocationPickerScreen \n GPS Detection and Interactive Map Pin Drop"]
+        MarketComparisonScreen["MarketComparisonScreen \n Nearby Mandi Distance & Net Profit Comparison Results"]
     end
 
     subgraph AlertsHeader ["Alerts Header Navigation"]
@@ -364,7 +368,9 @@ flowchart TB
     ForecastsScreen --> ForecastDetailScreen
     ExploreMoreCommoditiesScreen --> ExploreAdvisoryResultsScreen
     ExploreAdvisoryResultsScreen --> ForecastDetailScreen
-    ForecastDetailScreen --> MarketComparisonScreen
+    ForecastDetailScreen --> MarketLocationPickerScreen
+    MarketLocationPickerScreen -->|"Proceed"| MarketComparisonScreen
+    MarketComparisonScreen -->|"Change Location"| MarketLocationPickerScreen
     ProfileScreen --> OnboardingScreen
     ProfileScreen --> NotificationSettingsScreen
 ```
@@ -724,11 +730,24 @@ User enters OTP ◄────────────────────�
 
 ---
 
-# 24. Nearby Mandi Comparison & Financial Analytics Engine
+# 24. Nearby Mandi Comparison & Two-Step Spatial Location Engine
 
-Added on **27 August 2026**:
+*(Last Updated: 29 August 2026)*
 
-Provides multi-mandi financial payout comparison engine for farmers evaluating selling locations.
+Provides a complete two-step spatial analysis and multi-mandi financial payout comparison engine for farmers evaluating selling locations.
+
+### Two-Step User Flow Architecture
+1. **Screen 1 (Location Selection Screen - `MarketLocationPickerScreen`)**:
+   - Takes location input **only** without rendering comparison results upfront.
+   - **Detect Current Location (GPS)**: One-tap button calling `LocationService.determinePosition()` with device permission checks, GPS service validation, and real-time status feedback.
+   - **Interactive Map Pin Drop**: High-performance `FlutterMap` powered by OpenStreetMap tile layers (free, zero API key dependencies). Users can pan, zoom, and tap anywhere on the map to place or reposition the pin marker with live visual feedback.
+   - **Reverse Geocoding**: Asynchronously calls OpenStreetMap Nominatim reverse geocoding API to resolve human-readable place/district/state names from pin coordinates.
+   - **Confirmation Action**: "Compare Mandis for This Location" validates coordinates and redirects to Screen 2.
+
+2. **Screen 2 (Comparison Results Screen - `MarketComparisonScreen`)**:
+   - Computes distance matrix, transport costs, and net payouts for the user-selected coordinates (instead of hardcoded defaults).
+   - Features 5 sort options (`MarketSortOption`), dynamic quantity increment/decrement, and a prominent 🏆 **BEST VALUE** badge on the highest net payout mandi.
+   - **Dynamic Location Change**: Tapping "Change" in the top location card re-opens `MarketLocationPickerScreen` in change mode. Selecting a new pin or detecting GPS immediately updates the results screen and re-runs comparison for the newly chosen location.
 
 ### Financial Calculations Matrix
 
@@ -736,21 +755,20 @@ Provides multi-mandi financial payout comparison engine for farmers evaluating s
 | :--- | :--- |
 | **Distance ($D$)** | Spherical distance between user coords $(lat_u, lng_u)$ & Mandi coords $(lat_m, lng_m)$ in kilometers via PostGIS `ST_Distance`. |
 | **Selling Price ($P$)** | Latest `modal_price` per quintal (₹/qtl) for target commodity. |
-| **Transport Cost ($C_t$)** | $D 	imes 	ext{Transport Rate per km per quintal}$ *(e.g., ₹2.5 / km / qtl)*. |
-| **Mandi Commission ($C_m$)** | $P 	imes 1\%$ *(Standard 1% market fee)*. |
+| **Transport Cost ($C_t$)** | $D \times \text{Transport Rate per km per quintal}$ *(e.g., ₹2.5 / km / qtl)*. |
+| **Mandi Commission ($C_m$)** | $P \times 1\%$ *(Standard 1% market fee)*. |
 | **Net Profit ($P_{net}$)** | $P - (C_t + C_m)$ per quintal. |
-| **Total Net Profit ($P_{total}$)** | $P_{net} 	imes 	ext{Quantity (quintals)}$. |
+| **Total Net Profit ($P_{total}$)** | $P_{net} \times \text{Quantity (quintals)}$. |
 | **Best Value Badge** | Mandi with the **highest $P_{net}$** among nearby mandis. |
 
-### Endpoints & Handoff Switching
-- **Mock Endpoint**: `GET /markets/compare-mock` in `backend/app/api/routes/markets.py`.
-- **Handoff Switch for Raihan**: To connect the real PostGIS query:
-  1. Rename route to `@router.get("/compare")` in `markets.py`.
-  2. Change line 338 of `lib/data/services/mandi_api_service.dart`: `const String endpoint = '/markets/compare';`.
-- **Frontend Components**:
-  - `lib/data/models/market_comparison_model.dart` (`MarketComparisonItem`, `MarketComparisonResponse`).
-  - `lib/features/forecasts/providers/market_comparison_provider.dart` (`marketComparisonProvider`, `MarketSortOption` enum with 5 options: `bestValue`, `netProfit`, `sellingPrice`, `distance`, `lowestTransport`).
-  - `lib/features/forecasts/screens/market_comparison_screen.dart` (`MarketComparisonScreen`, location bar, quantity controls, sort chips, `NearbyMandiCard` with 🏆 BEST VALUE badge).
+### Components & Services
+- **Location Service**: `lib/core/services/location_service.dart` (`LocationService.determinePosition()`, `LocationService.reverseGeocode()`, `UserLocationResult`).
+- **Location Picker Screen**: `lib/features/forecasts/screens/market_location_picker_screen.dart` (`MarketLocationPickerScreen`, OpenStreetMap `FlutterMap`, GPS detection, animated pin marker, reverse geocoding banner).
+- **Comparison Results Screen**: `lib/features/forecasts/screens/market_comparison_screen.dart` (`MarketComparisonScreen`, location bar, quantity controls, sort chips, `NearbyMandiCard` with 🏆 BEST VALUE badge).
+- **Riverpod State**: `lib/features/forecasts/providers/market_comparison_provider.dart` (`marketComparisonProvider`, `MarketSortOption` enum with 5 options: `bestValue`, `netProfit`, `sellingPrice`, `distance`, `lowestTransport`).
+- **Data Models**: `lib/data/models/market_comparison_model.dart` (`MarketComparisonItem`, `MarketComparisonResponse`).
+- **Permissions**: `android/app/src/main/AndroidManifest.xml` (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `INTERNET`).
+- **API Endpoint**: `GET /markets/compare` in `lib/data/services/mandi_api_service.dart`.
 
 ---
 

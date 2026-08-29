@@ -9,7 +9,7 @@ import '../../../data/models/forecast_model.dart';
 import '../../../core/widgets/commodity_image_widget.dart';
 import '../providers/forecast_provider.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
-import 'market_comparison_screen.dart';
+import 'market_location_picker_screen.dart';
 
 class ForecastDetailScreen extends ConsumerStatefulWidget {
   final CommodityForecast forecast;
@@ -782,7 +782,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MarketComparisonScreen(
+                    builder: (context) => MarketLocationPickerScreen(
                       commodityName: widget.forecast.commodityName,
                       currentMarketName: widget.forecast.marketName,
                       commodityId: widget.forecast.commodityId,
