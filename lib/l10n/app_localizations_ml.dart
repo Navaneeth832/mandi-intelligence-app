@@ -525,6 +525,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get inAppNotifications => 'ഇൻ-ആപ്പ് അറിയിപ്പുകൾ';
 
   @override
+  String get emailNotifications => 'ഇമെയിൽ അറിയിപ്പുകൾ';
+
+  @override
   String get smsNotifications => 'എസ്എംഎസ് അറിയിപ്പുകൾ';
 
   @override

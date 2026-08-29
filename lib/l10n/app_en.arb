@@ -224,6 +224,7 @@
   "aiRecommendation": "AI Recommendation",
   "delivery": "Delivery",
   "inAppNotifications": "In-App Notifications",
+  "emailNotifications": "Email Notifications",
   "smsNotifications": "SMS Notifications",
   "pushNotifications": "Push Notifications",
   "comingSoon": "Coming Soon",

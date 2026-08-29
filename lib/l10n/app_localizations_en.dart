@@ -525,6 +525,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inAppNotifications => 'In-App Notifications';
 
   @override
+  String get emailNotifications => 'Email Notifications';
+
+  @override
   String get smsNotifications => 'SMS Notifications';
 
   @override

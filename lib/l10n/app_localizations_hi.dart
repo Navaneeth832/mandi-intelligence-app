@@ -525,6 +525,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get inAppNotifications => 'इन-ऐप सूचनाएं';
 
   @override
+  String get emailNotifications => 'ईमेल सूचनाएं';
+
+  @override
   String get smsNotifications => 'एसएमएस सूचनाएं';
 
   @override

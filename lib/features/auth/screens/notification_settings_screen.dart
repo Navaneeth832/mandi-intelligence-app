@@ -194,23 +194,23 @@ class _NotificationSettingsScreenState
       child: Column(
         children: [
           _buildToggleRow(
+            icon: Icons.trending_up,
+            title: l10n.priceIncrease,
+            value: current.priceIncrease,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(priceIncrease: val);
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
             icon: Icons.trending_down,
             title: l10n.priceDrop,
             value: current.priceDrop,
             onChanged: (val) {
               setState(() {
                 _localPreferences = current.copyWith(priceDrop: val);
-              });
-            },
-          ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
-          _buildToggleRow(
-            icon: Icons.trending_up,
-            title: l10n.betterMarket,
-            value: current.betterMarket,
-            onChanged: (val) {
-              setState(() {
-                _localPreferences = current.copyWith(betterMarket: val);
               });
             },
           ),
@@ -263,6 +263,17 @@ class _NotificationSettingsScreenState
             onChanged: (val) {
               setState(() {
                 _localPreferences = current.copyWith(deliveryInApp: val);
+              });
+            },
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF7F2E6)),
+          _buildToggleRow(
+            icon: Icons.mail_outline_rounded,
+            title: l10n.emailNotifications,
+            value: current.deliveryEmail,
+            onChanged: (val) {
+              setState(() {
+                _localPreferences = current.copyWith(deliveryEmail: val);
               });
             },
           ),

@@ -16,7 +16,7 @@ This document serves as the single authoritative persistent memory and comprehen
   4. **Detailed Analysis & Market Directory (Markets Tab)**: Users can inspect 7-day historical price movement charts (`fl_chart`) or browse a paginated directory of active markets in a state/district.
   5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee & expected profit breakdown, and Forecast Section with daily timeline). Features an interactive two-step "Compare Nearby Mandis" flow (`MarketLocationPickerScreen` for GPS detection & interactive OpenStreetMap pin drop, transitioning to `MarketComparisonScreen` for results) and an "Explore More Commodities" portal to search predictions across non-preferred crops.
   6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`) and searchable historical alert archives.
-  7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).
+  7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification preferences (Price Increase, Price Drop, AI Recommendation toggles; In-App, Email, Push delivery channels; Instant vs Daily Summary frequencies).
 - **Current implementation status**:
   - **Backend**: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (`latitude`, `longitude`, `location` Geography Point with GiST indexing), geocoding script (`populate_market_coordinates.py`), nearby market comparison endpoint (`/markets/compare-mock`), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.
   - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), production-ready Two-Step Nearby Mandi Comparison workflow (`MarketLocationPickerScreen` with GPS detection and OpenStreetMap pin drop + `MarketComparisonScreen` with 5 sort options, quantity controls, Change Location support, and Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.
@@ -508,7 +508,7 @@ Conforms strictly to the **Alerts API — v1 Contract**.
   - `AlertLocalizationService` applying localized message templates (`en`, `hi`, `ml`).
 - **Frontend Architecture**:
   - `AlertRepository` transparently attempts the real `/alerts` HTTP API. On network failures or offline demo scenarios, it seamlessly falls back to `AlertFallbackDataSource` (which provides realistic mock alerts for Tomato in Thrissur, Coconut in Kozhikode, Potato in Palakkad).
-  - `AlertsScreen` renders active alerts with filter chips (`All`, `Better Market`, `Price Increase`, `Price Drop`, `AI Recommendation`).
+  - `AlertsScreen` renders active alerts with filter chips (`All`, `Price Increase`, `Price Drop`, `AI Recommendation`).
   - `AlertHistoryScreen` renders searchable archives with date range bounds and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).
 
 ---
@@ -781,3 +781,31 @@ Added on **27 August 2026**:
 - **Mermaid Rendering**: All Mermaid diagrams (`flowchart TD`, `erDiagram`, `flowchart TB`) are preserved and rendered visually using Mermaid.js.
 - **GitHub Actions & Pages**: `.github/workflows/docs.yml` automatically rebuilds and deploys the documentation website to GitHub Pages on every `git push` to the `main` branch.
 - **README Integration**: `README.md` includes a prominent `## 📚 Technical Documentation` link pointing to the live GitHub Pages site.
+
+---
+
+# 26. Notification Settings & Alert UI Refinements
+
+Added on **29 August 2026**:
+
+Refined the notification preferences management and alert filtering interfaces:
+
+### 1. Database Schema & Backend Model Preservation
+- **No Schema Changes**: The PostgreSQL table `notification_preferences` and SQLAlchemy models remain completely unchanged.
+- **Field Integrity**: `better_market` is preserved in the database schema, backend schemas (`NotificationPreferenceBase`, `NotificationPreferenceUpdate`, `NotificationPreferenceResponse`), and Dart model (`NotificationPreferences`) with its existing value, preventing schema breakage.
+
+### 2. Notification Settings Screen (`NotificationSettingsScreen`)
+- **Alert Types Section**:
+  - **`priceIncrease`**: Added as an independent toggle (uses `Icons.trending_up` and localized string `priceIncrease`).
+  - **`priceDrop`**: Retained as an independent toggle (uses `Icons.trending_down` and localized string `priceDrop`).
+  - **`aiRecommendation`**: Retained as an independent toggle (uses `Icons.auto_awesome` and localized string `aiRecommendation`).
+  - **`betterMarket`**: Removed from the UI toggles. State is preserved when saving via `current.betterMarket`.
+- **Delivery Section**:
+  - **`deliveryInApp`**: In-App Notifications toggle (`Icons.notifications_none_outlined`).
+  - **`deliveryEmail`**: Email Notifications toggle (`Icons.mail_outline_rounded`, localized string `emailNotifications`). Connects to existing database column `delivery_email`.
+  - **`deliveryPush`**: Push Notifications toggle (`Icons.smartphone_outlined`).
+
+### 3. Alerts Screen & Alert History Screen Filter Chips
+- **Filter List (`AlertFilterChips`)**: Updated to `['ALL', AlertTypes.priceIncrease, AlertTypes.priceDrop, AlertTypes.aiRecommendation]`.
+- **Better Market Filter Removal**: `AlertTypes.betterMarket` removed from filter chips across both `AlertsScreen` and `AlertHistoryScreen`.
+

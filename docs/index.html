@@ -701,6 +701,10 @@
 <a class="nav-item nav-level-3" href="#financial-calculations-matrix" onclick="closeMobileNav()">Financial Calculations Matrix</a>
 <a class="nav-item nav-level-3" href="#components-services" onclick="closeMobileNav()">Components &amp; Services</a>
 <a class="nav-item nav-level-1" href="#25-technical-documentation-website-pipeline" onclick="closeMobileNav()">25. Technical Documentation Website Pipeline</a>
+<a class="nav-item nav-level-1" href="#26-notification-settings-alert-ui-refinements" onclick="closeMobileNav()">26. Notification Settings &amp; Alert UI Refinements</a>
+<a class="nav-item nav-level-3" href="#1-database-schema-backend-model-preservation" onclick="closeMobileNav()">1. Database Schema &amp; Backend Model Preservation</a>
+<a class="nav-item nav-level-3" href="#2-notification-settings-screen-notificationsettingsscreen" onclick="closeMobileNav()">2. Notification Settings Screen (NotificationSettingsScreen)</a>
+<a class="nav-item nav-level-3" href="#3-alerts-screen-alert-history-screen-filter-chips" onclick="closeMobileNav()">3. Alerts Screen &amp; Alert History Screen Filter Chips</a>
             </nav>
         </aside>
 
@@ -722,7 +726,7 @@
   4. <strong>Detailed Analysis &amp; Market Directory (Markets Tab)</strong>: Users can inspect 7-day historical price movement charts (<code>fl_chart</code>) or browse a paginated directory of active markets in a state/district.<br />
   5. <strong>Predictions &amp; Advisory (Advisory Tab)</strong>: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section with transport cost, market fee &amp; expected profit breakdown, and Forecast Section with daily timeline). Features an interactive two-step "Compare Nearby Mandis" flow (<code>MarketLocationPickerScreen</code> for GPS detection &amp; interactive OpenStreetMap pin drop, transitioning to <code>MarketComparisonScreen</code> for results) and an "Explore More Commodities" portal to search predictions across non-preferred crops.<br />
   6. <strong>Actionable Alerts &amp; History (Alerts Bell Header)</strong>: Displays real-time actionable price alerts (<code>PRICE_INCREASE</code>, <code>PRICE_DROP</code>, <code>BETTER_MARKET</code>, <code>AI_RECOMMENDATION</code>) and searchable historical alert archives.<br />
-  7. <strong>Profile &amp; Notification Management (Profile Tab)</strong>: Allows editing location, language, tracked crops, and notification delivery options (In-App, SMS, Push) and frequencies (Instant vs Daily Summary).</li>
+  7. <strong>Profile &amp; Notification Management (Profile Tab)</strong>: Allows editing location, language, tracked crops, and notification preferences (Price Increase, Price Drop, AI Recommendation toggles; In-App, Email, Push delivery channels; Instant vs Daily Summary frequencies).</li>
 <li><strong>Current implementation status</strong>:</li>
 <li><strong>Backend</strong>: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (<code>latitude</code>, <code>longitude</code>, <code>location</code> Geography Point with GiST indexing), geocoding script (<code>populate_market_coordinates.py</code>), nearby market comparison endpoint (<code>/markets/compare-mock</code>), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.</li>
 <li><strong>Frontend</strong>: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (<code>MobileFrameWrapper</code>), production-ready Two-Step Nearby Mandi Comparison workflow (<code>MarketLocationPickerScreen</code> with GPS detection and OpenStreetMap pin drop + <code>MarketComparisonScreen</code> with 5 sort options, quantity controls, Change Location support, and Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.</li>
@@ -1466,7 +1470,7 @@
 <li><code>AlertLocalizationService</code> applying localized message templates (<code>en</code>, <code>hi</code>, <code>ml</code>).</li>
 <li><strong>Frontend Architecture</strong>:</li>
 <li><code>AlertRepository</code> transparently attempts the real <code>/alerts</code> HTTP API. On network failures or offline demo scenarios, it seamlessly falls back to <code>AlertFallbackDataSource</code> (which provides realistic mock alerts for Tomato in Thrissur, Coconut in Kozhikode, Potato in Palakkad).</li>
-<li><code>AlertsScreen</code> renders active alerts with filter chips (<code>All</code>, <code>Better Market</code>, <code>Price Increase</code>, <code>Price Drop</code>, <code>AI Recommendation</code>).</li>
+<li><code>AlertsScreen</code> renders active alerts with filter chips (<code>All</code>, <code>Price Increase</code>, <code>Price Drop</code>, <code>AI Recommendation</code>).</li>
 <li><code>AlertHistoryScreen</code> renders searchable archives with date range bounds and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).</li>
 </ul>
 <hr />
@@ -1752,6 +1756,32 @@ User enters OTP ◄────────────────────�
 <li><strong>Mermaid Rendering</strong>: All Mermaid diagrams (<code>flowchart TD</code>, <code>erDiagram</code>, <code>flowchart TB</code>) are preserved and rendered visually using Mermaid.js.</li>
 <li><strong>GitHub Actions &amp; Pages</strong>: <code>.github/workflows/docs.yml</code> automatically rebuilds and deploys the documentation website to GitHub Pages on every <code>git push</code> to the <code>main</code> branch.</li>
 <li><strong>README Integration</strong>: <code>README.md</code> includes a prominent <code>## 📚 Technical Documentation</code> link pointing to the live GitHub Pages site.</li>
+</ul>
+<hr />
+<h1 id="26-notification-settings-alert-ui-refinements">26. Notification Settings &amp; Alert UI Refinements</h1>
+<p>Added on <strong>29 August 2026</strong>:</p>
+<p>Refined the notification preferences management and alert filtering interfaces:</p>
+<h3 id="1-database-schema-backend-model-preservation">1. Database Schema &amp; Backend Model Preservation</h3>
+<ul>
+<li><strong>No Schema Changes</strong>: The PostgreSQL table <code>notification_preferences</code> and SQLAlchemy models remain completely unchanged.</li>
+<li><strong>Field Integrity</strong>: <code>better_market</code> is preserved in the database schema, backend schemas (<code>NotificationPreferenceBase</code>, <code>NotificationPreferenceUpdate</code>, <code>NotificationPreferenceResponse</code>), and Dart model (<code>NotificationPreferences</code>) with its existing value, preventing schema breakage.</li>
+</ul>
+<h3 id="2-notification-settings-screen-notificationsettingsscreen">2. Notification Settings Screen (<code>NotificationSettingsScreen</code>)</h3>
+<ul>
+<li><strong>Alert Types Section</strong>:</li>
+<li><strong><code>priceIncrease</code></strong>: Added as an independent toggle (uses <code>Icons.trending_up</code> and localized string <code>priceIncrease</code>).</li>
+<li><strong><code>priceDrop</code></strong>: Retained as an independent toggle (uses <code>Icons.trending_down</code> and localized string <code>priceDrop</code>).</li>
+<li><strong><code>aiRecommendation</code></strong>: Retained as an independent toggle (uses <code>Icons.auto_awesome</code> and localized string <code>aiRecommendation</code>).</li>
+<li><strong><code>betterMarket</code></strong>: Removed from the UI toggles. State is preserved when saving via <code>current.betterMarket</code>.</li>
+<li><strong>Delivery Section</strong>:</li>
+<li><strong><code>deliveryInApp</code></strong>: In-App Notifications toggle (<code>Icons.notifications_none_outlined</code>).</li>
+<li><strong><code>deliveryEmail</code></strong>: Email Notifications toggle (<code>Icons.mail_outline_rounded</code>, localized string <code>emailNotifications</code>). Connects to existing database column <code>delivery_email</code>.</li>
+<li><strong><code>deliveryPush</code></strong>: Push Notifications toggle (<code>Icons.smartphone_outlined</code>).</li>
+</ul>
+<h3 id="3-alerts-screen-alert-history-screen-filter-chips">3. Alerts Screen &amp; Alert History Screen Filter Chips</h3>
+<ul>
+<li><strong>Filter List (<code>AlertFilterChips</code>)</strong>: Updated to <code>['ALL', AlertTypes.priceIncrease, AlertTypes.priceDrop, AlertTypes.aiRecommendation]</code>.</li>
+<li><strong>Better Market Filter Removal</strong>: <code>AlertTypes.betterMarket</code> removed from filter chips across both <code>AlertsScreen</code> and <code>AlertHistoryScreen</code>.</li>
 </ul>
             </article>
         </main>

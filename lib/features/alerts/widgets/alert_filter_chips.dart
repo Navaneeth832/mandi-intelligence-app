@@ -34,7 +34,6 @@ class AlertFilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     const filters = [
       'ALL',
-      AlertTypes.betterMarket,
       AlertTypes.priceIncrease,
       AlertTypes.priceDrop,
       AlertTypes.aiRecommendation,

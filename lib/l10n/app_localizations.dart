@@ -1081,6 +1081,12 @@ abstract class AppLocalizations {
   /// **'In-App Notifications'**
   String get inAppNotifications;
 
+  /// No description provided for @emailNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Notifications'**
+  String get emailNotifications;
+
   /// No description provided for @smsNotifications.
   ///
   /// In en, this message translates to:
