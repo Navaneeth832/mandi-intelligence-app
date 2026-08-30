@@ -29,11 +29,26 @@ def init_firebase():
                 except Exception as json_err:
                     logger.error(f"Invalid FIREBASE_CREDENTIALS_JSON string: {json_err}")
                     return False
-            elif cred_path and os.path.exists(cred_path):
-                cred = credentials.Certificate(cred_path)
             else:
-                logger.warning("Neither FIREBASE_CREDENTIALS_JSON nor valid FIREBASE_CREDENTIALS_PATH found. Push notifications disabled.")
-                return False
+                target_path = None
+                if cred_path:
+                    candidates = [
+                        cred_path,
+                        os.path.basename(cred_path),
+                        os.path.join(os.path.dirname(__file__), "..", "..", cred_path),
+                        os.path.join(os.path.dirname(__file__), "..", "..", os.path.basename(cred_path)),
+                    ]
+                    for candidate in candidates:
+                        if candidate and os.path.exists(candidate):
+                            target_path = candidate
+                            break
+
+                if target_path:
+                    cred = credentials.Certificate(target_path)
+                else:
+                    logger.warning("Neither FIREBASE_CREDENTIALS_JSON nor valid FIREBASE_CREDENTIALS_PATH found. Push notifications disabled.")
+                    return False
+
 
             firebase_admin.initialize_app(cred)
 

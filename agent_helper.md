@@ -44,6 +44,7 @@ This document serves as the single authoritative persistent memory and comprehen
 - **Charts**: `fl_chart` (^1.2.0) (price history & 7-day prediction trajectory)
 - **Networking**: `http` (^1.2.1)
 - **Localization**: `flutter_localizations` (SDK), `intl` (^0.20.2), `flutter gen-l10n`
+- **Push Notifications**: `firebase_core` (^3.10.0), `firebase_messaging` (^15.2.0), `flutter_local_notifications` (^18.0.1)
 - **Animations & UI**: `shimmer` (^3.0.0), `MobileFrameWrapper` (390x884 desktop viewport constraint)
 
 ### Backend
@@ -55,8 +56,10 @@ This document serves as the single authoritative persistent memory and comprehen
 - **Data Fetcher**: `httpx`, `requests`
 - **Config & Validation**: Pydantic / `pydantic-settings`
 - **Security & Token**: Passlib (`bcrypt`), `python-jose[cryptography]` (JWT)
+- **Push Notification Engine**: `firebase-admin` (SDK)
 - **Email Delivery**: `resend` (SDK)
 - **SMS Delivery**: `Fast2SMS` API (`SMSService`)
+
 
 ### Database & Deployment
 - **Database**: PostgreSQL (hosted on Railway)
@@ -225,7 +228,9 @@ flowchart TD
 | `/predictions/` | `GET` | Bearer | Get 7-day ML price predictions | Query: `commodity_id`, `market_id`, `commodity_ids`, `market_ids`, `language`, `page`, `page_size` | `PaginatedForecastResponse` |
 | `/alerts` | `GET` | Bearer | Active actionable alerts for user | Query: `type`, `page`, `page_size` | `PaginatedAlertsResponse` |
 | `/alerts/history` | `GET` | Bearer | Historical alerts archive | Query: `type`, `search`, `date_from`, `date_to`, `page`, `page_size` | `PaginatedAlertsResponse` |
+| `/alerts/fcm-token` | `POST` | Bearer | Register user device FCM token | Body: `FCMTokenRegisterSchema` | `{"status": "success", "message": "..."}` |
 | `/static/*` | `GET` | None | Serves static assets & images | Static asset path | Image file stream |
+
 
 ---
 
@@ -265,6 +270,7 @@ erDiagram
     users ||--o{ refresh_tokens : "owns"
     users ||--o{ notification_preferences : "configures"
     users ||--o{ alerts : "receives"
+    users ||--o{ user_fcm_tokens : "registers_device"
 ```
 
 ### Reference & Translation Tables
@@ -294,6 +300,8 @@ erDiagram
 20. **`verification_tokens`**: `id` (PK, UUID), `identifier` (VARCHAR), `token_hash` (VARCHAR), `purpose` (VARCHAR), `expires_at` (TIMESTAMPTZ), `used` (BOOL), `created_at` (TIMESTAMPTZ).
 21. **`notification_preferences`**: `user_id` (PK, FK -> `users.id`), `price_increase` (BOOL), `price_drop` (BOOL), `better_market` (BOOL), `market_glut` (BOOL), `ai_recommendation` (BOOL), `delivery_in_app` (BOOL), `delivery_email` (BOOL), `delivery_push` (BOOL), `frequency` (VARCHAR(20), default='instant'), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
 22. **`alerts`**: `id` (PK, UUID), `user_id` (FK -> `users.id`), `type` (VARCHAR(50)), `severity` (VARCHAR(20)), `title` (VARCHAR(255)), `message` (TEXT), `commodity_id` (FK -> `commodities.id`), `market_id` (FK -> `markets.id`), `current_price` (FLOAT, Nullable), `previous_price` (FLOAT, Nullable), `change_percent` (FLOAT, Nullable), `created_at` (TIMESTAMPTZ).
+23. **`user_fcm_tokens`**: `id` (PK, UUID), `user_id` (FK -> `users.id`, Cascade Delete), `fcm_token` (VARCHAR(500), Unique), `device_type` (VARCHAR(20), default='android'), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Index on `user_id`.
+
 
 ---
 
@@ -511,7 +519,44 @@ Conforms strictly to the **Alerts API — v1 Contract**.
   - `AlertsScreen` renders active alerts with filter chips (`All`, `Price Increase`, `Price Drop`, `AI Recommendation`).
   - `AlertHistoryScreen` renders searchable archives with date range bounds and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).
 
+### Push Notification Architecture (Firebase Cloud Messaging - FCM)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant App as Flutter Mobile App
+    participant FCM as Firebase Cloud Messaging
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL DB
+
+    App->>FCM: 1. Request Permission & Get Device Token
+    FCM-->>App: Returns FCM Token
+    App->>API: 2. POST /alerts/fcm-token (Bearer Auth + FCM Token)
+    API->>DB: 3. Upsert user_fcm_tokens (user_id, fcm_token, device_type)
+    
+    Note over API,DB: Price Ingestion / Alert Trigger
+    API->>API: 4. AlertGenerationService evaluates price condition
+    API->>DB: 5. Persist Alert to alerts table
+    API->>DB: 6. Fetch user delivery_push pref & user_fcm_tokens
+    API->>FCM: 7. send_fcm_notification (Multicast payload: title, body, data)
+    FCM-->>App: 8. Delivers Push Notification to System Notification Bar
+    App->>App: 9. Display Foreground Banner / Tap Route to /alerts
+```
+
+- **Backend Push Engine**:
+  - **Model**: `UserFCMToken` (`user_fcm_token.py`) mapping to `user_fcm_tokens` table.
+  - **Service**: `firebase_service.py` initialized via Firebase Admin SDK. Supports credential loading via `FIREBASE_CREDENTIALS_JSON` environment variable string or `FIREBASE_CREDENTIALS_PATH` file path with intelligent candidate location resolution.
+  - **Delivery Integration**: Integrated in `AlertService._send_alert_push_notification()` within `create_alert()`. Checks user `delivery_push` preference in `notification_preferences` and sends FCM multicast push notifications to all active user device tokens.
+  - **Endpoint**: `POST /api/alerts/fcm-token` registers or updates device tokens for authenticated users.
+
+- **Frontend Push Engine**:
+  - **Service**: `PushNotificationService` (`lib/core/services/push_notification_service.dart`).
+  - **Initialization**: Triggered automatically post-authentication in `AuthWrapper` (`main.dart`).
+  - **Permissions & Sync**: Prompts Android 13+ `POST_NOTIFICATIONS` runtime dialog, obtains FCM token, posts token to backend API, and listens for token refresh events.
+  - **Foreground & Background Handlers**: Uses `flutter_local_notifications` for foreground pop-up banners and `@pragma('vm:entry-point') firebaseMessagingBackgroundHandler` for background/terminated notification handling. Tapping notification routes user directly to `/alerts`.
+
 ---
+
 
 # 13. Data Ingestion Engine
 
@@ -687,8 +732,9 @@ User enters OTP ◄────────────────────�
   - Opening `AlertsScreen` triggers `markAsRead()`, resetting the shared in-memory `unreadCount` to `0` across both bells simultaneously.
 - **Source of Unread Data**:
   - Derived in-memory from `alertsNotifierProvider` (which fetches active alerts from `/alerts`).
-- **Push & FCM Disclaimer**:
-  - **FCM (Firebase Cloud Messaging), APNs push notifications, and SMS delivery are NOT implemented.** Alert notifications are handled purely in-app via `/alerts` API and Riverpod state.
+- **Push & FCM Architecture**:
+  - FCM (Firebase Cloud Messaging) push notifications for Android & iOS are fully implemented via `FirebaseMessaging`, `flutter_local_notifications`, and backend `firebase-admin` SDK. Tapping a push notification routes users directly to `AlertsScreen`.
+
 
 ---
 
@@ -809,4 +855,34 @@ Refined the notification preferences management and alert filtering interfaces:
 ### 3. Alerts Screen & Alert History Screen Filter Chips
 - **Filter List (`AlertFilterChips`)**: Updated to `['ALL', AlertTypes.priceIncrease, AlertTypes.priceDrop, AlertTypes.aiRecommendation]`.
 - **Better Market Filter Removal**: `AlertTypes.betterMarket` removed from filter chips across both `AlertsScreen` and `AlertHistoryScreen`.
+
+---
+
+# 27. FCM Push Notification Architecture & Multi-Channel Alert Integration
+
+Added on **30 August 2026**:
+
+Implemented real-time push notification delivery for Mandi Intelligence alerts via Firebase Cloud Messaging (FCM), integrated across both the Python FastAPI backend and Flutter mobile client.
+
+### 1. Architectural Highlights
+- **End-to-End Multicast Push**: Alerts generated by `AlertService.create_alert()` automatically dispatch push notifications via `firebase-admin` to all FCM tokens registered by the targeted user.
+- **Resilient Fallback Design**: If Firebase credentials are not configured or network failures occur, push delivery logs a warning and gracefully fails without rolling back alert creation or disrupting email delivery.
+- **Smart Credential Resolution**: Backend `firebase_service.py` supports credential loading via `FIREBASE_CREDENTIALS_JSON` environment variable string or `FIREBASE_CREDENTIALS_PATH` file path with intelligent candidate location resolution.
+- **Desugaring & Android 13+ Compliance**: Enabled `isCoreLibraryDesugaringEnabled = true` with `desugar_jdk_libs:2.0.4` in `android/app/build.gradle.kts` and added `POST_NOTIFICATIONS` runtime permission in `AndroidManifest.xml`.
+
+### 2. Database Schema Extension
+- **`user_fcm_tokens`**: Stores registered FCM device tokens (`id`, `user_id` FK -> `users.id`, `fcm_token` Unique, `device_type`, `created_at`, `updated_at`).
+
+### 3. Key Files Added / Modified
+- **Backend**:
+  - `app/models/user_fcm_token.py`: SQLAlchemy `UserFCMToken` model.
+  - `app/services/firebase_service.py`: Firebase Admin SDK initialization helper (`init_firebase`) and `send_fcm_notification()`.
+  - `app/schemas/alert.py`: Added `FCMTokenRegisterSchema`.
+  - `app/api/routes/alerts.py`: Added `POST /api/alerts/fcm-token` endpoint.
+  - `app/services/alert_service.py`: Added `_send_alert_push_notification()` invoked during `create_alert()`.
+- **Frontend**:
+  - `pubspec.yaml`: Added `firebase_core`, `firebase_messaging`, `flutter_local_notifications`.
+  - `lib/core/services/push_notification_service.dart`: Handles permission requests, FCM token retrieval/sync, local foreground banners, and background tap routing.
+  - `lib/main.dart`: Initialized `Firebase.initializeApp()` in `main()` and registered `PushNotificationService().initialize()` post-authentication.
+
 
