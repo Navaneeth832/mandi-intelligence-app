@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     FAST2SMS_API_KEY: str
 
     API_KEY: str
+
+    FIREBASE_CREDENTIALS_PATH: str | None = None
+    FIREBASE_CREDENTIALS_JSON: str | None = None
+
     
     model_config = SettingsConfigDict(
         env_file=".env",

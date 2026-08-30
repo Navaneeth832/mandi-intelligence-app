@@ -13,3 +13,4 @@ venv
 /build
 lib/core/constants/api_constants.dart
 backend/mandi_supabase.sql
+backend/firebase_service_account.json

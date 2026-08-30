@@ -20,4 +20,6 @@ from .prediction_batch import PredictionBatch
 from .commodity_prediction import CommodityPrediction
 from app.models.notification_preference import NotificationPreference
 from app.models.alert import Alert
+from app.models.user_fcm_token import UserFCMToken
+
 

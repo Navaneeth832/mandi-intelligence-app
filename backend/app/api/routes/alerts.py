@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.alert import PaginatedAlertsResponse, AlertType
+from app.schemas.alert import PaginatedAlertsResponse, AlertType, FCMTokenRegisterSchema
 from app.services.alert_service import AlertService
 
 router = APIRouter()
@@ -109,3 +109,30 @@ def get_alert_history(
         page=page,
         page_size=page_size,
     )
+
+@router.post("/fcm-token")
+def register_fcm_token(
+    payload: FCMTokenRegisterSchema,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Register or update FCM device token for authenticated user.
+    """
+    from app.models.user_fcm_token import UserFCMToken
+
+    existing = db.query(UserFCMToken).filter(UserFCMToken.fcm_token == payload.fcm_token).first()
+    if existing:
+        existing.user_id = current_user.id
+        existing.device_type = payload.device_type or "android"
+    else:
+        new_token = UserFCMToken(
+            user_id=current_user.id,
+            fcm_token=payload.fcm_token,
+            device_type=payload.device_type or "android",
+        )
+        db.add(new_token)
+    
+    db.commit()
+    return {"status": "success", "message": "FCM token registered successfully"}
+

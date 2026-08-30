@@ -68,3 +68,8 @@ class AlertCreateSchema(BaseModel):
     current_price: Optional[float] = None
     previous_price: Optional[float] = None
     change_percent: Optional[float] = None
+
+class FCMTokenRegisterSchema(BaseModel):
+    fcm_token: str = Field(..., description="Firebase Messaging Device Token")
+    device_type: Optional[str] = Field("android", description="android or ios")
+

@@ -9,6 +9,7 @@ import 'main_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 import 'core/widgets/mobile_frame_wrapper.dart';
+import 'core/services/push_notification_service.dart';
 
 void main() {
   runApp(
@@ -53,12 +54,16 @@ class AuthWrapper extends ConsumerWidget {
     }
 
     if (authState.isAuthenticated) {
+      // Register Push Notification Service
+      PushNotificationService().initialize();
+
       final user = authState.currentUser;
       if (user != null && !user.hasCompletedProfile) {
         return const OnboardingScreen();
       }
       return const MainScreen();
     }
+
 
     return const LoginScreen();
   }

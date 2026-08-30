@@ -21,3 +21,4 @@ lightgbm
 geopy
 GeoAlchemy2
 markdown
+firebase-admin
