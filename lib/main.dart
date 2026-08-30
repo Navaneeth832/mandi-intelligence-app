@@ -9,15 +9,25 @@ import 'main_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 import 'core/widgets/mobile_frame_wrapper.dart';
-import 'core/services/push_notification_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase.initializeApp error: $e');
+  }
+
   runApp(
     const ProviderScope(
       child: MyApp(),
     ),
   );
 }
+
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -54,8 +64,10 @@ class AuthWrapper extends ConsumerWidget {
     }
 
     if (authState.isAuthenticated) {
-      // Register Push Notification Service
-      PushNotificationService().initialize();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        PushNotificationService().initialize();
+      });
+
 
       final user = authState.currentUser;
       if (user != null && !user.hasCompletedProfile) {
