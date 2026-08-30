@@ -11,6 +11,8 @@ import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import 'core/widgets/mobile_frame_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/services/push_notification_service.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
