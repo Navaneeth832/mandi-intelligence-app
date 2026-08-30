@@ -93,7 +93,7 @@ This document serves as the single authoritative persistent memory and comprehen
 │   │   ├── repositories/                 # SQL queries (mandi prices, predictions, alerts)
 │   │   ├── schemas/                      # Pydantic schemas (alerts, predictions, auth, etc.)
 │   │   ├── services/                     # Business logic & processors
-│   │   │   ├── alert_processors/         # Price shift & AI alert processors
+│   │   │   ├── alert_processors/         # Price shift alert processor
 │   │   │   ├── alert_generation_service.py # Alert generator dispatcher
 │   │   │   ├── alert_localization.py     # Template-based alert translation
 │   │   │   ├── alert_service.py          # Alert persistence & mapping
@@ -724,6 +724,7 @@ User enters OTP ◄────────────────────�
   - Respects user notification preferences (`delivery_email` in `notification_preferences`).
 - **Backend-Only Channel**:
   - Email delivery is triggered internally on FastAPI backend upon alert generation. `RESEND_API_KEY` remains strictly server-side.
+  - Automated alert generation in GitHub Actions (`generate_alerts.yml`) provisions the necessary secrets (`RESEND_API_KEY`, `SECRET_KEY`, `API_KEY`) to support headless email delivery without application server dependencies.
 - **FCM & SMS Disclaimer**:
   - FCM push notifications and SMS delivery are **NOT** implemented in this change.
 

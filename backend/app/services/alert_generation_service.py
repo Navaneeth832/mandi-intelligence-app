@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.schemas.alert import AlertCreateSchema
 from app.services.alert_service import AlertService
 from app.services.alert_processors.price_shift_processor import PriceShiftProcessor
+from app.services.alert_processors.ai_recommendation_processor import AIRecommendationProcessor
 from app.services.alert_processor_interface import AlertProcessorInterface
 class AlertGenerationService:
     """
@@ -15,6 +16,7 @@ class AlertGenerationService:
         self._processors: List[AlertProcessorInterface] = []
         # Register core processors
         self.register_processor(PriceShiftProcessor())
+        self.register_processor(AIRecommendationProcessor())
 
     def register_processor(self, processor: AlertProcessorInterface) -> None:
         """Register an alert processor (e.g. PriceIncreaseProcessor, BetterMarketProcessor, AIRecommendationProcessor)."""
