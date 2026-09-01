@@ -134,8 +134,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentState = pricesAsync.valueOrNull;
 
     final hasConfiguredAsync = ref.watch(hasConfiguredNotificationPreferencesProvider);
-    final bool hasConfigured = hasConfiguredAsync.valueOrNull ?? false;
-    final bool showNotificationBanner = !hasConfigured && !_isNotificationBannerDismissed;
+    final bool showNotificationBanner = hasConfiguredAsync.maybeWhen(
+      data: (hasConfigured) => !hasConfigured && !_isNotificationBannerDismissed,
+      orElse: () => false,
+    );
 
     return RefreshIndicator(
       onRefresh: () async {
