@@ -480,8 +480,8 @@ class AuthNotifier extends Notifier<AuthState> {
           verificationToken: token,
         ),
       );
-      state = AuthState();
-      return true;
+      final user = await login(identifier, password);
+      return user != null;
     } catch (e) {
       state = state.copyWith(
         isRegistering: false,

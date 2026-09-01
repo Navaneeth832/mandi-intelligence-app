@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'login_screen.dart';
+import 'package:mandi_intelligence_app/main_screen.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -198,11 +199,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Account created successfully. Please log in.'),
+          content: Text('Account created successfully.'),
           backgroundColor: Colors.green,
         ),
       );
-      _navigateToLogin();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+        (route) => false,
+      );
       return;
     }
 

@@ -28,7 +28,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   StateModel? _selectedState;
   District? _selectedDistrict;
   Market? _selectedMarket;
-  String? _selectedLanguage;
+  String? _selectedLanguage = 'en';
   final List<Commodity> _selectedCrops = [];
   bool _isDataPopulated = false;
 
@@ -202,7 +202,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(27)),
               ),
-              onPressed: (_selectedState != null && _selectedDistrict != null && _selectedLanguage != null)
+              onPressed: (_selectedState != null && _selectedDistrict != null)
                   ? () async {
                       try {
                         final authRepo = ref.read(authRepositoryProvider);
@@ -397,7 +397,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
             const SizedBox(height: 12),
             
-            _buildLabel(AppLocalizations.of(context)!.preferredLanguage),
+            _buildLabel("${AppLocalizations.of(context)!.preferredLanguage} (Optional)"),
             DropdownButtonFormField<String>(
               value: _selectedLanguage,
               hint: Text(AppLocalizations.of(context)!.selectLanguage, style: const TextStyle(fontSize: 14)),
