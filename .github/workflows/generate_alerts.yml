@@ -39,6 +39,12 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           API_KEY: ${{ secrets.API_KEY != '' && secrets.API_KEY || vars.API_KEY }}
+          FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
         working-directory: backend
         run: |
           python scripts/run_alert_generation.py

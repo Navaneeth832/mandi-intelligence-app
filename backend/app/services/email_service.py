@@ -376,7 +376,7 @@ class EmailService:
             logger.info(f"Alert email sent successfully to {email} (subject: '{subject}').")
             return True
         except Exception as e:
-            logger.error(f"Failed to send alert email to {email}: {e}")
+            logger.exception(f"Failed to send alert email to {email}: {e}")
             return False
 
     

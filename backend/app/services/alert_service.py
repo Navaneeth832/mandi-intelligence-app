@@ -216,13 +216,13 @@ class AlertService:
         try:
             cls._send_alert_email_notification(db, alert)
         except Exception as e:
-            logger.error(f"Error executing email notification for alert ID {alert.id}: {e}")
+            logger.exception(f"Error executing email notification for alert ID {alert.id}: {e}")
 
         # Trigger push notification channel independently
         try:
             cls._send_alert_push_notification(db, alert)
         except Exception as e:
-            logger.error(f"Error executing FCM push notification for alert ID {alert.id}: {e}")
+            logger.exception(f"Error executing FCM push notification for alert ID {alert.id}: {e}")
 
         return alert
 
