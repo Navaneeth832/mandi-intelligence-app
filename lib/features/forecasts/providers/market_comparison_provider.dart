@@ -180,8 +180,12 @@ class MarketComparisonNotifier extends StateNotifier<MarketComparisonState> {
     switch (option) {
       case MarketSortOption.bestValue:
       case MarketSortOption.netProfit:
-        // Sort by highest net profit per quintal descending
-        list.sort((a, b) => b.netProfit.compareTo(a.netProfit));
+        // Sort by Best Value first, then highest net profit per quintal descending
+        list.sort((a, b) {
+          if (a.isBestValue && !b.isBestValue) return -1;
+          if (!a.isBestValue && b.isBestValue) return 1;
+          return b.netProfit.compareTo(a.netProfit);
+        });
         break;
       case MarketSortOption.sellingPrice:
         // Sort by highest selling price descending

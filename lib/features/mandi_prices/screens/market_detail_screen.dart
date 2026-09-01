@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
+import '../../../data/models/commodity_model.dart';
 import '../../../data/models/mandi_price.dart';
 import '../../../data/models/price_history.dart';
 import '../../../data/repositories/mandi_repository.dart';
 import '../../../data/services/mandi_api_service.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../forecasts/screens/commodity_advisory_screen.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 
 class MarketDetailScreen extends StatefulWidget {
@@ -131,6 +133,8 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
                     _buildPriceSummaryCard(context),
                     const SizedBox(height: 20),
                     _buildTrendSection(),
+                    const SizedBox(height: 20),
+                    _buildViewInForecastButton(context),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -513,6 +517,84 @@ class _MarketDetailScreenState extends State<MarketDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildViewInForecastButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF2E7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFD8B3)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            final commodityObj = Commodity(
+              id: widget.price.commodityId ?? 0,
+              name: widget.price.commodity,
+              commodityImageUrl: widget.price.commodityImageUrl,
+            );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CommodityAdvisoryScreen(commodity: commodityObj),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF97316),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.trending_up,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'View in Forecast & Advisory',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF9A3412),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Get price predictions and selling recommendations for ${widget.price.getDisplayCommodity()}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFFC2410C),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Color(0xFFF97316),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

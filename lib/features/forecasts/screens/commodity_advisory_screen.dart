@@ -222,6 +222,15 @@ class _CommodityAdvisoryScreenState extends ConsumerState<CommodityAdvisoryScree
       return true;
     }).toList();
 
+    // Prioritize "Sell Today" / "SELL" recommendations at the top
+    filteredPredictions.sort((a, b) {
+      final aIsSell = a.recommendation.toUpperCase().contains('SELL');
+      final bIsSell = b.recommendation.toUpperCase().contains('SELL');
+      if (aIsSell && !bIsSell) return -1;
+      if (!aIsSell && bIsSell) return 1;
+      return 0;
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFBF7), // Cream background
       appBar: AppBar(
