@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/providers.dart';
 import '../../../data/models/notification_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/notification_preferences_provider.dart';
@@ -26,6 +27,14 @@ class _NotificationSettingsScreenState
   NotificationPreferences? _localPreferences;
   NotificationPreferences? _initialPreferences;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationRepositoryProvider).markNotificationPreferencesConfigured();
+    });
+  }
 
   bool get _hasChanges =>
       _localPreferences != null &&

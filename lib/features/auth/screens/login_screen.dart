@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mandi_intelligence_app/l10n/app_localizations.dart';
 import 'package:mandi_intelligence_app/main_screen.dart';
 import 'forgot_password_screen.dart';
+import 'onboarding_screen.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'signup_screen.dart';
@@ -211,7 +212,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                                 Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
-                                    builder: (_) => const MainScreen(),
+                                    builder: (_) => user.hasCompletedProfile
+                                        ? const MainScreen()
+                                        : const OnboardingScreen(),
                                   ),
                                   (route) => false,
                                 );

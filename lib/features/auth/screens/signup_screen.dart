@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/primary_auth_button.dart';
 import 'login_screen.dart';
+import 'onboarding_screen.dart';
 import 'package:mandi_intelligence_app/main_screen.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -203,8 +204,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           backgroundColor: Colors.green,
         ),
       );
+      final user = ref.read(authProvider).currentUser;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MainScreen()),
+        MaterialPageRoute(
+          builder: (context) => (user != null && user.hasCompletedProfile)
+              ? const MainScreen()
+              : const OnboardingScreen(),
+        ),
         (route) => false,
       );
       return;

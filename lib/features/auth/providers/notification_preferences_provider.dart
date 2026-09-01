@@ -6,6 +6,11 @@ final notificationPreferencesNotifierProvider = AutoDisposeAsyncNotifierProvider
     NotificationPreferencesNotifier,
     NotificationPreferences>(NotificationPreferencesNotifier.new);
 
+final hasConfiguredNotificationPreferencesProvider =
+    FutureProvider.autoDispose<bool>((ref) async {
+  return ref.watch(notificationRepositoryProvider).hasConfiguredNotificationPreferences();
+});
+
 class NotificationPreferencesNotifier
     extends AutoDisposeAsyncNotifier<NotificationPreferences> {
   @override

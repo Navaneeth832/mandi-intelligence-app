@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/screens/onboarding_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'core/providers/locale_provider.dart';
@@ -69,6 +70,10 @@ class AuthWrapper extends ConsumerWidget {
         PushNotificationService().initialize();
       });
 
+      final user = authState.currentUser;
+      if (user != null && !user.hasCompletedProfile) {
+        return const OnboardingScreen();
+      }
       return const MainScreen();
     }
 

@@ -15,6 +15,9 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_widget.dart';
 import '../../alerts/widgets/notification_bell.dart';
+import '../../auth/screens/notification_settings_screen.dart';
+import '../../auth/providers/notification_preferences_provider.dart';
+import '../../../core/providers/providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _tempState;
   String? _tempDistrict;
   String? _tempMarket;
+  bool _isNotificationBannerDismissed = false;
 
   late final ScrollController _scrollController;
 
@@ -129,6 +133,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final pricesAsync = ref.watch(mandiPricesProvider(filter));
     final currentState = pricesAsync.valueOrNull;
 
+    final hasConfiguredAsync = ref.watch(hasConfiguredNotificationPreferencesProvider);
+    final bool hasConfigured = hasConfiguredAsync.valueOrNull ?? false;
+    final bool showNotificationBanner = !hasConfigured && !_isNotificationBannerDismissed;
+
     return RefreshIndicator(
       onRefresh: () async {
         // Refresh the current filter
@@ -157,12 +165,119 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               orElse: () => DateTime.now(),
             ),
           ),
+          if (showNotificationBanner)
+            _buildNotificationPreferencesBanner(),
           if (currentState?.isFromCache == true)
             _buildOfflineBanner(currentState?.cachedAt),
           const SizedBox(height: 24),
           _buildFilterSection(),
           const SizedBox(height: 20),
           _buildPriceList(filter),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationPreferencesBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFDBEAFE),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: Color(0xFF1D4ED8),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Set Up Notification Preferences',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E3A8A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Customize alerts for price changes and crop recommendations.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFF1E40AF),
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () async {
+                    await ref
+                        .read(notificationRepositoryProvider)
+                        .markNotificationPreferencesConfigured();
+                    ref.invalidate(hasConfiguredNotificationPreferencesProvider);
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationSettingsScreen(),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Set preferences',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1D4ED8),
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14,
+                        color: Color(0xFF1D4ED8),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Color(0xFF6B7280)),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () async {
+              setState(() {
+                _isNotificationBannerDismissed = true;
+              });
+              await ref
+                  .read(notificationRepositoryProvider)
+                  .markNotificationPreferencesConfigured();
+              ref.invalidate(hasConfiguredNotificationPreferencesProvider);
+            },
+          ),
         ],
       ),
     );
