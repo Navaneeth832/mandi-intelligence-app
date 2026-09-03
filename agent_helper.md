@@ -1,5 +1,5 @@
 # Mandi Intelligence - Long-Term Architectural Memory
-*(Last Updated: 29 August 2026)*
+*(Last Updated: 1 September 2026)*
 
 This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.
 
@@ -371,6 +371,7 @@ flowchart TB
     FilterResultsScreen --> MarketDetailScreen
     MarketsScreen --> MarketDirectoryDetailScreen
     MarketDirectoryDetailScreen --> MarketDetailScreen
+    MarketDetailScreen -->|"View in Forecast"| ForecastDetailScreen
     ForecastsScreen --> CommodityAdvisoryScreen
     ForecastsScreen --> ExploreMoreCommoditiesScreen
     ForecastsScreen --> ForecastDetailScreen
@@ -885,4 +886,28 @@ Implemented real-time push notification delivery for Mandi Intelligence alerts v
   - `lib/core/services/push_notification_service.dart`: Handles permission requests, FCM token retrieval/sync, local foreground banners, and background tap routing.
   - `lib/main.dart`: Initialized `Firebase.initializeApp()` in `main()` and registered `PushNotificationService().initialize()` post-authentication.
 
+---
+
+# 28. Profile Setup Redirection, Persistent Notification Banner, & Forecast Navigation Refinements
+
+Added on **1 September 2026**:
+
+Refined authentication onboarding redirection, persistent notification settings prompts, and direct prediction navigation:
+
+### 1. Registration Auto-Login & Profile Completion Redirection
+- **Auto-Login on Registration**: `AuthNotifier.register()` in `lib/features/auth/providers/auth_provider.dart` automatically authenticates users upon registration via `login(identifier, password)`, removing manual re-login prompts.
+- **Uncompleted Profile Setup Guard**: `AuthWrapper` (`main.dart`), `LoginScreen` (`login_screen.dart`), and `SignupScreen` (`signup_screen.dart`) evaluate `user.hasCompletedProfile`. Users without completed location profiles (both new signups and returning logins) are directed to `OnboardingScreen` ("Finish setting up your profile"). Users with completed profiles land directly on `MainScreen`.
+- **Default Language**: Defaulted `_selectedLanguage` to English (`en`) in `OnboardingScreen`, keeping language selection optional.
+
+### 2. Lifetime Persistent Notification Settings Banner
+- **Persistent Storage**: Utilizes `FlutterSecureStorage` with key `has_configured_notification_preferences`.
+- **Lifetime Visit / Dismissal Check**: Visiting `NotificationSettingsScreen` (or saving preferences) or tapping the close (`X`) button on the Home banner sets `has_configured_notification_preferences = 'true'`.
+- **Cross-Launch Persistence**: Once set, the top banner on `HomeScreen` is permanently hidden across future app restarts.
+- **Glitch-Free Evaluation**: Evaluated using `hasConfiguredAsync.maybeWhen(data: (hasConfigured) => !hasConfigured && !_isNotificationBannerDismissed, orElse: () => false)` to prevent 0.1-second flashes during background state loading.
+
+### 4. Unified Tractor Logo Branding Across Auth, Emails & APK Icon
+- **Home Header Badge**: Retained the green hexagon brand badge with `Icons.arrow_upward` on `HomeScreen` (`home_screen.dart`).
+- **Auth Header Logo**: Updated `AuthHeader` (`auth_header.dart`) across Login, Signup, and Password Recovery screens to feature `Icons.agriculture_rounded` (the tractor logo icon).
+- **Transactional Email Templates**: Updated `EmailService.send_otp_email()` in `backend/app/services/email_service.py` to share the same responsive HTML card layout with the `🚜 Mandi Intelligence` tractor header banner, matching alert emails.
+- **Android APK Launcher Icons**: Integrated `flutter_launcher_icons` (`^0.14.4`) in `pubspec.yaml`, created high-resolution tractor logo icon asset `assets/images/app_icon.png`, and generated all Android mipmap resolutions (`ic_launcher.png` across `mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) and adaptive icon configurations (`colors.xml`).
 

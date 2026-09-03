@@ -197,20 +197,62 @@ class EmailService:
             "from": "noreply@mandiintelligence.tech",
             "to": email,
             "subject": "Your Mandi Intelligence OTP",
-            "html": f"""
-            <p>Hello,</p>
+            "html": f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Mandi Intelligence OTP</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F8F9FA; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1F2937;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F8F9FA; padding: 20px 10px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 12px rgba(0,0,0,0.05);" cellspacing="0" cellpadding="0">
+          
+          <!-- Header Banner with Tractor Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1A9809 0%, #158007 100%); padding: 24px 28px; text-align: left;">
+              <h1 style="margin: 0; color: #FFFFFF; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">🚜 Mandi Intelligence</h1>
+              <p style="margin: 4px 0 0 0; color: #E2F2E0; font-size: 13px; font-weight: 500;">Smart Mandi Insights & Price Advisory</p>
+            </td>
+          </tr>
 
-            <p>Your verification code is:</p>
+          <!-- Main Content Area -->
+          <tr>
+            <td style="padding: 28px;">
+              <p style="margin: 0 0 12px 0; font-size: 16px; color: #374151; font-weight: 600;">
+                Hello,
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 14px; color: #6B7280; line-height: 1.5;">
+                Your verification code for Mandi Intelligence is:
+              </p>
 
-            <h1>{otp}</h1>
+              <!-- OTP Display Box -->
+              <div style="background-color: #F0FDF4; border: 2px dashed #16A34A; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 32px; font-weight: 900; color: #15803D; letter-spacing: 8px;">{otp}</span>
+              </div>
 
-            <p>This OTP is valid for 5 minutes.</p>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #6B7280;">
+                This OTP is valid for <strong>5 minutes</strong>. If you didn't request this code, you can safely ignore this email.
+              </p>
 
-            <p>If you didn't request this code, you can safely ignore this email.</p>
+              <hr style="border: none; border-top: 1px solid #F3F4F6; margin: 24px 0;" />
 
-            <p>Regards,</p>
-            <p>Mandi Intelligence</p>
-            """
+              <p style="margin: 0; font-size: 13px; color: #9CA3AF;">
+                Regards,<br />
+                <strong style="color: #4B5563;">Mandi Intelligence Team</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
         })
 
     @classmethod
@@ -251,7 +293,16 @@ class EmailService:
 
         formatted_current = f"₹{current_price:,.2f} {t['unit']}" if current_price is not None else "-"
         formatted_prev = f"₹{previous_price:,.2f} {t['unit']}" if previous_price is not None else None
-        formatted_change = f"{change_percent:+.1f}%" if change_percent is not None else None
+        
+        formatted_change = None
+        if change_percent is not None:
+            val = abs(change_percent)
+            if type_key == "PRICE_DROP" or (current_price is not None and previous_price is not None and current_price < previous_price):
+                formatted_change = f"-{val:.1f}%"
+            elif type_key == "PRICE_INCREASE" or (current_price is not None and previous_price is not None and current_price > previous_price):
+                formatted_change = f"+{val:.1f}%"
+            else:
+                formatted_change = f"{change_percent:+.1f}%" if change_percent >= 0 else f"{change_percent:.1f}%"
 
         change_box_html = ""
         if formatted_change:

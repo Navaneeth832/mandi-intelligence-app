@@ -678,6 +678,7 @@
 <a class="nav-item nav-level-1" href="#11-machine-learning-prediction-pipeline" onclick="closeMobileNav()">11. Machine Learning &amp; Prediction Pipeline</a>
 <a class="nav-item nav-level-1" href="#12-actionable-alerts-notification-system" onclick="closeMobileNav()">12. Actionable Alerts &amp; Notification System</a>
 <a class="nav-item nav-level-3" href="#alert-types-scope" onclick="closeMobileNav()">Alert Types &amp; Scope</a>
+<a class="nav-item nav-level-3" href="#push-notification-architecture-firebase-cloud-messaging---fcm" onclick="closeMobileNav()">Push Notification Architecture (Firebase Cloud Messaging - FCM)</a>
 <a class="nav-item nav-level-1" href="#13-data-ingestion-engine" onclick="closeMobileNav()">13. Data Ingestion Engine</a>
 <a class="nav-item nav-level-1" href="#14-authentication-recovery-profile-lifecycle" onclick="closeMobileNav()">14. Authentication, Recovery &amp; Profile Lifecycle</a>
 <a class="nav-item nav-level-3" href="#1-user-registration-flow" onclick="closeMobileNav()">1. User Registration Flow</a>
@@ -705,6 +706,15 @@
 <a class="nav-item nav-level-3" href="#1-database-schema-backend-model-preservation" onclick="closeMobileNav()">1. Database Schema &amp; Backend Model Preservation</a>
 <a class="nav-item nav-level-3" href="#2-notification-settings-screen-notificationsettingsscreen" onclick="closeMobileNav()">2. Notification Settings Screen (NotificationSettingsScreen)</a>
 <a class="nav-item nav-level-3" href="#3-alerts-screen-alert-history-screen-filter-chips" onclick="closeMobileNav()">3. Alerts Screen &amp; Alert History Screen Filter Chips</a>
+<a class="nav-item nav-level-1" href="#27-fcm-push-notification-architecture-multi-channel-alert-integration" onclick="closeMobileNav()">27. FCM Push Notification Architecture &amp; Multi-Channel Alert Integration</a>
+<a class="nav-item nav-level-3" href="#1-architectural-highlights" onclick="closeMobileNav()">1. Architectural Highlights</a>
+<a class="nav-item nav-level-3" href="#2-database-schema-extension" onclick="closeMobileNav()">2. Database Schema Extension</a>
+<a class="nav-item nav-level-3" href="#3-key-files-added-modified" onclick="closeMobileNav()">3. Key Files Added / Modified</a>
+<a class="nav-item nav-level-1" href="#28-profile-setup-redirection-persistent-notification-banner-forecast-navigation-refinements" onclick="closeMobileNav()">28. Profile Setup Redirection, Persistent Notification Banner, &amp; Forecast Navigation Refinements</a>
+<a class="nav-item nav-level-3" href="#1-registration-auto-login-profile-completion-redirection" onclick="closeMobileNav()">1. Registration Auto-Login &amp; Profile Completion Redirection</a>
+<a class="nav-item nav-level-3" href="#2-lifetime-persistent-notification-settings-banner" onclick="closeMobileNav()">2. Lifetime Persistent Notification Settings Banner</a>
+<a class="nav-item nav-level-3" href="#4-alert-email-price-change-sign-formatting" onclick="closeMobileNav()">4. Alert Email Price Change Sign Formatting</a>
+<a class="nav-item nav-level-3" href="#5-unified-tractor-logo-branding-across-auth-emails-apk-icon" onclick="closeMobileNav()">5. Unified Tractor Logo Branding Across Auth, Emails &amp; APK Icon</a>
             </nav>
         </aside>
 
@@ -712,7 +722,7 @@
         <main>
             <article class="markdown-body" id="docsContent">
                 <h1 id="mandi-intelligence-long-term-architectural-memory">Mandi Intelligence - Long-Term Architectural Memory</h1>
-<p><em>(Last Updated: 29 August 2026)</em></p>
+<p><em>(Last Updated: 1 September 2026)</em></p>
 <p>This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.</p>
 <hr />
 <h1 id="1-project-overview">1. Project Overview</h1>
@@ -753,6 +763,7 @@
 <li><strong>Charts</strong>: <code>fl_chart</code> (^1.2.0) (price history &amp; 7-day prediction trajectory)</li>
 <li><strong>Networking</strong>: <code>http</code> (^1.2.1)</li>
 <li><strong>Localization</strong>: <code>flutter_localizations</code> (SDK), <code>intl</code> (^0.20.2), <code>flutter gen-l10n</code></li>
+<li><strong>Push Notifications</strong>: <code>firebase_core</code> (^3.10.0), <code>firebase_messaging</code> (^15.2.0), <code>flutter_local_notifications</code> (^18.0.1)</li>
 <li><strong>Animations &amp; UI</strong>: <code>shimmer</code> (^3.0.0), <code>MobileFrameWrapper</code> (390x884 desktop viewport constraint)</li>
 </ul>
 <h3 id="backend">Backend</h3>
@@ -765,6 +776,7 @@
 <li><strong>Data Fetcher</strong>: <code>httpx</code>, <code>requests</code></li>
 <li><strong>Config &amp; Validation</strong>: Pydantic / <code>pydantic-settings</code></li>
 <li><strong>Security &amp; Token</strong>: Passlib (<code>bcrypt</code>), <code>python-jose[cryptography]</code> (JWT)</li>
+<li><strong>Push Notification Engine</strong>: <code>firebase-admin</code> (SDK)</li>
 <li><strong>Email Delivery</strong>: <code>resend</code> (SDK)</li>
 <li><strong>SMS Delivery</strong>: <code>Fast2SMS</code> API (<code>SMSService</code>)</li>
 </ul>
@@ -801,7 +813,7 @@
 │   │   ├── repositories/                 # SQL queries (mandi prices, predictions, alerts)
 │   │   ├── schemas/                      # Pydantic schemas (alerts, predictions, auth, etc.)
 │   │   ├── services/                     # Business logic &amp; processors
-│   │   │   ├── alert_processors/         # Price shift &amp; AI alert processors
+│   │   │   ├── alert_processors/         # Price shift alert processor
 │   │   │   ├── alert_generation_service.py # Alert generator dispatcher
 │   │   │   ├── alert_localization.py     # Template-based alert translation
 │   │   │   ├── alert_service.py          # Alert persistence &amp; mapping
@@ -1156,6 +1168,14 @@
 <td style="text-align: left;"><code>PaginatedAlertsResponse</code></td>
 </tr>
 <tr>
+<td style="text-align: left;"><code>/alerts/fcm-token</code></td>
+<td style="text-align: left;"><code>POST</code></td>
+<td style="text-align: left;">Bearer</td>
+<td style="text-align: left;">Register user device FCM token</td>
+<td style="text-align: left;">Body: <code>FCMTokenRegisterSchema</code></td>
+<td style="text-align: left;"><code>{"status": "success", "message": "..."}</code></td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>/static/*</code></td>
 <td style="text-align: left;"><code>GET</code></td>
 <td style="text-align: left;">None</td>
@@ -1211,7 +1231,8 @@
     users ||--o{ user_crop_preferences : &quot;prefers&quot;
     users ||--o{ refresh_tokens : &quot;owns&quot;
     users ||--o{ notification_preferences : &quot;configures&quot;
-    users ||--o{ alerts : &quot;receives&quot;</pre>
+    users ||--o{ alerts : &quot;receives&quot;
+    users ||--o{ user_fcm_tokens : &quot;registers_device&quot;</pre>
         </div>
     </div>
 </div>
@@ -1246,6 +1267,7 @@
 <li><strong><code>verification_tokens</code></strong>: <code>id</code> (PK, UUID), <code>identifier</code> (VARCHAR), <code>token_hash</code> (VARCHAR), <code>purpose</code> (VARCHAR), <code>expires_at</code> (TIMESTAMPTZ), <code>used</code> (BOOL), <code>created_at</code> (TIMESTAMPTZ).</li>
 <li><strong><code>notification_preferences</code></strong>: <code>user_id</code> (PK, FK -&gt; <code>users.id</code>), <code>price_increase</code> (BOOL), <code>price_drop</code> (BOOL), <code>better_market</code> (BOOL), <code>market_glut</code> (BOOL), <code>ai_recommendation</code> (BOOL), <code>delivery_in_app</code> (BOOL), <code>delivery_email</code> (BOOL), <code>delivery_push</code> (BOOL), <code>frequency</code> (VARCHAR(20), default='instant'), <code>created_at</code> (TIMESTAMPTZ), <code>updated_at</code> (TIMESTAMPTZ).</li>
 <li><strong><code>alerts</code></strong>: <code>id</code> (PK, UUID), <code>user_id</code> (FK -&gt; <code>users.id</code>), <code>type</code> (VARCHAR(50)), <code>severity</code> (VARCHAR(20)), <code>title</code> (VARCHAR(255)), <code>message</code> (TEXT), <code>commodity_id</code> (FK -&gt; <code>commodities.id</code>), <code>market_id</code> (FK -&gt; <code>markets.id</code>), <code>current_price</code> (FLOAT, Nullable), <code>previous_price</code> (FLOAT, Nullable), <code>change_percent</code> (FLOAT, Nullable), <code>created_at</code> (TIMESTAMPTZ).</li>
+<li><strong><code>user_fcm_tokens</code></strong>: <code>id</code> (PK, UUID), <code>user_id</code> (FK -&gt; <code>users.id</code>, Cascade Delete), <code>fcm_token</code> (VARCHAR(500), Unique), <code>device_type</code> (VARCHAR(20), default='android'), <code>created_at</code> (TIMESTAMPTZ), <code>updated_at</code> (TIMESTAMPTZ). Index on <code>user_id</code>.</li>
 </ol>
 <hr />
 <h1 id="7-frontend-architecture-screen-layout">7. Frontend Architecture &amp; Screen Layout</h1>
@@ -1325,6 +1347,7 @@
     FilterResultsScreen --&gt; MarketDetailScreen
     MarketsScreen --&gt; MarketDirectoryDetailScreen
     MarketDirectoryDetailScreen --&gt; MarketDetailScreen
+    MarketDetailScreen --&gt;|&quot;View in Forecast&quot;| ForecastDetailScreen
     ForecastsScreen --&gt; CommodityAdvisoryScreen
     ForecastsScreen --&gt; ExploreMoreCommoditiesScreen
     ForecastsScreen --&gt; ForecastDetailScreen
@@ -1472,6 +1495,59 @@
 <li><code>AlertRepository</code> transparently attempts the real <code>/alerts</code> HTTP API. On network failures or offline demo scenarios, it seamlessly falls back to <code>AlertFallbackDataSource</code> (which provides realistic mock alerts for Tomato in Thrissur, Coconut in Kozhikode, Potato in Palakkad).</li>
 <li><code>AlertsScreen</code> renders active alerts with filter chips (<code>All</code>, <code>Price Increase</code>, <code>Price Drop</code>, <code>AI Recommendation</code>).</li>
 <li><code>AlertHistoryScreen</code> renders searchable archives with date range bounds and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).</li>
+</ul>
+<h3 id="push-notification-architecture-firebase-cloud-messaging-fcm">Push Notification Architecture (Firebase Cloud Messaging - FCM)</h3>
+
+<div class="mermaid-card">
+    <div class="mermaid-card-header">
+        <span class="mermaid-card-title">📊 Architecture Diagram</span>
+        <div class="mermaid-card-controls">
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, 0.2)" title="Zoom In">🔍 +</button>
+            <button class="mermaid-expand-btn" onclick="zoomMermaid(this, -0.2)" title="Zoom Out">🔍 −</button>
+            <button class="mermaid-expand-btn" onclick="resetMermaidZoom(this)" title="Reset Zoom">↺ Reset</button>
+            <button class="mermaid-expand-btn" onclick="toggleMermaidFullscreen(this)" title="Toggle Fullscreen">⤢ Fullscreen</button>
+        </div>
+    </div>
+    <div class="mermaid-viewport">
+        <div class="mermaid-scale-wrapper">
+            <pre class="mermaid">sequenceDiagram
+    autonumber
+    participant App as Flutter Mobile App
+    participant FCM as Firebase Cloud Messaging
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL DB
+
+    App-&gt;&gt;FCM: 1. Request Permission &amp; Get Device Token
+    FCM--&gt;&gt;App: Returns FCM Token
+    App-&gt;&gt;API: 2. POST /alerts/fcm-token (Bearer Auth + FCM Token)
+    API-&gt;&gt;DB: 3. Upsert user_fcm_tokens (user_id, fcm_token, device_type)
+    
+    Note over API,DB: Price Ingestion / Alert Trigger
+    API-&gt;&gt;API: 4. AlertGenerationService evaluates price condition
+    API-&gt;&gt;DB: 5. Persist Alert to alerts table
+    API-&gt;&gt;DB: 6. Fetch user delivery_push pref &amp; user_fcm_tokens
+    API-&gt;&gt;FCM: 7. send_fcm_notification (Multicast payload: title, body, data)
+    FCM--&gt;&gt;App: 8. Delivers Push Notification to System Notification Bar
+    App-&gt;&gt;App: 9. Display Foreground Banner / Tap Route to /alerts</pre>
+        </div>
+    </div>
+</div>
+
+<ul>
+<li><strong>Backend Push Engine</strong>:</li>
+<li><strong>Model</strong>: <code>UserFCMToken</code> (<code>user_fcm_token.py</code>) mapping to <code>user_fcm_tokens</code> table.</li>
+<li><strong>Service</strong>: <code>firebase_service.py</code> initialized via Firebase Admin SDK. Supports credential loading via <code>FIREBASE_CREDENTIALS_JSON</code> environment variable string or <code>FIREBASE_CREDENTIALS_PATH</code> file path with intelligent candidate location resolution.</li>
+<li><strong>Delivery Integration</strong>: Integrated in <code>AlertService._send_alert_push_notification()</code> within <code>create_alert()</code>. Checks user <code>delivery_push</code> preference in <code>notification_preferences</code> and sends FCM multicast push notifications to all active user device tokens.</li>
+<li>
+<p><strong>Endpoint</strong>: <code>POST /api/alerts/fcm-token</code> registers or updates device tokens for authenticated users.</p>
+</li>
+<li>
+<p><strong>Frontend Push Engine</strong>:</p>
+</li>
+<li><strong>Service</strong>: <code>PushNotificationService</code> (<code>lib/core/services/push_notification_service.dart</code>).</li>
+<li><strong>Initialization</strong>: Triggered automatically post-authentication in <code>AuthWrapper</code> (<code>main.dart</code>).</li>
+<li><strong>Permissions &amp; Sync</strong>: Prompts Android 13+ <code>POST_NOTIFICATIONS</code> runtime dialog, obtains FCM token, posts token to backend API, and listens for token refresh events.</li>
+<li><strong>Foreground &amp; Background Handlers</strong>: Uses <code>flutter_local_notifications</code> for foreground pop-up banners and <code>@pragma('vm:entry-point') firebaseMessagingBackgroundHandler</code> for background/terminated notification handling. Tapping notification routes user directly to <code>/alerts</code>.</li>
 </ul>
 <hr />
 <h1 id="13-data-ingestion-engine">13. Data Ingestion Engine</h1>
@@ -1639,8 +1715,8 @@ User enters OTP ◄────────────────────�
 <li>Opening <code>AlertsScreen</code> triggers <code>markAsRead()</code>, resetting the shared in-memory <code>unreadCount</code> to <code>0</code> across both bells simultaneously.</li>
 <li><strong>Source of Unread Data</strong>:</li>
 <li>Derived in-memory from <code>alertsNotifierProvider</code> (which fetches active alerts from <code>/alerts</code>).</li>
-<li><strong>Push &amp; FCM Disclaimer</strong>:</li>
-<li><strong>FCM (Firebase Cloud Messaging), APNs push notifications, and SMS delivery are NOT implemented.</strong> Alert notifications are handled purely in-app via <code>/alerts</code> API and Riverpod state.</li>
+<li><strong>Push &amp; FCM Architecture</strong>:</li>
+<li>FCM (Firebase Cloud Messaging) push notifications for Android &amp; iOS are fully implemented via <code>FirebaseMessaging</code>, <code>flutter_local_notifications</code>, and backend <code>firebase-admin</code> SDK. Tapping a push notification routes users directly to <code>AlertsScreen</code>.</li>
 </ul>
 <hr />
 <h1 id="22-offline-authentication-session-persistence-architecture">22. Offline Authentication / Session Persistence Architecture</h1>
@@ -1674,6 +1750,7 @@ User enters OTP ◄────────────────────�
 <li>Respects user notification preferences (<code>delivery_email</code> in <code>notification_preferences</code>).</li>
 <li><strong>Backend-Only Channel</strong>:</li>
 <li>Email delivery is triggered internally on FastAPI backend upon alert generation. <code>RESEND_API_KEY</code> remains strictly server-side.</li>
+<li>Automated alert generation in GitHub Actions (<code>generate_alerts.yml</code>) provisions the necessary secrets (<code>RESEND_API_KEY</code>, <code>SECRET_KEY</code>, <code>API_KEY</code>) to support headless email delivery without application server dependencies.</li>
 <li><strong>FCM &amp; SMS Disclaimer</strong>:</li>
 <li>FCM push notifications and SMS delivery are <strong>NOT</strong> implemented in this change.</li>
 </ul>
@@ -1782,6 +1859,62 @@ User enters OTP ◄────────────────────�
 <ul>
 <li><strong>Filter List (<code>AlertFilterChips</code>)</strong>: Updated to <code>['ALL', AlertTypes.priceIncrease, AlertTypes.priceDrop, AlertTypes.aiRecommendation]</code>.</li>
 <li><strong>Better Market Filter Removal</strong>: <code>AlertTypes.betterMarket</code> removed from filter chips across both <code>AlertsScreen</code> and <code>AlertHistoryScreen</code>.</li>
+</ul>
+<hr />
+<h1 id="27-fcm-push-notification-architecture-multi-channel-alert-integration">27. FCM Push Notification Architecture &amp; Multi-Channel Alert Integration</h1>
+<p>Added on <strong>30 August 2026</strong>:</p>
+<p>Implemented real-time push notification delivery for Mandi Intelligence alerts via Firebase Cloud Messaging (FCM), integrated across both the Python FastAPI backend and Flutter mobile client.</p>
+<h3 id="1-architectural-highlights">1. Architectural Highlights</h3>
+<ul>
+<li><strong>End-to-End Multicast Push</strong>: Alerts generated by <code>AlertService.create_alert()</code> automatically dispatch push notifications via <code>firebase-admin</code> to all FCM tokens registered by the targeted user.</li>
+<li><strong>Resilient Fallback Design</strong>: If Firebase credentials are not configured or network failures occur, push delivery logs a warning and gracefully fails without rolling back alert creation or disrupting email delivery.</li>
+<li><strong>Smart Credential Resolution</strong>: Backend <code>firebase_service.py</code> supports credential loading via <code>FIREBASE_CREDENTIALS_JSON</code> environment variable string or <code>FIREBASE_CREDENTIALS_PATH</code> file path with intelligent candidate location resolution.</li>
+<li><strong>Desugaring &amp; Android 13+ Compliance</strong>: Enabled <code>isCoreLibraryDesugaringEnabled = true</code> with <code>desugar_jdk_libs:2.0.4</code> in <code>android/app/build.gradle.kts</code> and added <code>POST_NOTIFICATIONS</code> runtime permission in <code>AndroidManifest.xml</code>.</li>
+</ul>
+<h3 id="2-database-schema-extension">2. Database Schema Extension</h3>
+<ul>
+<li><strong><code>user_fcm_tokens</code></strong>: Stores registered FCM device tokens (<code>id</code>, <code>user_id</code> FK -&gt; <code>users.id</code>, <code>fcm_token</code> Unique, <code>device_type</code>, <code>created_at</code>, <code>updated_at</code>).</li>
+</ul>
+<h3 id="3-key-files-added-modified">3. Key Files Added / Modified</h3>
+<ul>
+<li><strong>Backend</strong>:</li>
+<li><code>app/models/user_fcm_token.py</code>: SQLAlchemy <code>UserFCMToken</code> model.</li>
+<li><code>app/services/firebase_service.py</code>: Firebase Admin SDK initialization helper (<code>init_firebase</code>) and <code>send_fcm_notification()</code>.</li>
+<li><code>app/schemas/alert.py</code>: Added <code>FCMTokenRegisterSchema</code>.</li>
+<li><code>app/api/routes/alerts.py</code>: Added <code>POST /api/alerts/fcm-token</code> endpoint.</li>
+<li><code>app/services/alert_service.py</code>: Added <code>_send_alert_push_notification()</code> invoked during <code>create_alert()</code>.</li>
+<li><strong>Frontend</strong>:</li>
+<li><code>pubspec.yaml</code>: Added <code>firebase_core</code>, <code>firebase_messaging</code>, <code>flutter_local_notifications</code>.</li>
+<li><code>lib/core/services/push_notification_service.dart</code>: Handles permission requests, FCM token retrieval/sync, local foreground banners, and background tap routing.</li>
+<li><code>lib/main.dart</code>: Initialized <code>Firebase.initializeApp()</code> in <code>main()</code> and registered <code>PushNotificationService().initialize()</code> post-authentication.</li>
+</ul>
+<hr />
+<h1 id="28-profile-setup-redirection-persistent-notification-banner-forecast-navigation-refinements">28. Profile Setup Redirection, Persistent Notification Banner, &amp; Forecast Navigation Refinements</h1>
+<p>Added on <strong>1 September 2026</strong>:</p>
+<p>Refined authentication onboarding redirection, persistent notification settings prompts, and direct prediction navigation:</p>
+<h3 id="1-registration-auto-login-profile-completion-redirection">1. Registration Auto-Login &amp; Profile Completion Redirection</h3>
+<ul>
+<li><strong>Auto-Login on Registration</strong>: <code>AuthNotifier.register()</code> in <code>lib/features/auth/providers/auth_provider.dart</code> automatically authenticates users upon registration via <code>login(identifier, password)</code>, removing manual re-login prompts.</li>
+<li><strong>Uncompleted Profile Setup Guard</strong>: <code>AuthWrapper</code> (<code>main.dart</code>), <code>LoginScreen</code> (<code>login_screen.dart</code>), and <code>SignupScreen</code> (<code>signup_screen.dart</code>) evaluate <code>user.hasCompletedProfile</code>. Users without completed location profiles (both new signups and returning logins) are directed to <code>OnboardingScreen</code> ("Finish setting up your profile"). Users with completed profiles land directly on <code>MainScreen</code>.</li>
+<li><strong>Default Language</strong>: Defaulted <code>_selectedLanguage</code> to English (<code>en</code>) in <code>OnboardingScreen</code>, keeping language selection optional.</li>
+</ul>
+<h3 id="2-lifetime-persistent-notification-settings-banner">2. Lifetime Persistent Notification Settings Banner</h3>
+<ul>
+<li><strong>Persistent Storage</strong>: Utilizes <code>FlutterSecureStorage</code> with key <code>has_configured_notification_preferences</code>.</li>
+<li><strong>Lifetime Visit / Dismissal Check</strong>: Visiting <code>NotificationSettingsScreen</code> (or saving preferences) or tapping the close (<code>X</code>) button on the Home banner sets <code>has_configured_notification_preferences = 'true'</code>.</li>
+<li><strong>Cross-Launch Persistence</strong>: Once set, the top banner on <code>HomeScreen</code> is permanently hidden across future app restarts.</li>
+<li><strong>Glitch-Free Evaluation</strong>: Evaluated using <code>hasConfiguredAsync.maybeWhen(data: (hasConfigured) =&gt; !hasConfigured &amp;&amp; !_isNotificationBannerDismissed, orElse: () =&gt; false)</code> to prevent 0.1-second flashes during background state loading.</li>
+</ul>
+<h3 id="4-alert-email-price-change-sign-formatting">4. Alert Email Price Change Sign Formatting</h3>
+<ul>
+<li><strong>Email Change Percent Formatting</strong>: Updated <code>EmailService.send_alert_email()</code> in <code>backend/app/services/email_service.py</code> to correctly format negative percentage signs (<code>-{val:.1f}%</code>) for <code>PRICE_DROP</code> alerts or price decreases (<code>current_price &lt; previous_price</code>), ensuring accurate directional representation in transactional alert emails.</li>
+</ul>
+<h3 id="5-unified-tractor-logo-branding-across-auth-emails-apk-icon">5. Unified Tractor Logo Branding Across Auth, Emails &amp; APK Icon</h3>
+<ul>
+<li><strong>Home Header Badge</strong>: Retained the green hexagon brand badge with <code>Icons.arrow_upward</code> on <code>HomeScreen</code> (<code>home_screen.dart</code>).</li>
+<li><strong>Auth Header Logo</strong>: Updated <code>AuthHeader</code> (<code>auth_header.dart</code>) across Login, Signup, and Password Recovery screens to feature <code>Icons.agriculture_rounded</code> (the tractor logo icon).</li>
+<li><strong>Transactional Email Templates</strong>: Updated <code>EmailService.send_otp_email()</code> in <code>backend/app/services/email_service.py</code> to share the same responsive HTML card layout with the <code>🚜 Mandi Intelligence</code> tractor header banner, matching alert emails.</li>
+<li><strong>Android APK Launcher Icons</strong>: Integrated <code>flutter_launcher_icons</code> (<code>^0.14.4</code>) in <code>pubspec.yaml</code>, created high-resolution tractor logo icon asset <code>assets/images/app_icon.png</code>, and generated all Android mipmap resolutions (<code>ic_launcher.png</code> across <code>mdpi</code>, <code>hdpi</code>, <code>xhdpi</code>, <code>xxhdpi</code>, <code>xxxhdpi</code>) and adaptive icon configurations (<code>colors.xml</code>).</li>
 </ul>
             </article>
         </main>

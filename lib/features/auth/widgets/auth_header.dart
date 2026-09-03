@@ -27,17 +27,17 @@ class AuthHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // App Logo Placeholder (Tree/Hexagon icon)
+            // App Logo (Tractor icon)
             Container(
-              padding: const EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(6.0),
               decoration: BoxDecoration(
                 color: _primaryGreen.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(10.0),
               ),
               child: const Icon(
-                Icons.park_outlined,
+                Icons.agriculture_rounded,
                 color: _primaryGreen,
-                size: 28,
+                size: 32,
               ),
             ),
             IconButton(
