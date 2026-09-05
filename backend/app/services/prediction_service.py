@@ -229,22 +229,18 @@ def get_predictions_for_user(
         first_price = prices[0]
         last_price = prices[-1]
 
-        # Calculate metrics using business logic helpers
+# Calculate metrics using business logic helpers
         trend_raw = compute_trend(first_price, last_price)
         expected_peak_forecast = max(prices)
 
+        # 1. Identify the actual peak date from the data
         if curr_price_val > expected_peak_forecast:
             expected_peak = curr_price_val
-            best_sell_date_obj = today_val
+            forecast_peak_date_obj = today_val
         else:
             expected_peak = expected_peak_forecast
             peak_index = prices.index(expected_peak)
-            best_sell_date_obj = pred_list[peak_index].prediction_day
-
-        if best_sell_date_obj == today_val:
-            best_sell_date_str = "Today"
-        else:
-            best_sell_date_str = best_sell_date_obj.strftime('%Y-%m-%d')
+            forecast_peak_date_obj = pred_list[peak_index].prediction_day
 
         selling_window_str_list = compute_selling_window(pred_list, expected_peak)
         selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
@@ -259,8 +255,9 @@ def get_predictions_for_user(
         expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
         data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
 
+        # 2. Compute the recommendation using the forecasted peak date
         recommendation_raw = compute_recommendation(
-            best_sell_date_obj,
+            forecast_peak_date_obj,
             selling_window_dates,
             trend_raw,
             expected_upside_pct,
@@ -269,6 +266,16 @@ def get_predictions_for_user(
             is_data_valid,
             today_val
         )
+
+        # 3. NEW LOGIC: Determine the UI display date based on the recommendation
+        if recommendation_raw == "SELL TODAY":
+            best_sell_date_str = "Today"
+        else:
+            # For HOLD, WAIT, or NO CLEAR SIGNAL, show the absolute peak price date
+            if forecast_peak_date_obj == today_val:
+                best_sell_date_str = "Today"
+            else:
+                best_sell_date_str = forecast_peak_date_obj.strftime('%Y-%m-%d')
 
         # Localize Trend & Recommendation values
         localized_trend = translate_trend(trend_raw, language)
