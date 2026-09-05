@@ -231,14 +231,30 @@ def get_predictions_for_user(
 
         # Calculate metrics using business logic helpers
         trend_raw = compute_trend(first_price, last_price)
-        expected_peak = max(prices)
-        peak_index = prices.index(expected_peak)
+        expected_peak_forecast = max(prices)
 
-        best_sell_date_obj = pred_list[peak_index].prediction_day
-        best_sell_date_str = best_sell_date_obj.strftime('%Y-%m-%d')
+        if curr_price_val > expected_peak_forecast:
+            expected_peak = curr_price_val
+            best_sell_date_obj = today_val
+        else:
+            expected_peak = expected_peak_forecast
+            peak_index = prices.index(expected_peak)
+            best_sell_date_obj = pred_list[peak_index].prediction_day
+
+        if best_sell_date_obj == today_val:
+            best_sell_date_str = "Today"
+        else:
+            best_sell_date_str = best_sell_date_obj.strftime('%Y-%m-%d')
 
         selling_window_str_list = compute_selling_window(pred_list, expected_peak)
         selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
+        
+        if curr_price_val >= expected_peak * 0.98:
+            today_str = today_val.strftime('%Y-%m-%d')
+            if today_str not in selling_window_str_list:
+                selling_window_str_list.insert(0, today_str)
+            if today_val not in selling_window_dates:
+                selling_window_dates.insert(0, today_val)
 
         expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
         data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
@@ -383,11 +399,20 @@ def get_best_markets_for_commodity(
         last_price = prices[-1]
 
         trend_raw = compute_trend(first_price, last_price)
-        expected_peak = max(prices)
-        peak_index = prices.index(expected_peak)
+        expected_peak_forecast = max(prices)
 
-        best_sell_date_obj = pred_list[peak_index].prediction_day
+        if curr_price_val > expected_peak_forecast:
+            expected_peak = curr_price_val
+            best_sell_date_obj = today_val
+        else:
+            expected_peak = expected_peak_forecast
+            peak_index = prices.index(expected_peak)
+            best_sell_date_obj = pred_list[peak_index].prediction_day
+
         selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
+        if curr_price_val >= expected_peak * 0.98:
+            if today_val not in selling_window_dates:
+                selling_window_dates.insert(0, today_val)
 
         expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
         data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
