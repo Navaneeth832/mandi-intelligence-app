@@ -735,7 +735,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               color: Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 12),
+          /*const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -763,7 +763,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 20),*/
 
           // Compare Nearby Mandis Button
           SizedBox(
