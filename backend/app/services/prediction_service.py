@@ -275,13 +275,20 @@ def get_predictions_for_user(
         localized_recommendation = translate_recommendation(recommendation_raw, language)
 
         # Map daily forecasts
-        forecast_list = [
+        forecast_list = []
+        if curr_price_val > 0:
+            forecast_list.append({
+                "date": today_val.strftime('%Y-%m-%d'),
+                "price": float(curr_price_val)
+            })
+
+        forecast_list.extend([
             {
                 "date": p.prediction_day.strftime('%Y-%m-%d'),
                 "price": float(p.predicted_price)
             }
             for p in pred_list
-        ]
+        ])
 
         # Advisory and logistics calculations
         transport_cost = 150.0
