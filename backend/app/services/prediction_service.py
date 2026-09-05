@@ -304,15 +304,24 @@ def get_predictions_for_user(
         expected_profit = round(max(120.0, base_diff), 2)
 
         if recommendation_raw == "SELL TODAY":
-            ai_title = "Maximum Price Window Active"
-            rec_reason = f"Current price or market trend indicates optimal return near ₹{int(expected_peak)} in {market_name}. Selling now maximizes net profit."
+            # Check specifically if the trend is falling
+            if trend_raw == "FALLING":
+                ai_title = "Action Required: Downward Trend"
+                rec_reason = f"The market trend in {market_name} is falling. Even though a peak of ₹{int(expected_peak)} is forecasted, holding is risky. Selling today minimizes potential losses from further price drops."
+            # Otherwise, it triggered because the current price is within 2% of the peak
+            else:
+                ai_title = "Maximum Price Window Active"
+                rec_reason = f"The current price in {market_name} is within 2% of the expected peak (₹{int(expected_peak)}). Selling today secures your profit and protects against unexpected market volatility."
+                
         elif recommendation_raw == "WAIT":
             ai_title = "Price Appreciation Expected"
             window_text = f"between {selling_window_str_list[0]} and {selling_window_str_list[-1]}" if len(selling_window_str_list) > 1 else f"on {best_sell_date_str}"
             rec_reason = f"Prices in {market_name} are trending upward with an expected upside of {expected_upside_pct}%, peaking near ₹{int(expected_peak)} {window_text}."
+            
         elif recommendation_raw == "HOLD":
             ai_title = "Stable Market Outlook"
             rec_reason = f"Prices remain steady near ₹{int(expected_peak)} with minimal expected upside ({expected_upside_pct}%). Monitor local demand."
+            
         else:
             ai_title = "Inconclusive Signal"
             rec_reason = "Market forecast data is incomplete, stale, or volatile. Monitor daily arrivals before scheduling sales."
