@@ -1,10 +1,12 @@
 import os
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, case
 from datetime import date, timedelta
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_user_optional
+from app.models.user import User
 
 from app.models.mandi_price import MandiPrice
 from app.models.commodity import Commodity
@@ -57,9 +59,38 @@ def get_mandi_prices(
     page: int = 1,
     page_size: int = 50,
 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional)
 ):
     page_size = min(page_size, 100)
+
+    preferred_commodity_ids = []
+    if current_user and current_user.crop_preferences:
+        preferred_commodity_ids = [cp.commodity_id for cp in current_user.crop_preferences]
+
+    whens = []
+    if preferred_commodity_ids:
+        pref_commodity_cond = MandiPrice.commodity_id.in_(preferred_commodity_ids)
+
+        # 1. Preferred commodities + preferred market
+        if current_user.preferred_market_id is not None:
+            whens.append((pref_commodity_cond & (MandiPrice.market_id == current_user.preferred_market_id), 1))
+
+        # 2. Preferred commodities + same district
+        if current_user.district_id is not None:
+            whens.append((pref_commodity_cond & (Market.district_id == current_user.district_id), 2))
+
+        # 3. Preferred commodities + same state
+        if current_user.state_id is not None:
+            whens.append((pref_commodity_cond & (District.state_id == current_user.state_id), 3))
+
+        # 4. Preferred commodities + other markets
+        whens.append((pref_commodity_cond, 4))
+
+    if whens:
+        priority_expr = case(*whens, else_=5)
+    else:
+        priority_expr = case((MandiPrice.id.isnot(None), 5), else_=5)
 
     query = (
         db.query(
@@ -78,6 +109,7 @@ def get_mandi_prices(
             MandiPrice.max_price,
             MandiPrice.arrival_date,
             MandiPrice.created_at,
+            priority_expr.label("priority_rank"),
             Commodity,
             State,
             District,
@@ -144,7 +176,7 @@ def get_mandi_prices(
     results = (
         query
         .distinct()
-        .order_by(MandiPrice.created_at.desc())
+        .order_by(priority_expr.asc(), MandiPrice.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()

@@ -911,3 +911,29 @@ Refined authentication onboarding redirection, persistent notification settings 
 - **Transactional Email Templates**: Updated `EmailService.send_otp_email()` in `backend/app/services/email_service.py` to share the same responsive HTML card layout with the `🚜 Mandi Intelligence` tractor header banner, matching alert emails.
 - **Android APK Launcher Icons**: Integrated `flutter_launcher_icons` (`^0.14.4`) in `pubspec.yaml`, created high-resolution tractor logo icon asset `assets/images/app_icon.png`, and generated all Android mipmap resolutions (`ic_launcher.png` across `mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) and adaptive icon configurations (`colors.xml`).
 
+
+---
+
+# 29. Home-Page Mandi Price API Personalized Sorting Priority
+
+*(Added: September 2026)*
+
+Updated `GET /mandi-prices/` endpoint ordering from simple `MandiPrice.created_at DESC` to a 5-tier personalization priority based on the authenticated user's profile (`state_id`, `district_id`, `preferred_market_id`) and crop preferences (`user_crop_preferences`).
+
+### Personalization Priority Tiers
+1. **Preferred commodities + preferred market**: `MandiPrice.commodity_id` in user crop preferences AND `MandiPrice.market_id == user.preferred_market_id`.
+2. **Preferred commodities + same district**: `MandiPrice.commodity_id` in user crop preferences AND `Market.district_id == user.district_id`.
+3. **Preferred commodities + same state**: `MandiPrice.commodity_id` in user crop preferences AND `District.state_id == user.state_id`.
+4. **Preferred commodities + other markets**: `MandiPrice.commodity_id` in user crop preferences across all remaining markets.
+5. **Other/random commodities**: All remaining non-preferred commodities.
+
+Within each priority group, records are sorted by `MandiPrice.created_at DESC` so the newest records appear first.
+
+### Key Implementation Details
+- **Optional Authentication Dependency**: `get_current_user_optional` (`backend/app/core/dependencies.py`) resolves `current_user` if `Authorization: Bearer <token>` is present, without throwing 401 errors for unauthenticated requests.
+- **Graceful Preference Fallback**: If the user has no `preferred_market_id`, Priority 1 is gracefully skipped and sorting proceeds from Priority 2 onwards. If unauthenticated or user has no crop preferences, all records fall into Priority 5 (`created_at DESC`), preserving backwards compatibility.
+- **SQL Ordering**: Built using SQLAlchemy `case()` statement (`priority_expr`), combined with `order_by(priority_expr.asc(), MandiPrice.created_at.desc())`.
+- **Preserved Filters & Pagination**: All filters (`state`, `district`, `market`, `commodity`, `variety`, `arrival_date == date.today()`) and response structures (`page`, `page_size`, `total_records`, `total_pages`, `data`) remain 100% intact.
+- **Frontend Token Injection**: `MandiRepository` injects `AuthRepository` to retrieve JWT tokens via `_authRepository.getToken()` and passes them in HTTP headers (`Authorization: Bearer <token>`) via `MandiApiService.getMandiPrices()`.
+
+

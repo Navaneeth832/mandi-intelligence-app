@@ -19,8 +19,13 @@ final apiServiceProvider = Provider<MandiApiService>((ref) {
 // Provider for the Repository
 final mandiRepositoryProvider = Provider<MandiRepository>((ref) {
   final apiService = ref.watch(apiServiceProvider);
+  final authRepo = ref.watch(authRepositoryProvider);
   final cacheService = ref.watch(localCacheServiceProvider).valueOrNull;
-  return MandiRepository(apiService, cacheService: cacheService);
+  return MandiRepository(
+    apiService,
+    authRepository: authRepo,
+    cacheService: cacheService,
+  );
 });
 
 // --- MANDI PRICES PROVIDER (Existing) ---

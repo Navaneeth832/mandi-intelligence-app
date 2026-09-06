@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../services/mandi_api_service.dart';
 import '../services/local_cache_service.dart';
+import 'auth_repository.dart';
 import '../../features/mandi_prices/providers/filter_model.dart';
 import '../models/price_history.dart';
 import '../models/paginated_mandi_response.dart';
@@ -17,10 +18,15 @@ const bool simulateEmpty = false;
 
 class MandiRepository {
   final MandiApiService _apiService;
+  final AuthRepository? _authRepository;
   LocalCacheService? _cacheService;
 
-  MandiRepository(this._apiService, {LocalCacheService? cacheService})
-      : _cacheService = cacheService;
+  MandiRepository(
+    this._apiService, {
+    AuthRepository? authRepository,
+    LocalCacheService? cacheService,
+  })  : _authRepository = authRepository,
+        _cacheService = cacheService;
 
   Future<LocalCacheService?> _getCacheService() async {
     _cacheService ??= await LocalCacheService.getInstance();
@@ -52,6 +58,7 @@ class MandiRepository {
     }
 
     try {
+      final token = await _authRepository?.getToken();
       final response = await _apiService.getMandiPrices(
         page: page,
         pageSize: pageSize,
@@ -60,6 +67,7 @@ class MandiRepository {
         market: filter.market,
         commodity: filter.crop,
         language: language,
+        token: token,
       );
 
       final cacheService = await _getCacheService();

@@ -24,6 +24,7 @@ class MandiApiService {
     String? market,
     String? commodity,
     String? language,
+    String? token,
   }) async {
     final queryParams = <String, String>{
       'page': page.toString(),
@@ -48,7 +49,12 @@ class MandiApiService {
 
     final uri = Uri.parse('$baseUrl/mandi-prices').replace(queryParameters: queryParams);
 
-    final response = await http.get(uri);
+    final headers = <String, String>{};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final response = await http.get(uri, headers: headers.isNotEmpty ? headers : null);
 
     if (response.statusCode != 200) {
       throw Exception(
