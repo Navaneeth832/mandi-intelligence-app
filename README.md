@@ -1,239 +1,148 @@
-# Mandi Intelligence App 🌾📈
+# 🚜 Mandi Intelligence App 🌾📈
 
-A robust, full-stack agricultural market intelligence application designed to analyze and track daily Mandi commodity prices. The system combines a powerful, robust **FastAPI (Python) backend** powered by an ORM database layout, with a highly interactive **Flutter (Dart) frontend** styled with smooth charts and state-of-the-art loaders.
+[![Live Website](https://img.shields.io/badge/Live%20API-website-brightgreen)](https://mandiintelligence.tech/)
+[![Documentation](https://img.shields.io/badge/Technical%20Docs-documentation-blue)](https://mandiintelligence.tech/docs/)
+[![Latest Release](https://img.shields.io/badge/GitHub-Releases-orange)](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
 
-## 📚 Technical Documentation
-
-Complete technical documentation, architecture diagrams, database schemas, machine learning pipeline, API specifications, and workflow guides are available on the automated documentation website:
-
-👉 **[View Technical Documentation Website](https://navaneeth832.github.io/mandi-intelligence-app/docs/)**
-
-*(Note: The documentation site is generated automatically from `agent_helper.md` via GitHub Actions on every push to the `main` branch).*
+An agricultural marketplace intelligence and price analysis platform designed to empower farmers, traders, and agricultural stakeholders across India. Mandi Intelligence provides real-time mandi prices, 7-day machine learning price forecasts, location-based mandi comparisons, and actionable price alerts.
 
 ---
 
-## 🚀 Key Features
+## 📱 App Download & Live Links
 
-- **Real-time Price Indexing**: View minimum, maximum, and modal prices of agricultural produce.
-- **Robust Multi-level Filtering**: Filter mandi prices by State, District, Market, Commodity, and Variety.
-- **Advanced Visualization**: Interactive graphs and performance charts (using `fl_chart`) representing price fluctuations and insights.
-- **Professional State Management**: Implemented using Riverpod (`flutter_riverpod`) to ensure reactive, robust, and decoupled business logic.
-- **Pre-configured App States**: Built-in support for multiple interface states:
-  - **Loading State** (styled with shimmering placeholder effects via `shimmer`).
-  - **Success State** (rendered with interactive tables and charts).
-  - **Empty State** (gracefully handles empty filters or no-data scenarios).
-  - **Error State** (displays interactive errors to the user with retry capabilities).
-- **Testing Controls**: Easy-to-use testing toggles to simulate all possible UI states (Loading, Error, Empty) on-demand.
+- 🌐 **Live Hosted Backend API**: [https://mandi-intelligence-app.onrender.com](https://mandi-intelligence-app.onrender.com)
+- 📚 **Technical Documentation**: [Documentation page](https://mandiintelligence.tech/docs/)
+- 📦 **Latest GitHub Release APK**: [GitHub Releases](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
 
----
+### 📲 Scan to Download App (APK)
 
-## 🛠️ Technology Stack
+![App Download QR Code](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/latest-release-qr.png)
 
-### Backend
-- **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
-- **Database ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
-- **Database Driver**: [psycopg2-binary](https://pypi.org/project/psycopg2-binary/) (supports PostgreSQL, easily configurable for SQLite/MySQL)
-- **Environment Management**: `python-dotenv`
-- **ASGI Web Server**: [Uvicorn](https://www.uvicorn.org/)
-
-### Frontend
-- **Framework**: [Flutter](https://flutter.dev/) (Dart SDK ^3.5.0)
-- **State Management**: [Riverpod (flutter_riverpod)](https://riverpod.dev/)
-- **Charting Engine**: [fl_chart](https://pub.dev/packages/fl_chart)
-- **Placeholders / Skeletons**: [shimmer](https://pub.dev/packages/shimmer)
-- **Date / Format Utils**: [intl](https://pub.dev/packages/intl)
-- **HTTP Client**: [http](https://pub.dev/packages/http)
+> Scan the QR code above with your mobile device to download the latest Android APK directly from GitHub Releases.
 
 ---
 
-## 📂 Project Structure
+## ✨ What This App Does
 
-```text
-mandi-intelligence-app/
-├── backend/                   # FastAPI Backend
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── routes/        # Router endpoints (mandi-prices, markets, states, etc.)
-│   │   ├── core/
-│   │   │   ├── config.py      # App configurations
-│   │   │   └── database.py    # SQLAlchemy session & database engine setup
-│   │   ├── models/            # SQLAlchemy database schemas/entities
-│   │   ├── schemas/           # Pydantic validation schemas
-│   │   └── main.py            # FastAPI Entry Point and Middleware initialization
-│   ├── create_tables.py       # Table creation helper script
-│   └── requirements.txt       # Python dependencies list
-│
-├── lib/                       # Flutter Frontend
-│   ├── core/
-│   │   ├── constants/         # Global API and theme constants
-│   │   ├── theme/             # Global light/dark themes
-│   │   └── utils/             # Helper utilities
-│   ├── data/
-│   │   ├── models/            # Dart Models (MandiPrice model and fromJson mapper)
-│   │   ├── repositories/      # Repository implementation with simulator toggles
-│   │   └── services/          # HTTP request handlers/API clients
-│   └── features/
-│       └── mandi_prices/      # Mandi Price core feature folder
-│           ├── providers/     # Riverpod Providers & Filter State
-│           ├── screens/       # Views (Home, FilterResults, MarketDetail)
-│           └── widgets/       # Reusable components (Shimmers, charts, filters)
-│
-├── docs/                      # Technical Documentation & Architectural Specs
-│   ├── api_contract.md        # API Request/Response contract standard
-│   ├── app_states.md          # State management criteria
-│   └── database_schema.md     # Mandi Prices DB Table structural details
-│
-├── pubspec.yaml               # Flutter/Dart package manager & assets mapping
-└── README.md                  # Project configuration and setup guide
-```
+Mandi Intelligence bridges the information gap for agricultural markets by aggregating live prices, forecasting future trends, and calculating net selling profits across nearby mandis.
+
+### Key Capabilities
+
+- 📊 **Real-Time Mandi Prices**: Track daily arrival prices (modal, minimum, maximum) across states, districts, markets, and crop varieties with grade details.
+- 🔮 **7-Day Machine Learning Forecasts**: Plan sales in advance using 7-day modal price trajectory forecasts, peak price predictions, and AI sell/hold recommendations (*Sell Today*, *Wait*, *Hold*).
+- 🏬 **Best Markets & Variety Matching**: Discover top-paying mandis in your district or across India strictly matched to your crop's exact variety and grade.
+- 📍 **Interactive Nearby Mandi Comparison**: Compare nearby mandis using GPS location detection or OpenStreetMap pin drops to evaluate net payouts and transport costs.
+- 🔔 **Actionable Price Shift Alerts**: Receive real-time in-app, email, and push notifications for price increases, price drops, better market selling opportunities, and AI recommendations.
+- 🌍 **Multi-Language Support**: Full UI and data localization in **English**, **Hindi (हिंदी)**, and **Malayalam (മലയാളം)**.
+- ⚡ **Offline Resilience**: Instant zero-latency loading using local caching, allowing seamless operation even under poor rural network conditions.
 
 ---
 
-## ⚙️ Backend Setup & Configuration
+## 📖 User Manual
 
-Follow these steps to configure, set up, and run the FastAPI backend server.
+### 1. Authentication & Onboarding
+1. **Sign Up / Log In**: Register using your Email or Mobile Phone Number. Enter the 6-digit OTP received via email or SMS to verify your account.
+2. **Profile & Location Setup**: Select your State, District, Preferred UI Language, and trackable crops.
+
+### 2. Tracking Daily Prices (Home Screen)
+- View current daily prices customized to your preferred crops and region.
+- Use dropdown filters to quickly search prices by **State**, **District**, **Market**, or **Crop Variety**.
+- Prices are ordered automatically based on your preferred market, district, state, and tracked crops.
+
+### 3. Predictive Advisory & Best Markets (Advisory Tab)
+- Select any of your tracked crops to inspect its 7-day price forecast trajectory.
+- View the **AI Advisory Card** for recommendation insights (*Sell Today*, *Wait*, or *Hold*).
+- Scroll down to **Best Markets** to see top-paying mandis in your district for that exact commodity, variety, and grade.
+- Tap **Load Other Markets** to expand the list to top mandis across India for the same variety and grade.
+
+### 4. Interactive Nearby Mandi Comparison
+1. On any crop forecast screen, tap **Compare Nearby Mandis**.
+2. Tap **Use Current Location (GPS)** or place a pin marker on the interactive map.
+3. Tap **Compare Mandis for This Location** to view net payout comparisons, transport costs, and distance metrics.
+
+### 5. Managing Alerts & Preferences
+- Tap the **Notification Bell** in the top header to view active actionable price alerts.
+- Filter alerts by type (*Price Increase*, *Price Drop*, *AI Recommendation*).
+- Go to the **Profile Tab** to customize crop preferences, location, language, or notification delivery channels (In-App, Email, Push).
+
+---
+
+## 🛠️ Setup & Installation Guide
 
 ### Prerequisites
-- **Python 3.10 or higher** installed on your machine.
-- A running **PostgreSQL** database (or any standard database supported by SQLAlchemy like **SQLite**).
-
-### 1. Initialize Virtual Environment
-Navigate to the `backend/` directory and create a virtual environment:
-
-```bash
-# Navigate to the backend folder
-cd backend
-
-# Create virtual environment (.venv)
-python -m venv .venv
-```
-
-**Activate the virtual environment:**
-- **On Windows (CMD / PowerShell):**
-  ```powershell
-  .venv\Scripts\activate
-  ```
-- **On macOS / Linux:**
-  ```bash
-  source .venv/bin/activate
-  ```
-
-### 2. Install Dependencies
-Install all required Python dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure Environment Variables
-Create a `.env` file in the `backend/` directory to manage database settings.
-
-**Example for PostgreSQL:**
-```env
-DATABASE_URL=postgresql://username:password@localhost:5432/mandi_db
-```
-
-**Example for SQLite (Ideal for zero-setup local testing):**
-```env
-DATABASE_URL=sqlite:///./mandi.db
-```
-
-### 4. Create Database Tables
-Run the schema initialization script to automatically construct all database tables using SQLAlchemy:
-
-```bash
-python create_tables.py
-```
-*Expected Output: `Tables created successfully!`*
-
-### 5. Run the Backend Server
-Launch the development server with Uvicorn (hot-reloading enabled):
-
-```bash
-uvicorn app.main:app --reload
-```
-- The backend API will be live at: **`http://127.0.0.1:8000`**
-- Interactive Swagger API Documentation can be accessed at: **`http://127.0.0.1:8000/docs`**
+- **Flutter SDK**: `^3.5.0` or higher
+- **Python**: `3.10+` or `3.12+`
+- **PostgreSQL Database** (PostGIS enabled)
 
 ---
 
-## 📱 Frontend Setup & Configuration
+### Backend Setup (FastAPI)
 
-Follow these steps to configure, build, and run the Flutter frontend.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Navaneeth832/mandi-intelligence-app.git
+   cd mandi-intelligence-app/backend
+   ```
 
-### Prerequisites
-- **Flutter SDK (version ^3.5.0)** installed and verified (`flutter doctor`).
-- An active device (Android/iOS emulator, web browser, or native Desktop build targets).
+2. **Create & Activate Virtual Environment**:
+   ```bash
+   python -m venv .venv
+   # On Windows PowerShell:
+   .\.venv\Scripts\Activate.ps1
+   # On macOS/Linux:
+   source .venv/bin/activate
+   ```
 
-### 1. Configure the API Endpoint
-Ensure the frontend matches your backend local server URL. 
-- Open `lib/data/services/mandi_api_service.dart`.
-- Verify/Update the `baseUrl` property to point to your running FastAPI server (default is `http://127.0.0.1:8000`):
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```dart
-static const String baseUrl = 'http://127.0.0.1:8000'; // Update as needed
-```
+4. **Configure Environment Variables**:
+   Create a `.env` file in the `backend/` directory:
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/mandi_db
+   SECRET_KEY=your_super_secret_jwt_key
+   RESEND_API_KEY=your_resend_api_key
+   FAST2SMS_API_KEY=your_fast2sms_api_key
+   ```
 
-### 2. Install Package Dependencies
-From the project root directory, run the following command to download all necessary Flutter packages:
-
-```bash
-flutter pub get
-```
-
-### 3. Build & Run the App
-To run the application, select your target platform/device and execute:
-
-```bash
-flutter run
-```
-To run the app on a specific device, list your devices with `flutter devices` and use:
-```bash
-flutter run -d <device-id>
-```
-
----
-
-## 🧪 UI State Testing & Simulations
-
-The application comes equipped with a **testing suite control system** to let engineers inspect and test different interface layouts easily without needing complex DB configurations.
-
-To test how the Flutter app handles different states:
-1. Open `lib/data/repositories/mandi_repository.dart`.
-2. Locate the **TASK 5: TESTING CONTROLS** flags at the top of the file:
-
-```dart
-// TASK 5: TESTING CONTROLS
-const bool simulateLoading = false;
-const bool simulateError = false;
-const bool simulateEmpty = false;
-```
-
-3. Toggle any of these flags to `true` (remember to set only one at a time for accurate simulation):
-   - **`simulateLoading`**: Simulates a 10-second delay in network operations to demonstrate the shimmer loader screens.
-   - **`simulateError`**: Forces the repository to throw a network exception to display the interactive error boundary screen.
-   - **`simulateEmpty`**: Simulates a successful request returning 0 items, triggering the empty state screen.
-4. Hot-reload or restart your Flutter application to see the state instantly represented in the UI.
+5. **Run the FastAPI Development Server**:
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+   API docs will be available at `http://localhost:8000/docs`.
 
 ---
 
-## 📡 Core API Endpoints
+### Frontend Setup (Flutter)
 
-Once your backend is running, the following endpoints are available:
+1. **Navigate to Project Root**:
+   ```bash
+   cd mandi-intelligence-app
+   ```
 
-- **`GET /`**: Welcome message and API info.
-- **`GET /health`**: Endpoint monitoring the system health.
-- **`GET /states`**: List of all states currently registered in the database.
-- **`GET /commodities`**: List of all agricultural commodities.
-- **`GET /markets`**: List of all physical Mandi markets.
-- **`GET /mandi-prices`**: Core query engine. Supports the following optional parameters:
-  - `state` (string)
-  - `district` (string)
-  - `market` (string)
-  - `commodity` (string)
-  - `variety` (string)
+2. **Install Flutter Packages**:
+   ```bash
+   flutter pub get
+   ```
+
+3. **Generate Localization Files**:
+   ```bash
+   flutter gen-l10n
+   ```
+
+4. **Run the Application**:
+   ```bash
+   # Run on Chrome / Desktop Frame:
+   flutter run -d chrome
+
+   # Run on Connected Mobile Device / Emulator:
+   flutter run
+   ```
 
 ---
 
-## 🤝 Contribution & Standards
-Please adhere to the styling conventions outlined in `analysis_options.yaml` for Flutter, and write idiomatic FastAPI path operations on the backend. Always write proper models/schemas and avoid direct SQL manipulation when mapping new fields.
+## 📄 Documentation & Attribution
+
+- 📚 **Full Architectural Blueprint**: For deep technical implementation details, database ER schemas, machine learning pipeline, alert engine, and API contracts, view [Documentation page](https://mandiintelligence.tech/docs/).
