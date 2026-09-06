@@ -820,7 +820,7 @@ abstract class AppLocalizations {
   /// No description provided for @expectedPriceTrajectory.
   ///
   /// In en, this message translates to:
-  /// **'Expected price trajectory for next 7 days'**
+  /// **'Projected price changes from today onwards'**
   String get expectedPriceTrajectory;
 
   /// No description provided for @detailedPriceForecasts.
@@ -862,7 +862,7 @@ abstract class AppLocalizations {
   /// No description provided for @sevenDayTrendChart.
   ///
   /// In en, this message translates to:
-  /// **'7-Day Trend Chart'**
+  /// **'Upcoming Price Trend'**
   String get sevenDayTrendChart;
 
   /// No description provided for @marketsSortedByHighestPredictedPrice.

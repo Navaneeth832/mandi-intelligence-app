@@ -393,7 +393,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get finishProfile => 'प्रोफ़ाइल सेटअप पूरा करें';
 
   @override
-  String get expectedPriceTrajectory => 'अगले 7 दिनों के लिए अपेक्षित मूल्य उतार-चढ़ाव';
+  String get expectedPriceTrajectory => 'आज से आगे कीमतों में संभावित बदलाव';
 
   @override
   String get detailedPriceForecasts => 'आगामी 7 दिनों में से प्रत्येक के लिए विस्तृत मूल्य पूर्वानुमान';

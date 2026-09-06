@@ -727,7 +727,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
           const Divider(height: 28, color: Color(0xFFFFE0CC)),
 
           // Financial Breakdown
-          const Text(
+          /*const Text(
             'Financial Estimates',
             style: TextStyle(
               fontSize: 13,
@@ -735,7 +735,7 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
               color: Color(0xFF1F2937),
             ),
           ),
-          /*const SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -1070,6 +1070,8 @@ class _ForecastDetailScreenState extends ConsumerState<ForecastDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final bestMarketsAsync = ref.watch(bestMarketsProvider((
       commodityId: widget.forecast.commodityId,
+      varietyId: widget.forecast.varietyId,
+      gradeId: widget.forecast.gradeId,
       includeAll: _loadAllBestMarkets,
     )));
 

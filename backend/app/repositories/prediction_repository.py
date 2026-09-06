@@ -28,12 +28,15 @@ def get_predictions_with_details(
     db: Session,
     batch_id: int,
     commodity_ids: list[int],
-    district_id: int | None = None
+    district_id: int | None = None,
+    variety_id: int | None = None,
+    grade_id: int | None = None
 ) -> list[CommodityPrediction]:
     """
     Load every prediction row belonging to that batch for specified commodity_ids.
     Eagerly loads commodities, markets, districts, states, varieties, grades, and translations.
     If district_id is provided, filters directly in SQL to markets in that district.
+    If variety_id and/or grade_id are provided, filters directly in SQL to that variety/grade.
     """
     query = (
         db.query(CommodityPrediction)
@@ -58,6 +61,16 @@ def get_predictions_with_details(
     if district_id is not None:
         query = query.filter(
             CommodityPrediction.market.has(Market.district_id == district_id)
+        )
+
+    if variety_id is not None:
+        query = query.filter(
+            CommodityPrediction.variety_id == variety_id
+        )
+
+    if grade_id is not None:
+        query = query.filter(
+            CommodityPrediction.grade_id == grade_id
         )
 
     return (

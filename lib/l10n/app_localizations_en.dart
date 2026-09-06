@@ -393,7 +393,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishProfile => 'Finish Setting Up Your Profile';
 
   @override
-  String get expectedPriceTrajectory => 'Expected price trajectory for next 7 days';
+  String get expectedPriceTrajectory => 'Projected price changes from today onwards';
 
   @override
   String get detailedPriceForecasts => 'Detailed price forecasts for each of the upcoming 7 days';
@@ -414,7 +414,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get explorePlaceholderMessage => 'Browse and exploration features will be available in a future update.';
 
   @override
-  String get sevenDayTrendChart => '7-Day Trend Chart';
+  String get sevenDayTrendChart => 'Upcoming Price Trend';
 
   @override
   String get marketsSortedByHighestPredictedPrice => 'Markets in your district sorted by highest predicted price';

@@ -374,12 +374,15 @@ def get_best_markets_for_commodity(
     current_user: User,
     commodity_id: int,
     language: str,
+    variety_id: int | None = None,
+    grade_id: int | None = None,
     include_all: bool = False
 ) -> list[dict]:
     """
     Get best markets for a commodity. By default filters strictly in SQL to markets
     in the user's selected district (sorted in descending order of predicted selling price).
-    If include_all is True, fetches all markets across India for this commodity.
+    If variety_id/grade_id are specified, strictly filters to that variety and grade.
+    If include_all is True, fetches all markets across India for this commodity (and variety/grade).
     """
     batch = get_latest_batch(db)
     if not batch:
@@ -388,7 +391,14 @@ def get_best_markets_for_commodity(
     district_id = current_user.district_id if not include_all else None
 
     from app.repositories.prediction_repository import get_predictions_with_details
-    prediction_rows = get_predictions_with_details(db, batch.id, [commodity_id], district_id=district_id)
+    prediction_rows = get_predictions_with_details(
+        db,
+        batch.id,
+        [commodity_id],
+        district_id=district_id,
+        variety_id=variety_id,
+        grade_id=grade_id
+    )
     if not prediction_rows:
         return []
 

@@ -99,6 +99,8 @@ class ForecastRepository {
 
   Future<List<BestMarket>> getBestMarkets({
     required int commodityId,
+    int? varietyId,
+    int? gradeId,
     String language = 'en',
     bool includeAll = false,
   }) async {
@@ -110,6 +112,8 @@ class ForecastRepository {
     final queryParams = <String, String>{
       'commodity_id': commodityId.toString(),
       'language': language,
+      if (varietyId != null) 'variety_id': varietyId.toString(),
+      if (gradeId != null) 'grade_id': gradeId.toString(),
       if (includeAll) 'include_all': 'true',
     };
 
