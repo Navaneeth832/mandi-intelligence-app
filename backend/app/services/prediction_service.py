@@ -229,22 +229,18 @@ def get_predictions_for_user(
         first_price = prices[0]
         last_price = prices[-1]
 
-        # Calculate metrics using business logic helpers
+# Calculate metrics using business logic helpers
         trend_raw = compute_trend(first_price, last_price)
         expected_peak_forecast = max(prices)
 
+        # 1. Identify the actual peak date from the data
         if curr_price_val > expected_peak_forecast:
             expected_peak = curr_price_val
-            best_sell_date_obj = today_val
+            forecast_peak_date_obj = today_val
         else:
             expected_peak = expected_peak_forecast
             peak_index = prices.index(expected_peak)
-            best_sell_date_obj = pred_list[peak_index].prediction_day
-
-        if best_sell_date_obj == today_val:
-            best_sell_date_str = "Today"
-        else:
-            best_sell_date_str = best_sell_date_obj.strftime('%Y-%m-%d')
+            forecast_peak_date_obj = pred_list[peak_index].prediction_day
 
         selling_window_str_list = compute_selling_window(pred_list, expected_peak)
         selling_window_dates = [p.prediction_day for p in pred_list if float(p.predicted_price) >= expected_peak * 0.98]
@@ -259,8 +255,9 @@ def get_predictions_for_user(
         expected_upside_pct = compute_expected_upside(expected_peak, curr_price_val)
         data_quality_label, is_data_valid = evaluate_data_quality(pred_list, curr_price_val)
 
+        # 2. Compute the recommendation using the forecasted peak date
         recommendation_raw = compute_recommendation(
-            best_sell_date_obj,
+            forecast_peak_date_obj,
             selling_window_dates,
             trend_raw,
             expected_upside_pct,
@@ -270,18 +267,35 @@ def get_predictions_for_user(
             today_val
         )
 
+        # 3. NEW LOGIC: Determine the UI display date based on the recommendation
+        if recommendation_raw == "SELL TODAY":
+            best_sell_date_str = "Today"
+        else:
+            # For HOLD, WAIT, or NO CLEAR SIGNAL, show the absolute peak price date
+            if forecast_peak_date_obj == today_val:
+                best_sell_date_str = "Today"
+            else:
+                best_sell_date_str = forecast_peak_date_obj.strftime('%Y-%m-%d')
+
         # Localize Trend & Recommendation values
         localized_trend = translate_trend(trend_raw, language)
         localized_recommendation = translate_recommendation(recommendation_raw, language)
 
         # Map daily forecasts
-        forecast_list = [
+        forecast_list = []
+        if curr_price_val > 0:
+            forecast_list.append({
+                "date": today_val.strftime('%Y-%m-%d'),
+                "price": float(curr_price_val)
+            })
+
+        forecast_list.extend([
             {
                 "date": p.prediction_day.strftime('%Y-%m-%d'),
                 "price": float(p.predicted_price)
             }
             for p in pred_list
-        ]
+        ])
 
         # Advisory and logistics calculations
         transport_cost = 150.0
@@ -290,15 +304,24 @@ def get_predictions_for_user(
         expected_profit = round(max(120.0, base_diff), 2)
 
         if recommendation_raw == "SELL TODAY":
-            ai_title = "Maximum Price Window Active"
-            rec_reason = f"Current price or market trend indicates optimal return near ₹{int(expected_peak)} in {market_name}. Selling now maximizes net profit."
+            # Check specifically if the trend is falling
+            if trend_raw == "FALLING":
+                ai_title = "Action Required: Downward Trend"
+                rec_reason = f"The market trend in {market_name} is falling. Even though a peak of ₹{int(expected_peak)} is forecasted, holding is risky. Selling today minimizes potential losses from further price drops."
+            # Otherwise, it triggered because the current price is within 2% of the peak
+            else:
+                ai_title = "Maximum Price Window Active"
+                rec_reason = f"The current price in {market_name} is within 2% of the expected peak (₹{int(expected_peak)}). Selling today secures your profit and protects against unexpected market volatility."
+                
         elif recommendation_raw == "WAIT":
             ai_title = "Price Appreciation Expected"
             window_text = f"between {selling_window_str_list[0]} and {selling_window_str_list[-1]}" if len(selling_window_str_list) > 1 else f"on {best_sell_date_str}"
             rec_reason = f"Prices in {market_name} are trending upward with an expected upside of {expected_upside_pct}%, peaking near ₹{int(expected_peak)} {window_text}."
+            
         elif recommendation_raw == "HOLD":
             ai_title = "Stable Market Outlook"
             rec_reason = f"Prices remain steady near ₹{int(expected_peak)} with minimal expected upside ({expected_upside_pct}%). Monitor local demand."
+            
         else:
             ai_title = "Inconclusive Signal"
             rec_reason = "Market forecast data is incomplete, stale, or volatile. Monitor daily arrivals before scheduling sales."
