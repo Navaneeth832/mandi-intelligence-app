@@ -1,8 +1,8 @@
 # 🚜 Mandi Intelligence App 🌾📈
 
-[![Live Website](https://img.shields.io/badge/Live%20API-website-brightgreen)](https://mandiintelligence.tech/)
+[![Live](https://img.shields.io/badge/Live%20API-website-brightgreen)](https://mandiintelligence.tech/)
 [![Documentation](https://img.shields.io/badge/Technical%20Docs-documentation-blue)](https://mandiintelligence.tech/docs/)
-[![Latest Release](https://img.shields.io/badge/GitHub-Releases-orange)](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
+[![Latest APK Release](https://img.shields.io/badge/GitHub-Releases-orange)](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
 
 An agricultural marketplace intelligence and price analysis platform designed to empower farmers, traders, and agricultural stakeholders across India. Mandi Intelligence provides real-time mandi prices, 7-day machine learning price forecasts, location-based mandi comparisons, and actionable price alerts.
 
@@ -10,9 +10,10 @@ An agricultural marketplace intelligence and price analysis platform designed to
 
 ## 📱 App Download & Live Links
 
+- 💻 **Live Hosted Web Application*: [https://mandiintelligence.tech/](https://mandiintelligence.tech/)
 - 🌐 **Live Hosted Backend API**: [https://mandi-intelligence-app.onrender.com](https://mandi-intelligence-app.onrender.com)
 - 📚 **Technical Documentation**: [Documentation page](https://mandiintelligence.tech/docs/)
-- 📦 **Latest GitHub Release APK**: [GitHub Releases](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
+- 📦 **Latest GitHub Release APK**: [GitHub Releases Latest APK](https://github.com/Navaneeth832/mandi-intelligence-app/releases/latest/download/app-release.apk)
 
 ### 📲 Scan to Download App (APK)
 
