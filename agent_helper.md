@@ -79,8 +79,8 @@ This document serves as the single authoritative persistent memory and comprehen
 │   │   │   │   ├── districts.py          # Districts by state
 │   │   │   │   ├── mandi_prices.py       # Daily price search & pagination
 │   │   │   │   ├── market_directory.py   # Market directory index
-│   │   │   │   ├── markets.py            # Markets by district
-│   │   │   │   ├── predictions.py        # ML price predictions (Forecasts)
+│   │   │   │   ├── markets.py            # Markets by district & compare
+│   │   │   │   ├── predictions.py        # ML price predictions & best markets
 │   │   │   │   ├── price_history.py      # 7-day historical prices
 │   │   │   │   └── states.py             # Active states
 │   │   │   ├── auth.py                   # OTP, Register, Login, Forgot Password
@@ -91,7 +91,7 @@ This document serves as the single authoritative persistent memory and comprehen
 │   │   ├── ml/                           # LightGBM weights & model feature JSON
 │   │   │   ├── lightgbm_weights.txt
 │   │   │   └── model_features.json
-│   │   ├── models/                       # 22 SQLAlchemy DB models
+│   │   ├── models/                       # 23 SQLAlchemy DB models
 │   │   ├── repositories/                 # SQL queries (mandi prices, predictions, alerts)
 │   │   ├── schemas/                      # Pydantic schemas (alerts, predictions, auth, etc.)
 │   │   ├── services/                     # Business logic & processors
@@ -101,14 +101,18 @@ This document serves as the single authoritative persistent memory and comprehen
 │   │   │   ├── alert_service.py          # Alert persistence & mapping
 │   │   │   ├── auth_service.py           # Verification & user creation
 │   │   │   ├── email_service.py          # Resend email wrapper
+│   │   │   ├── firebase_service.py       # Firebase Admin SDK & FCM push delivery
 │   │   │   ├── otp_service.py            # OTP generator & validator
 │   │   │   ├── prediction_runner.py      # ML execution interface
-│   │   │   ├── prediction_service.py     # Prediction grouping & metrics
+│   │   │   ├── prediction_service.py     # Prediction grouping, peak calculations & metrics
 │   │   │   └── verification_token_service.py # Hashed transient tokens
 │   │   ├── static/                       # Static files server
 │   │   │   └── commodity-images/         # Static images (1.jpeg, default.webp, etc.)
 │   │   ├── utils/                        # Auth identifier helpers
 │   │   └── main.py                       # FastAPI entrypoint & router registry
+│   ├── scripts/
+│   │   ├── populate_market_coordinates.py # PostGIS coordinate geocoder
+│   │   └── run_alert_generation.py        # Headless alert generation runner
 │   ├── price_fetcher.py                  # Scraper coordinator (V2 Agmarknet -> V1 Gov Fallback Default)
 │   ├── price_fetcher_v1.py               # Gov V1 public API client
 │   ├── price_fetcher_v2.py               # Agmarknet V2 JSON API client
@@ -122,16 +126,20 @@ This document serves as the single authoritative persistent memory and comprehen
 │   ├── insert_data.py                    # Mapping DB seeder
 │   └── test_alerts_api.py                # Automated pytest suite for Alerts API
 │
+├── assets/
+│   └── images/
+│       └── app_icon.png                  # High-resolution tractor app logo asset
+│
 ├── lib/
 │   ├── core/
 │   │   ├── constants/                    # ApiConstants (baseUrl, endpoints)
 │   │   ├── providers/                    # localeProvider, storageProvider, authApiProvider
-│   │   ├── services/                     # LocationService (GPS detection & reverse geocoding)
+│   │   ├── services/                     # LocationService & PushNotificationService
 │   │   ├── theme/                        # AppTheme (Material 3 palettes)
-│   │   └── widgets/                      # Global widgets (MobileFrameWrapper, CommodityImageWidget)
+│   │   └── widgets/                      # Global widgets (MobileFrameWrapper, CommodityImageWidget, NotificationBell, AuthHeader)
 │   ├── data/
 │   │   ├── datasources/                  # AlertFallbackDataSource (Offline mock engine)
-│   │   ├── models/                       # Dart data models (Alert, Forecast, MandiPrice, UserProfile)
+│   │   ├── models/                       # Dart data models (Alert, Forecast, MandiPrice, UserProfile, Cache)
 │   │   ├── repositories/                 # Repositories (AlertRepo, AuthRepo, ForecastRepo, MandiRepo)
 │   │   └── services/                     # HTTP API clients (AlertApiService, AuthApiService, etc.)
 │   ├── features/
@@ -142,6 +150,9 @@ This document serves as the single authoritative persistent memory and comprehen
 │   ├── l10n/                             # ARB localizations (app_en.arb, app_hi.arb, app_ml.arb)
 │   ├── main.dart                         # Flutter entrypoint & AuthWrapper
 │   └── main_screen.dart                  # BottomNavBar tab navigator frame
+│
+├── scripts/
+│   └── build_docs.py                     # Documentation website generator
 └── test/
     └── alerts_feature_test.dart          # Automated Flutter widget & repository tests
 ```
@@ -197,6 +208,8 @@ flowchart TD
 
 | Endpoint | Method | Auth | Purpose | Request Payload | Response Schema |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| `/` | `GET` | None | API root status message | None | `{"message": "Mandi Intelligence API"}` |
+| `/health` | `GET` | None | Health check status | None | `{"status": "healthy"}` |
 | `/auth/send-otp` | `POST` | None | Generate & dispatch signup OTP | `SendOTPRequest` | `{"message", "identifier", "registration_method"}` |
 | `/auth/verify-otp` | `POST` | None | Validate OTP; issue transient token | `VerifyOTPRequest` | `{"verification_token", "token_type", "expires_in_seconds"}` |
 | `/auth/forgot-password/send-otp` | `POST` | None | Send reset password OTP | `SendOTPRequest` | `{"message", "identifier", "registration_method"}` |
@@ -213,18 +226,19 @@ flowchart TD
 | `/profile/notification-preferences` | `PUT` | Bearer | Update notification settings | `NotificationPreferenceUpdate` | `NotificationPreferenceResponse` |
 | `/states/` | `GET` | None | List states with active markets | Query: `language` | `List[StateSchema]` |
 | `/districts/` | `GET` | None | List districts in a state | Query: `state_id`, `language` | `List[DistrictSchema]` |
-| `/markets/` | `GET` | None | List markets in a district | Query: `district_id`, `language` | `List[MarketSchema]` |
-| `/markets/closest` | `GET` | None | Get 10 closest markets by coordinates | Query: `lat`, `lng` | `List[ClosestMarketResponse]` |
-| `/markets/compare-mock` | `GET` | None | Financial comparison across nearby mandis | Query: `lat`, `lng`, `commodity_id`, `transport_rate_per_km`, `quantity` | `MarketComparisonResponse` |
+| `/markets/` | `GET` | None | List markets in a district active today | Query: `district_id`, `language` | `List[MarketSchema]` |
+| `/markets/all` | `GET` | None | List all markets in a district | Query: `district_id`, `language` | `List[MarketSchema]` |
+| `/markets/compare` | `GET` | None | Financial comparison across nearby mandis | Query: `lat`, `lng`, `commodity_id`, `transport_rate_per_km`, `quantity` | `MarketComparisonResponse` |
 | `/markets/{id}/commodities` | `GET` | None | Active commodities in market today | Path: `market_id` | `{"market_id", "commodity_count", "commodities"}` |
 | `/commodities/` | `GET` | None | List commodities with prices today | None | `List[CommoditySchema]` |
 | `/commodities/active` | `GET` | None | List active trackable commodities | None | `List[CommoditySchema]` |
 | `/commodities/all` | `GET` | None | List all mapped commodities | None | `List[CommoditySchema]` |
-| `/mandi-prices/` | `GET` | None | Paginated search of mandi prices | Query: `state`, `district`, `market`, `commodity`, `variety`, `language`, `page`, `page_size` | `PaginatedMandiResponse` |
+| `/mandi-prices/` | `GET` | Optional Bearer | Paginated search of mandi prices with 5-tier personalized priority sorting | Query: `state`, `district`, `market`, `commodity`, `variety`, `language`, `page`, `page_size` | `PaginatedMandiResponse` |
 | `/price-history/` | `GET` | None | Get 7 latest price records | Query: `commodity`, `market`, `variety` | `List[PriceHistoryResponse]` |
 | `/market-directory/` | `GET` | None | Paginated directory of active markets | Query: `state_id`, `district_id`, `commodity_id`, `search`, `language`, `page`, `page_size` | `PaginatedMarketResponse` |
-| `/predictions/` | `GET` | Bearer | Get 7-day ML price predictions | Query: `commodity_id`, `market_id`, `commodity_ids`, `market_ids`, `language`, `page`, `page_size` | `PaginatedForecastResponse` |
+| `/predictions/` | `GET` | Bearer | Get 7-day ML price predictions | Query: `commodity_id`, `market_id`, `commodity_ids`, `market_ids`, `district_id`, `language`, `page`, `page_size` | `PaginatedForecastResponse` |
 | `/predictions/best-markets` | `GET` | Bearer | Best markets for commodity, variety & grade | Query: `commodity_id`, `variety_id`, `grade_id`, `language`, `include_all` | `List[BestMarketResponse]` |
+| `/predictions/trigger` | `POST` | Bearer | Trigger ML price prediction pipeline in background | Query: `days` | `{"message": "..."}` |
 | `/alerts` | `GET` | Bearer | Active actionable alerts for user | Query: `type`, `page`, `page_size` | `PaginatedAlertsResponse` |
 | `/alerts/history` | `GET` | Bearer | Historical alerts archive | Query: `type`, `search`, `date_from`, `date_to`, `page`, `page_size` | `PaginatedAlertsResponse` |
 | `/alerts/fcm-token` | `POST` | Bearer | Register user device FCM token | Body: `FCMTokenRegisterSchema` | `{"status": "success", "message": "..."}` |
@@ -484,20 +498,36 @@ The predictive intelligence module estimates future modal prices for 7 days into
      - `change_pct >= +2.0%` $\rightarrow$ `RISING`
      - `change_pct <= -2.0%` $\rightarrow$ `FALLING`
      - Otherwise $\rightarrow$ `STABLE`
-  3. **Expected Peak & Best Sell Date**:
-     - `expected_peak_price = max(forecast_prices)`
-     - `best_sell_date = first date having expected_peak_price`
+  3. **Expected Peak Price & Peak Date**:
+     - `expected_peak_forecast = max(forecast_prices)`
+     - If `current_price > expected_peak_forecast`: `expected_peak = current_price` and `peak_date = today`.
+     - Otherwise: `expected_peak = expected_peak_forecast` and `peak_date = prediction_day of expected_peak_forecast`.
   4. **Expected Upside %**:
-     - `upside_pct = ((expected_peak_price - current_price) / current_price) * 100` (evaluates whether waiting is worthwhile).
+     - `upside_pct = ((expected_peak - current_price) / current_price) * 100` (evaluates whether waiting is worthwhile).
   5. **Selling Window**:
-     - Forecast dates where `price >= expected_peak_price * 0.98` (dates within 2% of the predicted peak).
+     - Forecast dates where `predicted_price >= expected_peak * 0.98` (dates within 2% of the predicted peak).
+     - If `current_price >= expected_peak * 0.98`, `today` is prepended to the selling window dates list.
   6. **Recommendation Matrix**:
-     - 🔴 **`SELL TODAY`**: If `current_price >= expected_peak_price * 0.98` OR (`trend == FALLING` AND `expected_upside_pct <= 2%`).
-     - 🟢 **`WAIT`**: If `expected_upside_pct > 2%` AND `selling_window` occurs in the future (at least one window date > today) AND `trend == RISING`.
-     - 🟡 **`HOLD`**: If `abs(expected_upside_pct) <= 2%` AND `trend == STABLE`.
-     - ⚪ **`NO CLEAR SIGNAL`**: If forecast data is incomplete, highly volatile ($CV > 0.4$), or `current_price` is missing/stale ($current\_price \le 0$).
-  7. **Final Response Contract**:
-     Produces `current_price`, `forecast`, `trend`, `expected_peak_price`, `best_sell_date`, `selling_window`, `expected_upside_pct`, `recommendation`, `data_quality`, `transport_cost`, `market_fee`, `expected_profit`, `recommendation_reason`, and `ai_recommendation_title`.
+     - 🔴 **`SELL TODAY`**: Triggered if `current_price >= expected_peak * 0.98` OR (`trend == FALLING` AND `expected_upside_pct <= 2%`).
+     - 🟢 **`WAIT`**: Triggered if `expected_upside_pct > 2%` AND `selling_window` occurs in the future (at least one window date > today) AND `trend == RISING`.
+     - 🟡 **`HOLD`**: Triggered if `abs(expected_upside_pct) <= 2%` AND `trend == STABLE`.
+     - ⚪ **`NO CLEAR SIGNAL`**: Triggered if forecast data is incomplete, highly volatile ($CV > 0.4$), or `current_price` is missing/stale ($current\_price \le 0$).
+  7. **Best Sell Date Synchronization**:
+     - If `recommendation == "SELL TODAY"`: `best_sell_date` is synced to `"Today"`.
+     - Otherwise: set to `"Today"` if `peak_date == today`, or formatted as `"YYYY-MM-DD"`.
+  8. **Timeline Line Graph Dataset**:
+     - If `current_price > 0`, the daily forecast timeline starts with today's date and actual current price `{"date": today_str, "price": current_price}`, followed by the 7 forecast days. This allows line charts on the frontend to visualize smooth transitions from live price through the 7 forecast days.
+  9. **AI Recommendation Copy & Reason Logic**:
+     - **`SELL TODAY` + `FALLING` trend**: Title: `"Action Required: Downward Trend"`, Reason: `"The market trend in {market_name} is falling. Even though a peak of ₹{int(expected_peak)} is forecasted, holding is risky. Selling today minimizes potential losses from further price drops."`
+     - **`SELL TODAY` + Current Price within 2% of Peak**: Title: `"Maximum Price Window Active"`, Reason: `"The current price in {market_name} is within 2% of the expected peak (₹{int(expected_peak)}). Selling today secures your profit and protects against unexpected market volatility."`
+     - **`WAIT`**: Title: `"Price Appreciation Expected"`, Reason: `"Prices in {market_name} are trending upward with an expected upside of {expected_upside_pct}%, peaking near ₹{int(expected_peak)} {window_text}."`
+     - **`HOLD`**: Title: `"Stable Market Outlook"`, Reason: `"Prices remain steady near ₹{int(expected_peak)} with minimal expected upside ({expected_upside_pct}%). Monitor local demand."`
+     - **`NO CLEAR SIGNAL`**: Title: `"Inconclusive Signal"`, Reason: `"Market forecast data is incomplete, stale, or volatile. Monitor daily arrivals before scheduling sales."`
+  10. **Best Markets API (`GET /predictions/best-markets`)**:
+      - Accepts `commodity_id` (required), `variety_id` (optional), `grade_id` (optional), `language` (optional), and `include_all` (boolean).
+      - Default (`include_all=False`): filters strictly to markets within the user's selected district.
+      - Nationwide (`include_all=True`): evaluates all markets across India.
+      - Results are sorted in descending order of predicted peak price (`predicted_price`).
 
 ---
 
