@@ -1,5 +1,5 @@
 # Mandi Intelligence - Long-Term Architectural Memory
-*(Last Updated: 1 September 2026)*
+*(Last Updated: 7 September 2026)*
 
 This document serves as the single authoritative persistent memory and comprehensive architectural blueprint of the Mandi Intelligence project. It provides complete context for future development, ensuring subsequent agent sessions do not need to rediscover the architecture, database schema, state management, predictive engine, alert pipeline, or business logic.
 
@@ -10,26 +10,26 @@ This document serves as the single authoritative persistent memory and comprehen
 - **What this project does**: Mandi Intelligence is an agricultural marketplace analysis and intelligence platform. It aggregates live agricultural commodity prices from across India, normalizes them, generates 7-day machine learning price predictions, processes actionable price alerts, and delivers them via a localized mobile app (with a desktop viewport frame wrapper).
 - **Primary purpose**: To empower farmers, traders, and agricultural stakeholders with real-time commodity price data, historical trends, 7-day machine learning forecasts, best selling day recommendations, and customized crop price alerts.
 - **Main user flow**:
-  1. **Authentication & Recovery**: User registers or logs in via OTP (Email via Resend or SMS via Fast2SMS). Registered users can also recover passwords via a 3-phase Forgot Password OTP flow.
+  1. **Authentication & Recovery**: User registers or logs in via Email OTP (delivered via Resend). Registered users can also recover passwords via a 3-phase Forgot Password OTP flow.
   2. **Onboarding & Profile Setup**: New users select their State, District, preferred UI Language (English, Hindi, Malayalam), and trackable crops (crop preferences).
   3. **Real-Time Price Tracking (Home Tab)**: Displays current daily mandi prices filtered by location and preferred crops, formatted with Variety and Grade tags.
   4. **Detailed Analysis & Market Directory (Markets Tab)**: Users can inspect 7-day historical price movement charts (`fl_chart`) or browse a paginated directory of active markets in a state/district.
   5. **Predictions & Advisory (Advisory Tab)**: Displays 7-day LightGBM price predictions in a production-grade 3-section layout (Prediction Section, AI Advisory Section, and Forecast Section with daily timeline). Features an interactive two-step "Compare Nearby Mandis" flow (`MarketLocationPickerScreen` for GPS detection & interactive OpenStreetMap pin drop, transitioning to `MarketComparisonScreen` for results) and an "Explore More Commodities" portal to search predictions across non-preferred crops.
-  6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`) and searchable historical alert archives.
+  6. **Actionable Alerts & History (Alerts Bell Header)**: Displays real-time actionable price alerts (`PRICE_INCREASE`, `PRICE_DROP`, `AI_RECOMMENDATION`) and searchable historical alert archives.
   7. **Profile & Notification Management (Profile Tab)**: Allows editing location, language, tracked crops, and notification preferences (Price Increase, Price Drop, AI Recommendation toggles; In-App, Email, Push delivery channels; Instant vs Daily Summary frequencies).
 - **Current implementation status**:
-  - **Backend**: Fully functional FastAPI service deployed on Railway. Features PostGIS spatial location engine (`latitude`, `longitude`, `location` Geography Point with GiST indexing), geocoding script (`populate_market_coordinates.py`), nearby market comparison endpoint (`/markets/compare-mock`), database migration schemas, dual-source price fetcher, fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, Fast2SMS gateway, and RESTful APIs.
+  - **Backend**: Fully functional FastAPI service deployed on Render. Features PostGIS spatial location engine (`latitude`, `longitude`, `location` Geography Point with GiST indexing on Supabase PostgreSQL), geocoding script (`populate_market_coordinates.py`), nearby market comparison endpoint (`/markets/compare-mock`), database migration schemas, price fetcher pipeline (always defaulting to Data.gov.in V1 API fallback since internal Agmarknet V2 API key is no longer used), fuzzy-matching normalizers, LightGBM prediction engine, template-based alert localization engine, Resend mailer, and RESTful APIs. Scheduling jobs for predictions, alert generation, and data fetching are handled via GitHub Actions workflows / GitHub Pages workflows.
   - **Frontend**: Production-grade Flutter app with multi-language localizations (EN, HI, ML), Riverpod state management, custom Material 3 cards, desktop frame wrapper (`MobileFrameWrapper`), production-ready Two-Step Nearby Mandi Comparison workflow (`MarketLocationPickerScreen` with GPS detection and OpenStreetMap pin drop + `MarketComparisonScreen` with 5 sort options, quantity controls, Change Location support, and Best Value badge), and dual-mode fallback repositories for offline/resilient demo operation.
 - **Completed Core Modules**:
-  - Authentication (OTP send/verify with transient verification tokens, login, register, me).
+  - Authentication (Email OTP send/verify via Resend with transient verification tokens, login, register, me).
   - Forgot Password recovery pipeline.
   - Notification Preferences management.
-  - Dual price ingestion pipeline (Agmarknet V2 Daily API + Data.gov.in V1 Fallback API).
+  - Price ingestion pipeline (always defaults to Data.gov.in V1 API fallback as Agmarknet V2 internal API key is no longer used, though Agmarknet V2 remains documented in architecture).
   - Advanced fuzzy matching normalization for Markets, Commodities, and Varieties.
   - Multi-language localization (EN, HI, ML) for App UI and database-driven translations.
   - 7-day historical price timeline visualization.
   - LightGBM Machine Learning 7-day price forecasting engine.
-  - Actionable & Historical Alerts System (`PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`).
+  - Actionable & Historical Alerts System (`PRICE_INCREASE`, `PRICE_DROP`, `AI_RECOMMENDATION`).
   - Two-Step Spatial Mandi Comparison System (GPS auto-detection, OpenStreetMap pin-drop picker with Nominatim reverse geocoding, financial payout matrix with best-value ranking).
 
 ---
@@ -50,7 +50,7 @@ This document serves as the single authoritative persistent memory and comprehen
 ### Backend
 - **Framework**: FastAPI (Python)
 - **Server**: Uvicorn
-- **ORM / DB Access**: SQLAlchemy (PostgreSQL engine with PostGIS / `GeoAlchemy2`)
+- **ORM / DB Access**: SQLAlchemy (PostgreSQL engine on Supabase with PostGIS / `GeoAlchemy2`)
 - **Geocoding & Spatial**: `geopy` (GoogleV3 geocoder), `GeoAlchemy2` (PostGIS Geography column)
 - **Machine Learning**: LightGBM, Pandas, NumPy, Scikit-learn (`app/ml/lightgbm_weights.txt`, `app/ml/model_features.json`)
 - **Data Fetcher**: `httpx`, `requests`
@@ -58,12 +58,11 @@ This document serves as the single authoritative persistent memory and comprehen
 - **Security & Token**: Passlib (`bcrypt`), `python-jose[cryptography]` (JWT)
 - **Push Notification Engine**: `firebase-admin` (SDK)
 - **Email Delivery**: `resend` (SDK)
-- **SMS Delivery**: `Fast2SMS` API (`SMSService`)
-
+- **Scheduling**: GitHub Actions workflows / GitHub Pages scheduled workflows for price ingestion, alert generation, and ML inference jobs.
 
 ### Database & Deployment
-- **Database**: PostgreSQL (hosted on Railway)
-- **Deployment**: Railway (`mandi-intelligence-app-production`)
+- **Database**: PostgreSQL (hosted on Supabase)
+- **Deployment**: Render (`mandi-intelligence-app`)
 
 ---
 
@@ -105,13 +104,12 @@ This document serves as the single authoritative persistent memory and comprehen
 │   │   │   ├── otp_service.py            # OTP generator & validator
 │   │   │   ├── prediction_runner.py      # ML execution interface
 │   │   │   ├── prediction_service.py     # Prediction grouping & metrics
-│   │   │   ├── sms_service.py            # Fast2SMS wrapper
 │   │   │   └── verification_token_service.py # Hashed transient tokens
 │   │   ├── static/                       # Static files server
 │   │   │   └── commodity-images/         # Static images (1.jpeg, default.webp, etc.)
 │   │   ├── utils/                        # Auth identifier helpers
 │   │   └── main.py                       # FastAPI entrypoint & router registry
-│   ├── price_fetcher.py                  # Scraper coordinator (V2 Agmarknet -> V1 Gov)
+│   ├── price_fetcher.py                  # Scraper coordinator (V2 Agmarknet -> V1 Gov Fallback Default)
 │   ├── price_fetcher_v1.py               # Gov V1 public API client
 │   ├── price_fetcher_v2.py               # Agmarknet V2 JSON API client
 │   ├── run_predictions.py                # Standalone LightGBM inference & batch saver
@@ -161,31 +159,31 @@ flowchart TD
         Repo -.->|Network Fallback| FBDS["AlertFallbackDataSource"]
     end
 
-    subgraph Server ["FastAPI Backend Service"]
+    subgraph Server ["FastAPI Backend Service (Render)"]
         AS -->|Bearer JWT JSON| RT["FastAPI Routers"]
         RT -->|Injects| Deps["Auth and Database Dependencies"]
         RT -->|Invokes| Serv["Services Layer"]
         Serv -->|Queries| DBRepo["Repository Layer"]
-        DBRepo -->|SQLAlchemy| DB[("PostgreSQL Database")]
+        DBRepo -->|SQLAlchemy| DB[("PostgreSQL Database (Supabase)")]
         Static["StaticFiles Engine"] -->|Serves Images| UI
     end
 
     subgraph Predictions ["ML Forecast Engine"]
-        CronP["Cron / Admin Trigger"] --> PR["run_predictions.py"]
+        CronP["GitHub Actions Workflow / Schedule"] --> PR["run_predictions.py"]
         PR -->|Loads Weights| LGB["LightGBM Model"]
         PR -->|Reads History| DB
         LGB -->|Writes Batches| DB
     end
 
     subgraph AlertsEngine ["Alert Processor System"]
-        CronA["Cron / Service Trigger"] --> AGS["AlertGenerationService"]
+        CronA["GitHub Actions Workflow / Schedule"] --> AGS["AlertGenerationService"]
         AGS -->|Evaluates Shifts| Processors["PriceShiftProcessor"]
         Processors -->|Localizes via Templates| ALS["AlertLocalizationService"]
         ALS -->|Persists Alerts| DB
     end
 
     subgraph DataPipeline ["Price Scraper Pipeline"]
-        CronS["External Cron"] --> PF["price_fetcher.py"]
+        CronS["GitHub Actions Workflow / Schedule"] --> PF["price_fetcher.py"]
         PF -->|Attempts V2| V2["Agmarknet API"]
         PF -->|Fallback V1| V1["Data.gov.in API"]
         PF -->|Fuzzy Matches| Norm["Normalizers"]
@@ -411,7 +409,7 @@ The frontend utilizes **Riverpod** (`flutter_riverpod`) for reactive state manag
 
 ### Alerts Providers
 - `alertRepositoryProvider` (`alert_providers.dart`): Injects `AlertRepository` with transparent HTTP API client and fallback offline data source (`AlertFallbackDataSource`).
-- `alertsNotifierProvider` (`alert_providers.dart`): `StateNotifierProvider<AlertsNotifier, AlertsState>`. Manages active alerts list, filter chips (`All`, `Better Market`, `Price Increase`, `Price Drop`, `AI Recommendation`), pagination, and pull-to-refresh.
+- `alertsNotifierProvider` (`alert_providers.dart`): `StateNotifierProvider<AlertsNotifier, AlertsState>`. Manages active alerts list, filter chips (`All`, `Price Increase`, `Price Drop`, `AI Recommendation`), pagination, and pull-to-refresh.
 - `alertHistoryNotifierProvider` (`alert_providers.dart`): `StateNotifierProvider<AlertHistoryNotifier, AlertHistoryState>`. Manages searchable alert archives, date filters, and presentation-layer date grouping ("Today", "Yesterday", "8 August 2026", etc.).
 
 ---
@@ -440,20 +438,19 @@ The frontend utilizes **Riverpod** (`flutter_riverpod`) for reactive state manag
 # 10. Services & Processing Logic
 
 ### Authentication & Security Services
-1. **`AuthService`** (`auth_service.py`): Handles email/phone normalization, OTP dispatching, verification token generation, password hashing, and user creation.
+1. **`AuthService`** (`auth_service.py`): Handles email normalization, OTP dispatching via Resend, verification token generation, password hashing, and user creation.
 2. **`OTPService`** (`otp_service.py`): Generates cryptographically secure 6-digit OTP codes, bcrypts them before database storage, and validates 5-minute expiry windows.
 3. **`VerificationTokenService`** (`verification_token_service.py`): Generates 32-character URL-safe verification tokens, hashes them in the database, and enforces 10-minute validity.
 4. **`EmailService`** (`email_service.py`): Resend SDK wrapper for sending transactional emails containing OTPs.
-5. **`SMSService`** (`sms_service.py`): Fast2SMS API wrapper (`https://www.fast2sms.com/dev/bulkV2`) for dispatching SMS OTPs (with console print fallback during dev).
 
 ### Machine Learning & Prediction Services
-6. **`PredictionRunner`** (`prediction_runner.py`): Programmatic trigger interface that invokes `run_predictions.py`.
-7. **`PredictionService`** (`prediction_service.py`): Fetches raw predictions from `prediction_batches` and `commodity_predictions`, groups chronological days by `(commodity_id, market_id, variety_id, grade_id)`, computes peak price, best selling day, trend, and recommendation, and localizes names via translation tables.
+5. **`PredictionRunner`** (`prediction_runner.py`): Programmatic trigger interface that invokes `run_predictions.py`.
+6. **`PredictionService`** (`prediction_service.py`): Fetches raw predictions from `prediction_batches` and `commodity_predictions`, groups chronological days by `(commodity_id, market_id, variety_id, grade_id)`, computes peak price, best selling day, trend, and recommendation, and localizes names via translation tables.
 
 ### Alert Engine & Localization Services
-8. **`AlertGenerationService`** (`alert_generation_service.py`): Dispatches alert processors (`PriceShiftProcessor`, etc.) to evaluate price shifts and persist new alerts into the `alerts` table.
-9. **`AlertLocalizationService`** (`alert_localization.py`): Multi-language alert template renderer (EN, HI, ML) with in-memory translation caches for commodities and markets.
-10. **`AlertService`** (`alert_service.py`): Manages database queries for active alerts, searchable history, and deterministic sorting (`created_at desc, id desc`).
+7. **`AlertGenerationService`** (`alert_generation_service.py`): Dispatches alert processors (`PriceShiftProcessor`, etc.) to evaluate price shifts and persist new alerts into the `alerts` table.
+8. **`AlertLocalizationService`** (`alert_localization.py`): Multi-language alert template renderer (EN, HI, ML) with in-memory translation caches for commodities and markets.
+9. **`AlertService`** (`alert_service.py`): Manages database queries for active alerts, searchable history, and deterministic sorting (`created_at desc, id desc`).
 
 ---
 
@@ -509,7 +506,7 @@ The predictive intelligence module estimates future modal prices for 7 days into
 Conforms strictly to the **Alerts API — v1 Contract**.
 
 ### Alert Types & Scope
-- **Supported Types**: `PRICE_INCREASE`, `PRICE_DROP`, `BETTER_MARKET`, `AI_RECOMMENDATION`.
+- **Supported Types**: `PRICE_INCREASE`, `PRICE_DROP`, `AI_RECOMMENDATION`.
 - **Explicit Exclusion**: `MARKET_GLUT` is explicitly **OUT OF SCOPE**. Any request containing `type=MARKET_GLUT` is rejected by the backend with `HTTP 400 Bad Request`.
 - **Backend Architecture**:
   - `Alert` SQLAlchemy model mapping to `alerts` table.
@@ -529,7 +526,7 @@ sequenceDiagram
     participant App as Flutter Mobile App
     participant FCM as Firebase Cloud Messaging
     participant API as FastAPI Backend
-    participant DB as PostgreSQL DB
+    participant DB as PostgreSQL DB (Supabase)
 
     App->>FCM: 1. Request Permission & Get Device Token
     FCM-->>App: Returns FCM Token
@@ -566,11 +563,10 @@ sequenceDiagram
 
 1. Loads active commodities from `active_commodity`.
 2. Resolves commodity parameters using `Data_mapping.py` generated by `generate_mapping.py`.
-3. Calls **Agmarknet V2 Daily API** (`https://api.agmarknet.gov.in/v1/daily-price-arrival/report`) via JSON POST.
-4. If V2 fails (timeout, 5xx server error, or rate limit), falls back to **Gov V1 Public API** (`https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070`) using API Key authentication.
-5. Ingested records pass through `validate_records()`.
-6. Fuzzy normalizers map string text to database foreign key IDs (`commodity_id`, `market_id`, `variety_id`, `grade_id`).
-7. Performs bulk upserts into `mandi_prices` using PostgreSQL `on_conflict_do_update` on constraint `mandi_prices_unique`.
+3. Ingestion Pipeline Strategy: As the internal Agmarknet V2 API key is no longer used, the pipeline defaults directly to the **Gov V1 Public API** (`https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070`) fallback using API Key authentication for daily price data fetching.
+4. Ingested records pass through `validate_records()`.
+5. Fuzzy normalizers map string text to database foreign key IDs (`commodity_id`, `market_id`, `variety_id`, `grade_id`).
+6. Performs bulk upserts into `mandi_prices` using PostgreSQL `on_conflict_do_update` on constraint `mandi_prices_unique`.
 
 ---
 
@@ -578,9 +574,9 @@ sequenceDiagram
 
 ### 1. User Registration Flow
 ```
-User (Email/Phone) ──► /auth/send-otp ──► [Resend Email / Fast2SMS]
-                                                │
-User enters OTP ◄───────────────────────────────┘
+User (Email) ──► /auth/send-otp ──► [Resend Email]
+                                          │
+User enters OTP ◄─────────────────────────┘
        │
        ▼
 /auth/verify-otp ──► Returns hashed transient verification_token (10 min expiry)
@@ -591,9 +587,9 @@ User enters OTP ◄────────────────────�
 
 ### 2. Password Recovery Flow
 ```
-User ──► /auth/forgot-password/send-otp ──► [Dispatches Reset OTP]
-                                                   │
-User enters OTP ◄──────────────────────────────────┘
+User ──► /auth/forgot-password/send-otp ──► [Dispatches Reset Email OTP]
+                                                    │
+User enters OTP ◄───────────────────────────────────┘
        │
        ▼
 /auth/forgot-password/verify-otp ──► Returns transient reset token
@@ -624,25 +620,23 @@ User enters OTP ◄────────────────────�
 
 # 16. External APIs & Third-Party Integrations
 
-1. **Agmarknet V2 Daily API**: `https://api.agmarknet.gov.in/v1/daily-price-arrival/report` (Primary price scraper).
-2. **Gov V1 Public API**: `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070` (Fallback price scraper, requires `api-key`).
-3. **Resend SMTP Email API**: Dispatches OTP verification emails. Requires `RESEND_API_KEY`.
-4. **Fast2SMS Bulk V2 API**: `https://www.fast2sms.com/dev/bulkV2` (SMS OTP dispatcher). Requires `FAST2SMS_API_KEY`.
+1. **Agmarknet V2 Daily API**: `https://api.agmarknet.gov.in/v1/daily-price-arrival/report` (Internal API key no longer used; kept in architecture reference).
+2. **Gov V1 Public API**: `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070` (Active daily price scraper fallback used by default, requires `api-key`).
+3. **Resend SMTP Email API**: Dispatches OTP verification emails and alert notification emails. Requires `RESEND_API_KEY`.
 
 ---
 
 # 17. Important Constants & Configuration
 
 ### Environment Variables (`backend/.env`)
-- `DATABASE_URL`: Hosted PostgreSQL connection URL.
+- `DATABASE_URL`: Hosted PostgreSQL connection URL on Supabase.
 - `SECRET_KEY`: Used for JWT signing.
 - `API_KEY`: Gov data API key.
 - `RESEND_API_KEY`: API key for email delivery.
-- `FAST2SMS_API_KEY`: API key for Fast2SMS gateway.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_EMAIL`, `SMTP_PASSWORD`: Fallback SMTP configuration.
 
 ### Frontend Base Constants (`lib/core/constants/api_constants.dart`)
-- `baseUrl`: `https://mandi-intelligence-app-production.up.railway.app`
+- `baseUrl`: `https://mandi-intelligence-app.onrender.com`
 - Static images base route: `/static/commodity-images/{commodityId}.jpeg`
 
 ---
@@ -674,9 +668,9 @@ User enters OTP ◄────────────────────�
 2. **Singular Database Table Names**: Note that `grade` and `active_commodity` are named singular in PostgreSQL. All other tables (`states`, `districts`, `markets`, `commodities`, `varieties`, `mandi_prices`, `users`, `alerts`, `prediction_batches`, `commodity_predictions`, `notification_preferences`) are named plural.
 3. **`MARKET_GLUT` Exclusion**: `MARKET_GLUT` is explicitly excluded across backend validators, repositories, UI filter chips, and data models. Querying `MARKET_GLUT` returns `HTTP 400 Bad Request`.
 4. **Dual-Mode Fallback Repository Pattern**: To guarantee seamless demo execution and offline resilience, `AlertRepository` transparently falls back to `AlertFallbackDataSource` if API network requests fail or time out.
-5. **Transient Verification Tokens**: `auth/verify-otp` returns a cryptographically hashed 10-minute token. Registration calls (`/auth/register`) require this token, ensuring account creation originates from verified email/phone numbers.
+5. **Transient Verification Tokens**: `auth/verify-otp` returns a cryptographically hashed 10-minute token. Registration calls (`/auth/register`) require this token, ensuring account creation originates from verified email numbers.
 6. **In-Memory Reference Dictionary Caching**: `price_fetcher.py` loads entities into memory maps to achieve $O(1)$ lookup times during high-volume fuzzy matching normalization.
-7. **FastAPI Lifespan Tasks**: Commented out inside `main.py` to prevent startup context blocking. Data fetching (`price_fetcher.py`), prediction execution (`run_predictions.py`), and alert processing (`scripts/run_alert_generation.py`) are triggered via external cron or administrative CLI scripts.
+7. **FastAPI Lifespan Tasks & Scheduling Jobs**: Commented out inside `main.py` to prevent startup context blocking. Data fetching (`price_fetcher.py`), prediction execution (`run_predictions.py`), and alert processing (`scripts/run_alert_generation.py`) are triggered via scheduled GitHub Actions workflows / GitHub Pages workflows or administrative CLI scripts.
 
 ---
 
@@ -766,15 +760,15 @@ User enters OTP ◄────────────────────�
   - If Resend API calls fail, network timeouts occur, or the user lacks an email address, the error is logged and caught gracefully without rolling back or failing alert creation.
 - **Multilingual Support**:
   - Templates use the user's `preferred_language` (`en`, `hi`, `ml`) from the `users` table to select localized subjects and HTML content.
-  - Supports English, Hindi, and Malayalam templates for all alert types (`PRICE_INCREASE`, `PRICE_DROP`, `MARKET_GLUT`, `SELLING_OPPORTUNITY`, `BETTER_MARKET`, `AI_RECOMMENDATION`).
+  - Supports English, Hindi, and Malayalam templates for all alert types (`PRICE_INCREASE`, `PRICE_DROP`, `MARKET_GLUT`, `SELLING_OPPORTUNITY`, `AI_RECOMMENDATION`).
 - **User Validation & Preferences**:
-  - Email delivery is only attempted when `user.email` is present. Users registered via phone without an email address are cleanly skipped.
+  - Email delivery is only attempted when `user.email` is present.
   - Respects user notification preferences (`delivery_email` in `notification_preferences`).
 - **Backend-Only Channel**:
   - Email delivery is triggered internally on FastAPI backend upon alert generation. `RESEND_API_KEY` remains strictly server-side.
   - Automated alert generation in GitHub Actions (`generate_alerts.yml`) provisions the necessary secrets (`RESEND_API_KEY`, `SECRET_KEY`, `API_KEY`) to support headless email delivery without application server dependencies.
 - **FCM & SMS Disclaimer**:
-  - FCM push notifications and SMS delivery are **NOT** implemented in this change.
+  - FCM push notifications are fully implemented. SMS delivery is **NOT** implemented in this application.
 
 
 ---
@@ -936,5 +930,46 @@ Within each priority group, records are sorted by `MandiPrice.created_at DESC` s
 - **SQL Ordering**: Built using SQLAlchemy `case()` statement (`priority_expr`), combined with `order_by(priority_expr.asc(), MandiPrice.created_at.desc())`.
 - **Preserved Filters & Pagination**: All filters (`state`, `district`, `market`, `commodity`, `variety`, `arrival_date == date.today()`) and response structures (`page`, `page_size`, `total_records`, `total_pages`, `data`) remain 100% intact.
 - **Frontend Token Injection**: `MandiRepository` injects `AuthRepository` to retrieve JWT tokens via `_authRepository.getToken()` and passes them in HTTP headers (`Authorization: Bearer <token>`) via `MandiApiService.getMandiPrices()`.
+
+
+---
+
+# 30. Market Detail Screen Bar Chart & Percentage Change Calculation Logic
+
+
+Documents the frontend computation and visualization logic implemented in `MarketDetailScreen` (`lib/features/mandi_prices/screens/market_detail_screen.dart`) for calculating price trends and rendering historical price timeline bar charts.
+
+### 1. Percentage Change Calculation (`_buildPriceSummaryCard`)
+The percentage change badge in the Price Summary card indicates the price movement over the fetched historical timeline for the specific `(commodity, market, variety)` tuple:
+
+1. **Data Source**: Calls `MandiRepository.getPriceHistory()` to fetch a chronologically ordered array of `PriceHistory` records.
+2. **Formula**:
+   - $\text{Price}_{\text{earliest}} = \text{history.first.modalPrice}$ (earliest recorded price in the history window).
+   - $\text{Price}_{\text{latest}} = \text{history.last.modalPrice}$ (latest recorded price in the history window).
+   - When $\text{history.length} \ge 2$ and $\text{Price}_{\text{earliest}} \neq 0$:
+     $$\text{Percentage Change (\%)} = \left( \frac{\text{Price}_{\text{latest}} - \text{Price}_{\text{earliest}}}{\text{Price}_{\text{earliest}}} \right) \times 100$$
+   - When $\text{history.length} == 1$: Percentage change defaults to `0.00%`.
+   - When $\text{history.isEmpty}$: Displayed as `N/A`.
+
+3. **Visual Representation**:
+   - 🟢 **Positive Shift ($> 0\%$)**: Rendered in theme green (`#007A33`) with a `+` prefix and an upward arrow icon (`Icons.arrow_upward`).
+   - 🔴 **Negative Shift ($< 0\%$)**: Rendered in alert red (`#D32F2F`) with a downward arrow icon (`Icons.arrow_downward`).
+   - ⚪ **Zero / Neutral Shift ($0\%$)**: Rendered in neutral dark grey (`#616161`).
+
+### 2. Historical Bar Chart Visualization (`_buildTrendSection` & `_buildChartData`)
+The recent trend section renders an interactive 7-day price bar chart powered by `fl_chart` (`BarChart` / `BarChartData`):
+
+1. **Bar Construction (`BarChartGroupData`)**:
+   - Each historical record index `x` is mapped to a vertical bar with height `toY = entry.value.modalPrice`.
+   - Bars are formatted with a fixed 16px width and rounded top corners (`BorderRadius.vertical(top: Radius.circular(6))`), styled in primary brand green (`#007A33`).
+
+2. **Axis & Grid Scaling**:
+   - **Y-Axis Bounds**: `minY = 0`, `maxY = maxPrice * 1.2` (dynamic 20% headroom calculation so high bars never touch the top boundary).
+   - **Y-Axis Labels & Gridlines**: Horizontal gridlines and left titles set at interval steps of $\text{ceil}(\text{maxPrice} / 3)$, formatted in Indian Rupees (e.g. `₹4,500`).
+   - **X-Axis Date Rotation**: Date labels on the bottom axis are formatted as `MMM d` (e.g., `Aug 28`). Labels are rotated by $-45^\circ$ (`Transform.rotate(angle: -math.pi / 4)`) to prevent overlapping text when multiple dates are displayed side-by-side.
+
+3. **Interactive Touch Tooltip (`BarTouchData`)**:
+   - Tapping or hovering on any bar displays a dark floating pill tooltip (`#111111`) displaying the exact modal price in Rupees and the date (e.g., `₹4,500 \n Aug 28`).
+
 
 
